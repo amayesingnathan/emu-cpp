@@ -159,20 +159,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\Cartridge\CartridgeManager.h" />
     <ClInclude Include="src\Core\Base.h" />
     <ClInclude Include="src\Core\Types.h" />
+    <ClInclude Include="src\CPU\Flags.h" />
+    <ClInclude Include="src\CPU\Instructions.h" />
     <ClInclude Include="src\Emulator.h" />
-    <ClInclude Include="src\Emulator\Address.h" />
-    <ClInclude Include="src\Emulator\Cartridge.h" />
-    <ClInclude Include="src\Emulator\Flags.h" />
-    <ClInclude Include="src\Emulator\Interupts.h" />
-    <ClInclude Include="src\Emulator\Memory.h" />
-    <ClInclude Include="src\Emulator\RamBank.h" />
-    <ClInclude Include="src\Emulator\Register.h" />
-    <ClInclude Include="src\Emulator\Screen.h" />
+    <ClInclude Include="src\Memory\Address.h" />
+    <ClInclude Include="src\Cartridge\Cartridge.h" />
+    <ClInclude Include="src\CPU\CPU.h" />
+    <ClInclude Include="src\CPU\Interupts.h" />
+    <ClInclude Include="src\Memory\Memory.h" />
+    <ClInclude Include="src\Memory\MemoryBus.h" />
+    <ClInclude Include="src\Memory\RamBank.h" />
+    <ClInclude Include="src\CPU\Register.h" />
+    <ClInclude Include="src\Graphics\Screen.h" />
     <ClInclude Include="src\gbpch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\CPU\CPU.cpp" />
     <ClCompile Include="src\gbpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

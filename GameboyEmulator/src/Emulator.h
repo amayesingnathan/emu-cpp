@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Emulator/Memory.h"
+#include "Memory/Memory.h"
 
 namespace GB {
 
@@ -22,13 +22,13 @@ namespace GB {
     public:
         void update()
         {
-            USize cycleCount = 0;
+            int cycleCount = 0;
             while (cycleCount < _MaxCycles)
             {
-                USize cycles = ExecNextOpcode();
+                int cycles = ExecNextOpcode();
                 cycleCount += cycles;
 
-                mMemory.updateTimers(cycles);
+                mProcessor.updateTimers(cycles);
                 UpdateGraphics(cycles);
                 Interupts();
             }
@@ -37,11 +37,14 @@ namespace GB {
         }
 
     private:
-        USize ExecNextOpcode()
+        Byte Read(Word address) const { return mProcessor}
+
+    private:
+        int ExecNextOpcode()
         {
         }
 
-        void UpdateGraphics(USize cycles)
+        void UpdateGraphics(int cycles)
         {
         }
 
@@ -55,8 +58,6 @@ namespace GB {
         }
 
     private:
-        Word mProgramCounter = 0x100;
-        Register mStackPointer = 0xFFFE;
-        Memory mMemory;
+        CPU mProcessor;
     };
 }

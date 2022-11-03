@@ -1,14 +1,12 @@
 #pragma once
 
-#include "Address.h"
-#include "Register.h"
-#include "RamBank.h"
-#include "Cartridge.h"
-#include "Interupts.h"
+#include "Core/Address.h"
+#include "Cartridge/CartridgeManager.h"
+#include "CPU/Register.h"
 
 namespace GB {
 
-    class Memory
+    class CPU
     {
     private:
         GB_CONST USize _MemSize = 0x10000;
@@ -17,7 +15,7 @@ namespace GB {
         GB_CONST Cartridge::BankMode MBC2 = Cartridge::MBC2;
 
     public:
-        Memory()
+        CPU()
         {
             mMainMemory[0xFF05] = 0x00;    mMainMemory[0xFF06] = 0x00;    mMainMemory[0xFF07] = 0x00;    mMainMemory[0xFF10] = 0x80;
             mMainMemory[0xFF11] = 0xBF;    mMainMemory[0xFF12] = 0xF3;    mMainMemory[0xFF14] = 0xBF;    mMainMemory[0xFF16] = 0x3F;
@@ -29,13 +27,13 @@ namespace GB {
             mMainMemory[0xFF4A] = 0x00;    mMainMemory[0xFF4B] = 0x00;    mMainMemory[0xFFFF] = 0x00;
         }
 
-        ~Memory()
+        ~CPU()
         {
         }
 
 
     public:
-        void updateTimers(USize cycles)
+        void updateTimers(int cycles)
         {
             DividerRegister(cycles);
 
@@ -51,13 +49,13 @@ namespace GB {
                     SetClockFreq();
 
                     // timer about to overflow
-                    if (Read<Addr::TIMA>() == 255)
+                    if (Read(Addr::TIMA) == 255)
                     {
-                        Write<Addr::TIMA>(Read<Addr::TMA>());
+                        Write(Addr::TIMA, Read(Addr::TMA));
                         RequestInterupt<Interupts::V_BLNK>();
                     }
                     else
-                        Write<Addr::TIMA>(Read<Addr::TIMA>() + 1);
+                        Write(Addr::TIMA, Read(Addr::TIMA) + 1);
                 }
             }
         }
@@ -67,11 +65,11 @@ namespace GB {
             if (!mInteruptMaster)
                 return;
             
-            Byte req = Read<Addr::IF>();
+            Byte req = Read(Addr::IF);
             if (req == 0)
                 return;
 
-            Byte enabled = Read<Addr::IE>();
+            Byte enabled = Read(Addr::IE);
             for (Byte i = 0; i < 5; i++)
             {
                 if (TestBit(req, i) && TestBit(enabled, i))
@@ -81,29 +79,27 @@ namespace GB {
 
         // Main Access
     private:
-        template<Word Address>
-        Byte Read() const
+        Byte Read(Word address) const
         {
-            if_c (Address >= 0x4000 && Address < 0x8000)
-                return mROM.read<Address - 0x4000>();
-            else if_c (Address >= 0xA000 && Address < 0xC000)
-                return mRAMBanks.read<Address - 0xA000>();
+            if (address >= 0x4000 && address < 0x8000)
+                return CartridgeManager::Read(address - 0x4000);
+            else if (address >= 0xA000 && address < 0xC000)
+                return mRAMBanks.read(address - 0xA000);
 
-            return mMainMemory[Address];
+            return mMainMemory[address];
         }
 
-        template<Word Address>
-        void Write(Byte data)
+        void Write(Word address, Byte data)
         {
-            GB_SASSERT(Address < 0xFEA0 || Address > 0xFF00, "Restricted memory!");
+            GB_ASSERT(address < 0xFEA0 || address > 0xFF00, "Restricted memory!");
 
-            if_c (Address < 0x8000)
-                HandleBanking<Address>(data);
-            else if_c (Address >= 0xA000 && Address < 0xC000)
-                mRAMBanks.write<Address - 0xA000>(data);
-            else if_c (Address >= 0xE000 && Address < 0xFE00)
-                Write<Address - 0x2000>(data);
-            else if_c (Address == Addr::TMC)
+            if (address < 0x8000)
+                HandleBanking(address, data);
+            else if (address >= 0xA000 && address < 0xC000)
+                mRAMBanks.write(address - 0xA000, data);
+            else if (address >= 0xE000 && address < 0xFE00)
+                Write(address, data);
+            else if (address == Addr::TMC)
             {
                 Byte currentFreq = GetClockFreq();
                 mMainMemory[Addr::TMC] = data;
@@ -111,15 +107,15 @@ namespace GB {
                 if (currentFreq != newFreq)
                     SetClockFreq();
             }
-            else if_c (Address == Addr::DIV)
+            else if (address == Addr::DIV)
                 mMainMemory[Addr::DIV] = 0;
             else
-                mMainMemory[Address] = data;
+                mMainMemory[address] = data;
         }
 
         // Helpers
     private:
-        Byte GetClockFreq() const { return Read<Addr::TMC>() & 0x3; }
+        Byte GetClockFreq() const { return Read(Addr::TMC) & 0x3; }
         void SetClockFreq() 
         {
             Byte freq = GetClockFreq();
@@ -132,54 +128,73 @@ namespace GB {
             }
         }
 
-        bool IsClockEnabled() const { return TestBit(Read<Addr::TMC>(), 2); }
+        bool IsClockEnabled() const { return TestBit(Read(Addr::TMC), 2); }
 
         template<Byte _Bit>
         void RequestInterupt()
         {
-            Byte req = Read<Addr::IF>();
+            Byte req = Read(Addr::IF);
             req = BitSet<_Bit>(req);
-            Write<Addr:IF>(req);
+            Write(Addr::IF);
+        }
+
+        // Stack Management
+    private:
+        void StackPush(Register data)
+        {
+            --mStackPointer;
+            Write(mStackPointer.reg, data.hi);
+            --mStackPointer;
+            Write(mStackPointer.reg, data.lo);
+        }
+        Register StackPop()
+        {
+            Register data;
+
+            data.lo = Read(mStackPointer.reg);
+            ++mStackPointer;
+            data.hi = Read(mStackPointer.reg);
+            ++mStackPointer;
+
+            return data;
         }
     
         // Internal
     private:
-        template<Word Address>
-        void HandleBanking(Byte data)
+        void HandleBanking(Word address, Byte data)
         {
-            mBankMode = mROM.getBankMode();
+            mBankMode = CartridgeManager::BankMode();
 
-            if_c(Address < 0x2000)
+            if (address < 0x2000)
             {
                 if (mBankMode)
-                    RamBankEnable<Address>(data);
+                    RamBankEnable(address, data);
             }
-            else if_c(Address >= 0x2000 && Address < 0x4000
+            else if (address >= 0x2000 && address < 0x4000)
             {
                 if (mBankMode)
-                    mROM.changeLoROMBank(data);
+                    CartridgeManager::ChangeLoROMBank(data);
             }
-            else if_c(Address >= 0x4000 && Address < 0x6000)
+            else if (address >= 0x4000 && address < 0x6000)
             {
                 if (mBankMode & MBC1)
                 {
                     if (mROMBanking)
-                        mROM.changeHiROMBank(data);
+                        CartridgeManager::ChangeHiROMBank(data);
                     else
                         mRAMBanks.bankChange(data);
                 }
             }
-            else if_c(Address >= 0x6000 && Address < 0x8000)
+            else if (address >= 0x6000 && address < 0x8000)
             {
                 if (mBankMode & MBC1)
                     ChangeRomRamMode(data);
             }
         }
 
-        template<Word Address>
-        void RamBankEnable(Byte data)
+        void RamBankEnable(Word address, Byte data)
         {
-            if (mBankMode & MBC2 && Bit<Address, 4>::Eq(1))
+            if (mBankMode & MBC2 && TestBit(address, 4))
                 return;
 
             Byte testData = data & 0xF;
@@ -210,12 +225,12 @@ namespace GB {
         void ServiceInterupt(Byte interupt)
         {
             mInteruptMaster = false;
-            Byte req = Read<0xFF0F>();
+            Byte req = Read(Addr::IF);
             req = BitReset(req, interupt);
-            Write<0xFF0F>(req);
+            Write(0xFF0F, req);
 
             /// we must save the current execution address by pushing it onto the stack
-            PushWordOntoStack(m_ProgramCounter);
+            StackPush(mProgramCounter);
 
             switch (interupt)
             {
@@ -227,18 +242,18 @@ namespace GB {
         }
 
     private:
+        Register mStackPointer = 0xFFFE;
+
         Byte mMainMemory[_MemSize];
 
         RamBank mRAMBanks;
 
-        Cartridge mROM;
         Cartridge::BankMode mBankMode;
 
         bool mROMBanking = true;
+
         int mTimerCounter = 1024;
         int mDividerCounter = 0;
-
-        bool mInteruptMaster = true;
     };
 
 }

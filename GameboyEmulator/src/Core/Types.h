@@ -5,11 +5,21 @@
 namespace GB {
 
     using Byte  = uint8_t;
-    using UByte = int8_t;
     using Word  = uint16_t;
-    using UWord = int16_t;
 
     using USize = size_t;
+
+    template<typename T>
+    using Instance = std::unique_ptr<T>;
+
+    template<typename T, typename... TArgs>
+    Instance<T> MakeInstance(TArgs&&... args) { return make_unique<T>(std::forward<TArgs>(args)...); }
+
+    template<typename T>
+    using Ref = std::shared_ptr<T>;
+
+    template<typename T, typename... TArgs>
+    Ref<T> MakeRef(TArgs&&... args) { return make_shared<T>(std::forward<TArgs>(args)...); }
 
     template<Word _Value, Byte _Bit>
     struct Bit

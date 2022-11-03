@@ -2,6 +2,7 @@
 
 #include <string>
 #include <fstream>
+#include <memory>
 
 #include <new>
 

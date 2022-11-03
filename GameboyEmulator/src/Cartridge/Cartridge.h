@@ -18,7 +18,7 @@ namespace GB {
         static constexpr USize _ROMSize = 0x200000;
         static constexpr USize _ROMBankSize = 0x4000;
 
-    public:
+    private:
         Cartridge() = default;
         Cartridge(std::string_view filename)
             : mCartridgeMemory((Byte*)::operator new(_ROMSize))
@@ -60,7 +60,7 @@ namespace GB {
             other.mCartridgeMemory = nullptr;
         }
 
-    public:
+    private:
         Byte read(Word address) const
         {
             return mCartridgeMemory[address + mCurrentBank * _ROMBankSize];
@@ -99,5 +99,7 @@ namespace GB {
         Byte* mCartridgeMemory = nullptr;
         BankMode mBankMode = NONE;
         Byte mCurrentBank = 1;
+
+        friend class CartridgeManager;
     };
 }

@@ -23,6 +23,10 @@ namespace GB {
         {
             return mRamBanks[Address + mCurrentBank * _RamBankSize];
         }
+        Byte read(Word address) const
+        {
+            return mRamBanks[address + mCurrentBank * _RamBankSize];
+        }
 
         template<Word Address>
         void write(Byte data)
@@ -31,6 +35,13 @@ namespace GB {
                 return;
 
             mRamBanks[Address + mCurrentBank * _RamBankSize] = data;
+        }
+        void write(Word address, Byte data)
+        {
+            if (!mEnabled)
+                return;
+
+            mRamBanks[address + mCurrentBank * _RamBankSize] = data;
         }
 
         void bankChange(Byte data)
