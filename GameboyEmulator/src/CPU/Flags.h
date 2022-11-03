@@ -10,10 +10,12 @@ namespace GB {
     GB_CONST Flag _SubtractFlag = 1 << 6;
     GB_CONST Flag _ZeroFlag = 1 << 7;
 
-    struct FlagsRegister
+    class FlagsRegister
     {
+    private:
         Byte& reg;
 
+    public:
         FlagsRegister(Byte& _reg) : reg(_reg) {}
 
         inline bool carry() const { return reg & _CarryFlag; }
@@ -21,6 +23,6 @@ namespace GB {
         inline bool subtr() const { return reg & _SubtractFlag; }
         inline bool zero() const { return reg & _ZeroFlag; }
 
-        inline void setFlags(Flag flag) { reg |= flag; }
+        inline void setFlags(Flag flag) { flag &= 0xF0; reg |= flag; }
     };
 }

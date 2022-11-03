@@ -5,1032 +5,1159 @@ namespace GB {
 
 	void CPU::HandleInstruction(OpCode instruction)
 	{
-
-#define DISPATCH() goto *sDispatchTable[]
+		switch (instruction)
+		{
+		}
 	}
 
-	inline void CPU::Opcode00()
+	void CPU::_OpcodeADC(Byte value)
 	{
 	}
-
-	inline void CPU::Opcode01()
+	void CPU::OpcodeADC()
 	{
 	}
-
-	inline void CPU::Opcode02()
+	void CPU::OpcodeADC(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode03()
+	void CPU::OpcodeADC(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode04()
+	void CPU::_OpcodeADD(Byte reg, Byte value)
 	{
 	}
-
-	inline void CPU::Opcode05()
+	void CPU::OpcodeADD_A()
 	{
 	}
-
-	inline void CPU::Opcode06()
+	void CPU::OpcodeADD_A(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode07()
+	void CPU::OpcodeADD_A(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode08()
+	void CPU::_OpcodeADD_HL(Word value)
 	{
 	}
-
-	inline void CPU::Opcode09()
+	void CPU::OpcodeADD_HL(Register regPair)
 	{
 	}
-
-	inline void CPU::Opcode0A()
+	void CPU::OpcodeADD_HL(WordReg wordReg)
 	{
 	}
-
-	inline void CPU::Opcode0B()
+	void CPU::OpcodeADD_SP()
 	{
 	}
-
-	inline void CPU::Opcode0C()
+	void CPU::OpcodeADD_SIGNED()
 	{
 	}
-
-	inline void CPU::Opcode0D()
+	void CPU::_OpcodeAND(Byte value)
 	{
 	}
-
-	inline void CPU::Opcode0E()
+	void CPU::OpcodeAND()
 	{
 	}
-
-	inline void CPU::Opcode0F()
+	void CPU::OpcodeAND(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode10()
+	void CPU::OpcodeAND(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode11()
+	void CPU::_OpcodeBIT(Byte bit, Byte value)
 	{
 	}
-
-	inline void CPU::Opcode12()
+	void CPU::OpcodeBIT(Byte bit, ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode13()
+	void CPU::OpcodeBIT(Byte bit, Word addr)
 	{
 	}
-
-	inline void CPU::Opcode14()
+	void CPU::OpcodeCALL()
 	{
 	}
-
-	inline void CPU::Opcode15()
+	void CPU::OpcodeCALL(Condition condition)
 	{
 	}
-
-	inline void CPU::Opcode16()
+	void CPU::OpcodeCCF()
 	{
 	}
-
-	inline void CPU::Opcode17()
+	void CPU::_OpcodeCP(Byte value)
 	{
 	}
-
-	inline void CPU::Opcode18()
+	void CPU::OpcodeCP()
 	{
 	}
-
-	inline void CPU::Opcode19()
+	void CPU::OpcodeCP(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode1A()
+	void CPU::OpcodeCP(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode1B()
+	void CPU::OpcodeCPL()
 	{
 	}
-
-	inline void CPU::Opcode1C()
+	void CPU::OpcodeDAA()
 	{
 	}
-
-	inline void CPU::Opcode1D()
+	void CPU::OpcodeDEC(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode1E()
+	void CPU::OpcodeDEC(Register reg)
 	{
 	}
-
-	inline void CPU::Opcode1F()
+	void CPU::OpcodeDEC(WordReg reg)
 	{
 	}
-
-	inline void CPU::Opcode20()
+	void CPU::OpcodeDEC(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode21()
+	void CPU::OpcodeDI()
 	{
 	}
-
-	inline void CPU::Opcode22()
+	void CPU::OpcodeEI()
 	{
 	}
-
-	inline void CPU::Opcode23()
+	void CPU::OpcodeINC(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode24()
+	void CPU::OpcodeINC(Register reg)
 	{
 	}
-
-	inline void CPU::Opcode25()
+	void CPU::OpcodeINC(WordReg reg)
 	{
 	}
-
-	inline void CPU::Opcode26()
+	void CPU::OpcodeINC(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode27()
+	void CPU::OpcodeJP()
 	{
 	}
-
-	inline void CPU::Opcode28()
+	void CPU::OpcodeJP(Condition condition)
 	{
 	}
-
-	inline void CPU::Opcode29()
+	void CPU::OpcodeJP(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode2A()
+	void CPU::OpcodeJR()
 	{
 	}
-
-	inline void CPU::Opcode2B()
+	void CPU::OpcodeJR(Condition condition)
 	{
 	}
-
-	inline void CPU::Opcode2C()
+	void CPU::OpcodeHALT()
 	{
 	}
-
-	inline void CPU::Opcode2D()
+	void CPU::OpcodeLD(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode2E()
+	void CPU::OpcodeLD(ByteReg reg, ByteReg byteReg)
 	{
 	}
-
-	inline void CPU::Opcode2F()
+	void CPU::OpcodeLD(ByteReg reg, Word address)
 	{
 	}
-
-	inline void CPU::Opcode30()
+	void CPU::OpcodeLD(Register reg)
 	{
 	}
-
-	inline void CPU::Opcode31()
+	void CPU::OpcodeLD(WordReg& reg)
 	{
 	}
-
-	inline void CPU::Opcode32()
+	void CPU::OpcodeLD(WordReg& reg, Register regPair)
 	{
 	}
-
-	inline void CPU::Opcode33()
+	void CPU::OpcodeLD(Word address)
 	{
 	}
-
-	inline void CPU::Opcode34()
+	void CPU::OpcodeLD(Word address, ByteReg byte_reg)
 	{
 	}
-
-	inline void CPU::Opcode35()
+	void CPU::OpcodeLD(Word address, WordReg word_reg)
 	{
 	}
-
-	inline void CPU::Opcode36()
+	void CPU::OpcodeLD_TO_ADDR(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode37()
+	void CPU::OpcodeLD_FROM_ADDR(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode38()
+	Byte CPU::_OpcodeLDD(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode39()
+	void CPU::OpcodeLDD(ByteReg reg, Word address)
 	{
 	}
-
-	inline void CPU::Opcode3A()
+	void CPU::OpcodeLDD(Word address, ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode3B()
+	void CPU::OpcodeLDH_INTO_A()
 	{
 	}
-
-	inline void CPU::Opcode3C()
+	void CPU::OpcodeLDH_INTO_DATA()
 	{
 	}
-
-	inline void CPU::Opcode3D()
+	void CPU::OpcodeLDH_INTO_C()
 	{
 	}
-
-	inline void CPU::Opcode3E()
+	void CPU::OpcodeLDH_C_INTO_A()
 	{
 	}
-
-	inline void CPU::Opcode3F()
+	void CPU::OpcodeLDHL()
 	{
 	}
-
-	inline void CPU::Opcode40()
+	void CPU::OpcodeLDI(ByteReg reg, Word address)
 	{
 	}
-
-	inline void CPU::Opcode41()
+	void CPU::OpcodeLDI(Word address, ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode42()
+	void CPU::OpcodeNOP()
 	{
 	}
-
-	inline void CPU::Opcode43()
+	void CPU::_OpcodeOR(Byte value)
 	{
 	}
-
-	inline void CPU::Opcode44()
+	void CPU::OpcodeOR()
 	{
 	}
-
-	inline void CPU::Opcode45()
+	void CPU::OpcodeOR(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode46()
+	void CPU::OpcodeOR(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode47()
+	void CPU::OpcodePOP(Register reg)
 	{
 	}
-
-	inline void CPU::Opcode48()
+	void CPU::OpcodePUSH(Register reg)
 	{
 	}
-
-	inline void CPU::Opcode49()
+	void CPU::OpcodeRES(Byte bit, ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode4A()
+	void CPU::OpcodeRES(Byte bit, Word addr)
 	{
 	}
-
-	inline void CPU::Opcode4B()
+	void CPU::OpcodeRET()
 	{
 	}
-
-	inline void CPU::Opcode4C()
+	void CPU::OpcodeRET(Condition condition)
 	{
 	}
-
-	inline void CPU::Opcode4D()
+	void CPU::OpcodeRETI()
 	{
 	}
-
-	inline void CPU::Opcode4E()
+	Byte CPU::_OpcodeRL(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode4F()
+	void CPU::OpcodeRLA()
 	{
 	}
-
-	inline void CPU::Opcode50()
+	void CPU::OpcodeRL(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode51()
+	void CPU::OpcodeRL(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode52()
+	Byte CPU::_OpcodeRLC(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode53()
+	void CPU::OpcodeRLCA()
 	{
 	}
-
-	inline void CPU::Opcode54()
+	void CPU::OpcodeRLC(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode55()
+	void CPU::OpcodeRLC(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode56()
+	Byte CPU::_OpcodeRR(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode57()
+	void CPU::OpcodeRRA()
 	{
 	}
-
-	inline void CPU::Opcode58()
+	void CPU::OpcodeRR(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode59()
+	void CPU::OpcodeRR(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode5A()
+	Byte CPU::_OpcodeRRC(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode5B()
+	void CPU::OpcodeRRCA()
 	{
 	}
-
-	inline void CPU::Opcode5C()
+	void CPU::OpcodeRRC(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode5D()
+	void CPU::OpcodeRRC(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode5E()
+	void CPU::OpcodeRST(Byte offset)
 	{
 	}
-
-	inline void CPU::Opcode5F()
+	void CPU::_OpcodeSBC(Byte value)
 	{
 	}
-
-	inline void CPU::Opcode60()
+	void CPU::OpcodeSBC()
 	{
 	}
-
-	inline void CPU::Opcode61()
+	void CPU::OpcodeSBC(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode62()
+	void CPU::OpcodeSBC(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode63()
+	void CPU::OpcodeSCF()
 	{
 	}
-
-	inline void CPU::Opcode64()
+	void CPU::OpcodeSET(Byte bit, ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode65()
+	void CPU::OpcodeSET(Byte bit, Word addr)
 	{
 	}
-
-	inline void CPU::Opcode66()
+	Byte CPU::_OpcodeSLA(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode67()
+	void CPU::OpcodeSLA(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode68()
+	void CPU::OpcodeSLA(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode69()
+	Byte CPU::_OpcodeSRA(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode6A()
+	void CPU::OpcodeSRA(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode6B()
+	void CPU::OpcodeSRA(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode6C()
+	Byte CPU::_OpcodeSRL(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode6D()
+	void CPU::OpcodeSRL(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode6E()
+	void CPU::OpcodeSRL(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode6F()
+	void CPU::OpcodeSTOP()
 	{
 	}
-
-	inline void CPU::Opcode70()
+	void CPU::_OpcodeSUB(Byte value)
 	{
 	}
-
-	inline void CPU::Opcode71()
+	void CPU::OpcodeSUB()
 	{
 	}
-
-	inline void CPU::Opcode72()
+	void CPU::OpcodeSUB(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode73()
+	void CPU::OpcodeSUB(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode74()
+	Byte CPU::_OpcodeSWAP(Byte value)
 	{
+		return Byte();
 	}
-
-	inline void CPU::Opcode75()
+	void CPU::OpcodeSWAP(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode76()
+	void CPU::OpcodeSWAP(Word addr)
 	{
 	}
-
-	inline void CPU::Opcode77()
+	void CPU::_OpcodeXOR(Byte value)
 	{
 	}
-
-	inline void CPU::Opcode78()
+	void CPU::OpcodeXOR()
 	{
 	}
-
-	inline void CPU::Opcode79()
+	void CPU::OpcodeXOR(ByteReg reg)
 	{
 	}
-
-	inline void CPU::Opcode7A()
+	void CPU::OpcodeXOR(Word addr)
 	{
 	}
+
 
-	inline void CPU::Opcode7B()
+
+	void CPU::Opcode00()
 	{
+		// NOP
 	}
-
-	inline void CPU::Opcode7C()
+	void CPU::Opcode01()
 	{
 	}
-
-	inline void CPU::Opcode7D()
+	void CPU::Opcode02()
 	{
 	}
-
-	inline void CPU::Opcode7E()
+	void CPU::Opcode03()
 	{
 	}
-
-	inline void CPU::Opcode7F()
+	void CPU::Opcode04()
 	{
 	}
-
-	inline void CPU::Opcode80()
+	void CPU::Opcode05()
 	{
 	}
-
-	inline void CPU::Opcode81()
+	void CPU::Opcode06()
 	{
 	}
-
-	inline void CPU::Opcode82()
+	void CPU::Opcode07()
 	{
 	}
-
-	inline void CPU::Opcode83()
+	void CPU::Opcode08()
 	{
 	}
-
-	inline void CPU::Opcode84()
+	void CPU::Opcode09()
 	{
 	}
-
-	inline void CPU::Opcode85()
+	void CPU::Opcode0A()
 	{
 	}
-
-	inline void CPU::Opcode86()
+	void CPU::Opcode0B()
 	{
 	}
-
-	inline void CPU::Opcode87()
+	void CPU::Opcode0C()
 	{
 	}
-
-	inline void CPU::Opcode88()
+	void CPU::Opcode0D()
 	{
 	}
-
-	inline void CPU::Opcode89()
+	void CPU::Opcode0E()
 	{
 	}
-
-	inline void CPU::Opcode8A()
+	void CPU::Opcode0F()
 	{
 	}
-
-	inline void CPU::Opcode8B()
+	void CPU::Opcode10()
 	{
 	}
-
-	inline void CPU::Opcode8C()
+	void CPU::Opcode11()
 	{
 	}
-
-	inline void CPU::Opcode8D()
+	void CPU::Opcode12()
 	{
 	}
-
-	inline void CPU::Opcode8E()
+	void CPU::Opcode13()
 	{
 	}
-
-	inline void CPU::Opcode8F()
+	void CPU::Opcode14()
 	{
 	}
-
-	inline void CPU::Opcode90()
+	void CPU::Opcode15()
 	{
 	}
-
-	inline void CPU::Opcode91()
+	void CPU::Opcode16()
 	{
 	}
-
-	inline void CPU::Opcode92()
+	void CPU::Opcode17()
 	{
 	}
-
-	inline void CPU::Opcode93()
+	void CPU::Opcode18()
 	{
 	}
-
-	inline void CPU::Opcode94()
+	void CPU::Opcode19()
 	{
 	}
-
-	inline void CPU::Opcode95()
+	void CPU::Opcode1A()
 	{
 	}
-
-	inline void CPU::Opcode96()
+	void CPU::Opcode1B()
 	{
 	}
-
-	inline void CPU::Opcode97()
+	void CPU::Opcode1C()
 	{
 	}
-
-	inline void CPU::Opcode98()
+	void CPU::Opcode1D()
 	{
 	}
-
-	inline void CPU::Opcode99()
+	void CPU::Opcode1E()
 	{
 	}
-
-	inline void CPU::Opcode9A()
+	void CPU::Opcode1F()
 	{
 	}
-
-	inline void CPU::Opcode9B()
+	void CPU::Opcode20()
 	{
 	}
-
-	inline void CPU::Opcode9C()
+	void CPU::Opcode21()
 	{
 	}
-
-	inline void CPU::Opcode9D()
+	void CPU::Opcode22()
 	{
 	}
-
-	inline void CPU::Opcode9E()
+	void CPU::Opcode23()
 	{
 	}
-
-	inline void CPU::Opcode9F()
+	void CPU::Opcode24()
 	{
 	}
-
-	inline void CPU::OpcodeA0()
+	void CPU::Opcode25()
 	{
 	}
-
-	inline void CPU::OpcodeA1()
+	void CPU::Opcode26()
 	{
 	}
-
-	inline void CPU::OpcodeA2()
+	void CPU::Opcode27()
 	{
 	}
-
-	inline void CPU::OpcodeA3()
+	void CPU::Opcode28()
 	{
 	}
-
-	inline void CPU::OpcodeA4()
+	void CPU::Opcode29()
 	{
 	}
-
-	inline void CPU::OpcodeA5()
+	void CPU::Opcode2A()
 	{
 	}
-
-	inline void CPU::OpcodeA6()
+	void CPU::Opcode2B()
 	{
 	}
-
-	inline void CPU::OpcodeA7()
+	void CPU::Opcode2C()
 	{
 	}
-
-	inline void CPU::OpcodeA8()
+	void CPU::Opcode2D()
 	{
 	}
-
-	inline void CPU::OpcodeA9()
+	void CPU::Opcode2E()
 	{
 	}
-
-	inline void CPU::OpcodeAA()
+	void CPU::Opcode2F()
 	{
 	}
-
-	inline void CPU::OpcodeAB()
+	void CPU::Opcode30()
 	{
 	}
-
-	inline void CPU::OpcodeAC()
+	void CPU::Opcode31()
 	{
 	}
-
-	inline void CPU::OpcodeAD()
+	void CPU::Opcode32()
 	{
 	}
-
-	inline void CPU::OpcodeAE()
+	void CPU::Opcode33()
 	{
 	}
-
-	inline void CPU::OpcodeAF()
+	void CPU::Opcode34()
 	{
 	}
-
-	inline void CPU::OpcodeB0()
+	void CPU::Opcode35()
 	{
 	}
-
-	inline void CPU::OpcodeB1()
+	void CPU::Opcode36()
 	{
 	}
-
-	inline void CPU::OpcodeB2()
+	void CPU::Opcode37()
 	{
 	}
-
-	inline void CPU::OpcodeB3()
+	void CPU::Opcode38()
 	{
 	}
-
-	inline void CPU::OpcodeB4()
+	void CPU::Opcode39()
 	{
 	}
-
-	inline void CPU::OpcodeB5()
+	void CPU::Opcode3A()
 	{
 	}
-
-	inline void CPU::OpcodeB6()
+	void CPU::Opcode3B()
 	{
 	}
-
-	inline void CPU::OpcodeB7()
+	void CPU::Opcode3C()
 	{
 	}
-
-	inline void CPU::OpcodeB8()
+	void CPU::Opcode3D()
 	{
 	}
-
-	inline void CPU::OpcodeB9()
+	void CPU::Opcode3E()
 	{
 	}
-
-	inline void CPU::OpcodeBA()
+	void CPU::Opcode3F()
 	{
 	}
-
-	inline void CPU::OpcodeBB()
+	void CPU::Opcode40()
 	{
 	}
-
-	inline void CPU::OpcodeBC()
+	void CPU::Opcode41()
 	{
 	}
-
-	inline void CPU::OpcodeBD()
+	void CPU::Opcode42()
 	{
 	}
-
-	inline void CPU::OpcodeBE()
+	void CPU::Opcode43()
 	{
 	}
-
-	inline void CPU::OpcodeBF()
+	void CPU::Opcode44()
 	{
 	}
-
-	inline void CPU::OpcodeC0()
+	void CPU::Opcode45()
 	{
 	}
-
-	inline void CPU::OpcodeC1()
+	void CPU::Opcode46()
 	{
 	}
-
-	inline void CPU::OpcodeC2()
+	void CPU::Opcode47()
 	{
 	}
-
-	inline void CPU::OpcodeC3()
+	void CPU::Opcode48()
 	{
 	}
-
-	inline void CPU::OpcodeC4()
+	void CPU::Opcode49()
 	{
 	}
-
-	inline void CPU::OpcodeC5()
+	void CPU::Opcode4A()
 	{
 	}
-
-	inline void CPU::OpcodeC6()
+	void CPU::Opcode4B()
 	{
 	}
-
-	inline void CPU::OpcodeC7()
+	void CPU::Opcode4C()
 	{
 	}
-
-	inline void CPU::OpcodeC8()
+	void CPU::Opcode4D()
 	{
 	}
-
-	inline void CPU::OpcodeC9()
+	void CPU::Opcode4E()
 	{
 	}
-
-	inline void CPU::OpcodeCA()
+	void CPU::Opcode4F()
 	{
 	}
-
-	inline void CPU::OpcodeCB()
+	void CPU::Opcode50()
 	{
 	}
-
-	inline void CPU::OpcodeCC()
+	void CPU::Opcode51()
 	{
 	}
-
-	inline void CPU::OpcodeCD()
+	void CPU::Opcode52()
 	{
 	}
-
-	inline void CPU::OpcodeCE()
+	void CPU::Opcode53()
 	{
 	}
-
-	inline void CPU::OpcodeCF()
+	void CPU::Opcode54()
 	{
 	}
-
-	inline void CPU::OpcodeD0()
+	void CPU::Opcode55()
 	{
 	}
-
-	inline void CPU::OpcodeD1()
+	void CPU::Opcode56()
 	{
 	}
-
-	inline void CPU::OpcodeD2()
+	void CPU::Opcode57()
 	{
 	}
-
-	inline void CPU::OpcodeD3()
+	void CPU::Opcode58()
 	{
 	}
-
-	inline void CPU::OpcodeD4()
+	void CPU::Opcode59()
 	{
 	}
-
-	inline void CPU::OpcodeD5()
+	void CPU::Opcode5A()
 	{
 	}
-
-	inline void CPU::OpcodeD6()
+	void CPU::Opcode5B()
 	{
 	}
-
-	inline void CPU::OpcodeD7()
+	void CPU::Opcode5C()
 	{
 	}
-
-	inline void CPU::OpcodeD8()
+	void CPU::Opcode5D()
 	{
 	}
-
-	inline void CPU::OpcodeD9()
+	void CPU::Opcode5E()
 	{
 	}
-
-	inline void CPU::OpcodeDA()
+	void CPU::Opcode5F()
 	{
 	}
-
-	inline void CPU::OpcodeDB()
+	void CPU::Opcode60()
 	{
 	}
-
-	inline void CPU::OpcodeDC()
+	void CPU::Opcode61()
 	{
 	}
-
-	inline void CPU::OpcodeDD()
+	void CPU::Opcode62()
 	{
 	}
-
-	inline void CPU::OpcodeDE()
+	void CPU::Opcode63()
 	{
 	}
-
-	inline void CPU::OpcodeDF()
+	void CPU::Opcode64()
 	{
 	}
-
-	inline void CPU::OpcodeE0()
+	void CPU::Opcode65()
 	{
 	}
-
-	inline void CPU::OpcodeE1()
+	void CPU::Opcode66()
 	{
 	}
-
-	inline void CPU::OpcodeE2()
+	void CPU::Opcode67()
 	{
 	}
-
-	inline void CPU::OpcodeE3()
+	void CPU::Opcode68()
 	{
 	}
-
-	inline void CPU::OpcodeE4()
+	void CPU::Opcode69()
 	{
 	}
-
-	inline void CPU::OpcodeE5()
+	void CPU::Opcode6A()
 	{
 	}
-
-	inline void CPU::OpcodeE6()
+	void CPU::Opcode6B()
 	{
 	}
-
-	inline void CPU::OpcodeE7()
+	void CPU::Opcode6C()
 	{
 	}
-
-	inline void CPU::OpcodeE8()
+	void CPU::Opcode6D()
 	{
 	}
-
-	inline void CPU::OpcodeE9()
+	void CPU::Opcode6E()
 	{
 	}
-
-	inline void CPU::OpcodeEA()
+	void CPU::Opcode6F()
 	{
 	}
-
-	inline void CPU::OpcodeEB()
+	void CPU::Opcode70()
 	{
 	}
-
-	inline void CPU::OpcodeEC()
+	void CPU::Opcode71()
 	{
 	}
-
-	inline void CPU::OpcodeED()
+	void CPU::Opcode72()
 	{
 	}
-
-	inline void CPU::OpcodeEE()
+	void CPU::Opcode73()
 	{
 	}
-
-	inline void CPU::OpcodeEF()
+	void CPU::Opcode74()
 	{
 	}
-
-	inline void CPU::OpcodeF0()
+	void CPU::Opcode75()
 	{
 	}
-
-	inline void CPU::OpcodeF1()
+	void CPU::Opcode76()
 	{
 	}
-
-	inline void CPU::OpcodeF2()
+	void CPU::Opcode77()
 	{
 	}
-
-	inline void CPU::OpcodeF3()
+	void CPU::Opcode78()
 	{
 	}
-
-	inline void CPU::OpcodeF4()
+	void CPU::Opcode79()
 	{
 	}
-
-	inline void CPU::OpcodeF5()
+	void CPU::Opcode7A()
 	{
 	}
-
-	inline void CPU::OpcodeF6()
+	void CPU::Opcode7B()
 	{
 	}
-
-	inline void CPU::OpcodeF7()
+	void CPU::Opcode7C()
 	{
 	}
-
-	inline void CPU::OpcodeF8()
+	void CPU::Opcode7D()
 	{
 	}
-
-	inline void CPU::OpcodeF9()
+	void CPU::Opcode7E()
 	{
 	}
-
-	inline void CPU::OpcodeFA()
+	void CPU::Opcode7F()
 	{
 	}
-
-	inline void CPU::OpcodeFB()
+	void CPU::Opcode80()
 	{
 	}
-
-	inline void CPU::OpcodeFC()
+	void CPU::Opcode81()
 	{
 	}
-
-	inline void CPU::OpcodeFD()
+	void CPU::Opcode82()
 	{
 	}
-
-	inline void CPU::OpcodeFE()
+	void CPU::Opcode83()
 	{
 	}
-
-	inline void CPU::OpcodeFF()
+	void CPU::Opcode84()
 	{
 	}
-
+	void CPU::Opcode85()
+	{
+	}
+	void CPU::Opcode86()
+	{
+	}
+	void CPU::Opcode87()
+	{
+	}
+	void CPU::Opcode88()
+	{
+	}
+	void CPU::Opcode89()
+	{
+	}
+	void CPU::Opcode8A()
+	{
+	}
+	void CPU::Opcode8B()
+	{
+	}
+	void CPU::Opcode8C()
+	{
+	}
+	void CPU::Opcode8D()
+	{
+	}
+	void CPU::Opcode8E()
+	{
+	}
+	void CPU::Opcode8F()
+	{
+	}
+	void CPU::Opcode90()
+	{
+	}
+	void CPU::Opcode91()
+	{
+	}
+	void CPU::Opcode92()
+	{
+	}
+	void CPU::Opcode93()
+	{
+	}
+	void CPU::Opcode94()
+	{
+	}
+	void CPU::Opcode95()
+	{
+	}
+	void CPU::Opcode96()
+	{
+	}
+	void CPU::Opcode97()
+	{
+	}
+	void CPU::Opcode98()
+	{
+	}
+	void CPU::Opcode99()
+	{
+	}
+	void CPU::Opcode9A()
+	{
+	}
+	void CPU::Opcode9B()
+	{
+	}
+	void CPU::Opcode9C()
+	{
+	}
+	void CPU::Opcode9D()
+	{
+	}
+	void CPU::Opcode9E()
+	{
+	}
+	void CPU::Opcode9F()
+	{
+	}
+	void CPU::OpcodeA0()
+	{
+	}
+	void CPU::OpcodeA1()
+	{
+	}
+	void CPU::OpcodeA2()
+	{
+	}
+	void CPU::OpcodeA3()
+	{
+	}
+	void CPU::OpcodeA4()
+	{
+	}
+	void CPU::OpcodeA5()
+	{
+	}
+	void CPU::OpcodeA6()
+	{
+	}
+	void CPU::OpcodeA7()
+	{
+	}
+	void CPU::OpcodeA8()
+	{
+	}
+	void CPU::OpcodeA9()
+	{
+	}
+	void CPU::OpcodeAA()
+	{
+	}
+	void CPU::OpcodeAB()
+	{
+	}
+	void CPU::OpcodeAC()
+	{
+	}
+	void CPU::OpcodeAD()
+	{
+	}
+	void CPU::OpcodeAE()
+	{
+	}
+	void CPU::OpcodeAF()
+	{
+	}
+	void CPU::OpcodeB0()
+	{
+	}
+	void CPU::OpcodeB1()
+	{
+	}
+	void CPU::OpcodeB2()
+	{
+	}
+	void CPU::OpcodeB3()
+	{
+	}
+	void CPU::OpcodeB4()
+	{
+	}
+	void CPU::OpcodeB5()
+	{
+	}
+	void CPU::OpcodeB6()
+	{
+	}
+	void CPU::OpcodeB7()
+	{
+	}
+	void CPU::OpcodeB8()
+	{
+	}
+	void CPU::OpcodeB9()
+	{
+	}
+	void CPU::OpcodeBA()
+	{
+	}
+	void CPU::OpcodeBB()
+	{
+	}
+	void CPU::OpcodeBC()
+	{
+	}
+	void CPU::OpcodeBD()
+	{
+	}
+	void CPU::OpcodeBE()
+	{
+	}
+	void CPU::OpcodeBF()
+	{
+	}
+	void CPU::OpcodeC0()
+	{
+	}
+	void CPU::OpcodeC1()
+	{
+	}
+	void CPU::OpcodeC2()
+	{
+	}
+	void CPU::OpcodeC3()
+	{
+	}
+	void CPU::OpcodeC4()
+	{
+	}
+	void CPU::OpcodeC5()
+	{
+	}
+	void CPU::OpcodeC6()
+	{
+	}
+	void CPU::OpcodeC7()
+	{
+	}
+	void CPU::OpcodeC8()
+	{
+	}
+	void CPU::OpcodeC9()
+	{
+	}
+	void CPU::OpcodeCA()
+	{
+	}
+	void CPU::OpcodeCB()
+	{
+	}
+	void CPU::OpcodeCC()
+	{
+	}
+	void CPU::OpcodeCD()
+	{
+	}
+	void CPU::OpcodeCE()
+	{
+	}
+	void CPU::OpcodeCF()
+	{
+	}
+	void CPU::OpcodeD0()
+	{
+	}
+	void CPU::OpcodeD1()
+	{
+	}
+	void CPU::OpcodeD2()
+	{
+	}
+	void CPU::OpcodeD3()
+	{
+	}
+	void CPU::OpcodeD4()
+	{
+	}
+	void CPU::OpcodeD5()
+	{
+	}
+	void CPU::OpcodeD6()
+	{
+	}
+	void CPU::OpcodeD7()
+	{
+	}
+	void CPU::OpcodeD8()
+	{
+	}
+	void CPU::OpcodeD9()
+	{
+	}
+	void CPU::OpcodeDA()
+	{
+	}
+	void CPU::OpcodeDB()
+	{
+	}
+	void CPU::OpcodeDC()
+	{
+	}
+	void CPU::OpcodeDD()
+	{
+	}
+	void CPU::OpcodeDE()
+	{
+	}
+	void CPU::OpcodeDF()
+	{
+	}
+	void CPU::OpcodeE0()
+	{
+	}
+	void CPU::OpcodeE1()
+	{
+	}
+	void CPU::OpcodeE2()
+	{
+	}
+	void CPU::OpcodeE3()
+	{
+	}
+	void CPU::OpcodeE4()
+	{
+	}
+	void CPU::OpcodeE5()
+	{
+	}
+	void CPU::OpcodeE6()
+	{
+	}
+	void CPU::OpcodeE7()
+	{
+	}
+	void CPU::OpcodeE8()
+	{
+	}
+	void CPU::OpcodeE9()
+	{
+	}
+	void CPU::OpcodeEA()
+	{
+	}
+	void CPU::OpcodeEB()
+	{
+	}
+	void CPU::OpcodeEC()
+	{
+	}
+	void CPU::OpcodeED()
+	{
+	}
+	void CPU::OpcodeEE()
+	{
+	}
+	void CPU::OpcodeEF()
+	{
+	}
+	void CPU::OpcodeF0()
+	{
+	}
+	void CPU::OpcodeF1()
+	{
+	}
+	void CPU::OpcodeF2()
+	{
+	}
+	void CPU::OpcodeF3()
+	{
+	}
+	void CPU::OpcodeF4()
+	{
+	}
+	void CPU::OpcodeF5()
+	{
+	}
+	void CPU::OpcodeF6()
+	{
+	}
+	void CPU::OpcodeF7()
+	{
+	}
+	void CPU::OpcodeF8()
+	{
+	}
+	void CPU::OpcodeF9()
+	{
+	}
+	void CPU::OpcodeFA()
+	{
+	}
+	void CPU::OpcodeFB()
+	{
+	}
+	void CPU::OpcodeFC()
+	{
+	}
+	void CPU::OpcodeFD()
+	{
+	}
+	void CPU::OpcodeFE()
+	{
+	}
+	void CPU::OpcodeFF()
+	{
+	}
 }

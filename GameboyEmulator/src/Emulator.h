@@ -37,7 +37,7 @@ namespace GB {
         }
 
     private:
-        Byte Read(Word address) const { return mProcessor}
+        Byte Read(Word address) const { return mProcessor; }
 
     private:
         int ExecNextOpcode()
