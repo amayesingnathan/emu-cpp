@@ -14,7 +14,7 @@ namespace GB {
 	{
 	public:
 		CPU()
-			: mFlagsRegister(mRegisters[ByteReg::F])
+			: mFRegister(mRegisters[ByteReg::F])
 		{
 
 		}
@@ -26,16 +26,16 @@ namespace GB {
 
             switch (condition) {
             case Condition::C:
-                shouldBranch = mFlagsRegister.carry();
+                shouldBranch = mFRegister.carry();
                 break;
             case Condition::NC:
-                shouldBranch = !mFlagsRegister.carry();
+                shouldBranch = !mFRegister.carry();
                 break;
             case Condition::Z:
-                shouldBranch = mFlagsRegister.zero();
+                shouldBranch = mFRegister.zero();
                 break;
             case Condition::NZ:
-                shouldBranch = !mFlagsRegister.zero();
+                shouldBranch = !mFRegister.zero();
                 break;
             }
 
@@ -47,7 +47,7 @@ namespace GB {
 
 	private:
 		Registers mRegisters;
-        FRegister mFlagsRegister;
+        FRegister mFRegister;
 
         bool mInteruptsEnabled = false;
         bool mHalted = false;

@@ -160,21 +160,25 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="src\Cartridge\CartridgeManager.h" />
+    <ClInclude Include="src\Cartridge\MBC.h" />
     <ClInclude Include="src\Core\Base.h" />
     <ClInclude Include="src\Core\Types.h" />
-    <ClInclude Include="src\CPU\CPU.h" />
     <ClInclude Include="src\CPU\Flags.h" />
     <ClInclude Include="src\CPU\Instructions.h" />
     <ClInclude Include="src\CPU\WRAM.h" />
     <ClInclude Include="src\Emulator.h" />
     <ClInclude Include="src\Gameboy.h" />
+    <ClInclude Include="src\Graphics\OAM.h" />
+    <ClInclude Include="src\Graphics\PPU.h" />
     <ClInclude Include="src\Graphics\Tile.h" />
+    <ClInclude Include="src\Graphics\VRAM.h" />
     <ClInclude Include="src\Memory\Address.h" />
     <ClInclude Include="src\Cartridge\Cartridge.h" />
     <ClInclude Include="src\CPU\CPU2.h" />
     <ClInclude Include="src\CPU\Interupts.h" />
     <ClInclude Include="src\Memory\AddressBus.h" />
     <ClInclude Include="src\Memory\Memory.h" />
+    <ClInclude Include="src\Memory\MemoryBak.h" />
     <ClInclude Include="src\Memory\MemoryBlockIdea.h" />
     <ClInclude Include="src\Memory\MemoryMap.h" />
     <ClInclude Include="src\Memory\RamBank.h" />
@@ -193,6 +197,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Memory\AddressBus.cpp" />
+    <ClCompile Include="src\Memory\Memory.cpp" />
     <ClCompile Include="src\Memory\MemoryMap.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

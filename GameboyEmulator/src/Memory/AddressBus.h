@@ -1,32 +1,23 @@
 #pragma once
 
-#include "MemoryMap.h"
+#include "Memory.h"
 
 namespace GB {
 
 	class AddressBus
 	{
 	public:
-		static void Init(class Gameboy* context);
 
+	public:
 		static Byte Read(Word address);
 		static void Write(Word address, Byte data);
 
 	private:
-		inline static MemoryMap sMemMap;
-
-	};
-
-	class BusConnection
-	{
-	public:
+		static void Register(Memory::Type type, Memory* memory) { sMemBlocks[type] = memory; }
 
 	private:
-		
-	};
+		inline static std::array<Memory*, Memory::LAST> sMemBlocks;
 
-	class System
-	{
-
+		friend Memory;
 	};
 }
