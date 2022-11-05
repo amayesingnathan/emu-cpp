@@ -9,11 +9,9 @@ namespace GB {
     class Cartridge : public Memory
     {
     private:
-        static constexpr USize _ROMSize = 0x200000;
-        static constexpr USize _ROMBankSize = 0x4000;
+        GB_CONST USize _ROMSize = 0x200000;
 
-    private:
-        Cartridge() = delete;
+    public:
         Cartridge(std::string_view filename)
             : Memory(Memory::ROM), mCartridgeMemory((Byte*)::operator new(_ROMSize))
         {
@@ -54,8 +52,10 @@ namespace GB {
             if (!mMBC)
                 return mCartridgeMemory[address];
 
-            return mCartridgeMemory[mMBC->map(address)];
+            return mCartridgeMemory[mMBC->map(GetMode(), address)];
         }
+
+        constexpr USize GetSize() const override { return _ROMSize; }
 
     //private:
     //    Byte read(Word address) const

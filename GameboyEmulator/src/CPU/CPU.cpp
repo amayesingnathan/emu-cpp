@@ -3,11 +3,9 @@
 
 namespace GB {
 
-	void CPU::HandleInstruction(OpCode instruction)
+	int CPU::HandleInstruction(OpCode instruction)
 	{
-		switch (instruction)
-		{
-		}
+
 	}
 
 	void CPU::_OpcodeADC(Byte value)
@@ -157,10 +155,10 @@ namespace GB {
 	void CPU::OpcodeLD(Register reg)
 	{
 	}
-	void CPU::OpcodeLD(WordReg& reg)
+	void CPU::OpcodeLD(WordReg reg)
 	{
 	}
-	void CPU::OpcodeLD(WordReg& reg, Register regPair)
+	void CPU::OpcodeLD(WordReg reg, Register regPair)
 	{
 	}
 	void CPU::OpcodeLD(Word address)

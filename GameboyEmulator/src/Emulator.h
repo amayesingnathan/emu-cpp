@@ -1,63 +1,37 @@
 #pragma once
 
-#include "Memory/Memory.h"
+#include "Gameboy.h"
 
 namespace GB {
+
+    struct Settings
+    {
+        std::string_view gamePath;
+    };
 
     class Emulator
     {
     public:
-        GB_CONST USize _MaxCycles = 69905;
-        GB_CONST USize _ROMSize = 0x10000;
-
-    public:
-        Emulator()
+        static void Init()
         {
+
         }
 
-        ~Emulator()
+        static void Run()
         {
-        }
+            if (sGameInstance)
+                delete sGameInstance;
 
-    public:
-        void update()
-        {
-            int cycleCount = 0;
-            while (cycleCount < _MaxCycles)
+            sGameInstance = new Gameboy(sEmuSettings.gamePath);
+
+            while (true)
             {
-                int cycles = ExecNextOpcode();
-                cycleCount += cycles;
 
-                mProcessor.updateTimers(cycles);
-                UpdateGraphics(cycles);
-                Interupts();
             }
-
-            Render();
         }
 
     private:
-        Byte Read(Word address) const { return mProcessor; }
-
-    private:
-        int ExecNextOpcode()
-        {
-        }
-
-        void UpdateGraphics(int cycles)
-        {
-        }
-
-        void Interupts()
-        {
-        }
-
-        void Render()
-        {
-
-        }
-
-    private:
-        CPU mProcessor;
+        inline static Gameboy* sGameInstance = nullptr;
+        inline static Settings sEmuSettings;
     };
 }

@@ -1,8 +1,11 @@
 #pragma once
 
+#include "Memory/AddressBus.h"
+
 #include "Register.h"
 #include "Flags.h"
 #include "Instructions.h"
+#include "WRAM.h"
 
 namespace GB {
 
@@ -18,6 +21,13 @@ namespace GB {
 		{
 
 		}
+
+    public:
+        int exec()
+        {
+            OpCode nextOp = AddressBus::Read(mRegisters[WordReg::PC]++);
+            return HandleInstruction(nextOp);
+        }
 
     private:
         bool IsCondition(Condition condition)
@@ -49,6 +59,8 @@ namespace GB {
 		Registers mRegisters;
         FRegister mFRegister;
 
+        WRAM mMainMemory;
+
         bool mInteruptsEnabled = false;
         bool mHalted = false;
 
@@ -56,7 +68,7 @@ namespace GB {
 
 #pragma region OpCodeFunctions
 	private:
-		void HandleInstruction(OpCode instruction);
+		int HandleInstruction(OpCode instruction);
 
         /* ADC */
         void _OpcodeADC(Byte value);
@@ -150,8 +162,8 @@ namespace GB {
         
         void OpcodeLD(Register reg);
         
-        void OpcodeLD(WordReg& reg);
-        void OpcodeLD(WordReg& reg, Register regPair);
+        void OpcodeLD(WordReg reg);
+        void OpcodeLD(WordReg reg, Register regPair);
         
         void OpcodeLD(Word address);
         void OpcodeLD(Word address, ByteReg byte_reg);

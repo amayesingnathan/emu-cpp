@@ -65,7 +65,7 @@ namespace GB {
                 DE = 0x00D8;
                 HL = 0x014D;
                 SP = 0xFFFE;
-                PC = 0x100;
+                PC = 0x0100;
             };
         };
 
@@ -87,7 +87,7 @@ namespace GB {
                 case ByteReg::L: return mRegisters.L;
             }
         }
-        const Byte& operator[](ByteReg reg) const
+        Byte operator[](ByteReg reg) const
         {
             switch (reg)
             {
@@ -114,7 +114,7 @@ namespace GB {
             case WordReg::PC: return mRegisters.PC;
             }
         }
-        const Word& operator[](WordReg reg) const
+        Word operator[](WordReg reg) const
         {
             switch (reg)
             {
