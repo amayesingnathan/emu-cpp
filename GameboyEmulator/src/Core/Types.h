@@ -11,6 +11,8 @@ namespace GB {
 
     using USize = size_t;
 
+    using Flag = Byte;
+
     template<typename T>
     using Instance = std::unique_ptr<T>;
 

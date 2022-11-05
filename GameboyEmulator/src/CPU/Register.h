@@ -43,22 +43,20 @@ namespace GB {
     };
     enum class WordReg
     {
-        AF, BC, DE, HL
+        AF, BC, DE, HL, SP, PC
     };
 
     class Registers
     {
     private:
-        union InternalRegister
+        struct InternalRegister
         {
             union
             {
-                struct { Byte A, F, B, C, D, E, H, L; };
+                struct { Byte A, F, B, C, D, E, H, L, SP1, SP2, PC1, PC2; };
 
-                struct { Word AF, BC, DE, HL; };
+                struct { Word AF, BC, DE, HL, SP, PC; };
             };
-
-            Register registers[4];
 
             InternalRegister()
             {
@@ -66,6 +64,8 @@ namespace GB {
                 BC = 0x0013;
                 DE = 0x00D8;
                 HL = 0x014D;
+                SP = 0xFFFE;
+                PC = 0x100;
             };
         };
 
@@ -85,7 +85,6 @@ namespace GB {
                 case ByteReg::E: return mRegisters.E;
                 case ByteReg::H: return mRegisters.H;
                 case ByteReg::L: return mRegisters.L;
-                default: GB_ASSERT(false, "Wrong access type!");
             }
         }
         const Byte& operator[](ByteReg reg) const
@@ -100,7 +99,6 @@ namespace GB {
             case ByteReg::E: return mRegisters.E;
             case ByteReg::H: return mRegisters.H;
             case ByteReg::L: return mRegisters.L;
-            default: GB_ASSERT(false, "Wrong access type!");
             }
         }
 
@@ -112,7 +110,8 @@ namespace GB {
             case WordReg::BC: return mRegisters.BC;
             case WordReg::DE: return mRegisters.DE;
             case WordReg::HL: return mRegisters.HL;
-            default: GB_ASSERT(false, "Wrong access type!");
+            case WordReg::SP: return mRegisters.SP;
+            case WordReg::PC: return mRegisters.PC;
             }
         }
         const Word& operator[](WordReg reg) const
@@ -123,7 +122,8 @@ namespace GB {
             case WordReg::BC: return mRegisters.BC;
             case WordReg::DE: return mRegisters.DE;
             case WordReg::HL: return mRegisters.HL;
-            default: GB_ASSERT(false, "Wrong access type!");
+            case WordReg::SP: return mRegisters.SP;
+            case WordReg::PC: return mRegisters.PC;
             }
         }
     private:
