@@ -159,12 +159,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="src\Cartridge\CartridgeManager.h" />
     <ClInclude Include="src\Cartridge\MBC.h" />
     <ClInclude Include="src\Core\Base.h" />
     <ClInclude Include="src\Core\Types.h" />
+    <ClInclude Include="src\CPU\Bootstrap.h" />
     <ClInclude Include="src\CPU\Flags.h" />
     <ClInclude Include="src\CPU\Instructions.h" />
+    <ClInclude Include="src\CPU\Opcodes.h" />
     <ClInclude Include="src\CPU\WRAM.h" />
     <ClInclude Include="src\Emulator.h" />
     <ClInclude Include="src\Gameboy.h" />
@@ -172,9 +173,10 @@
     <ClInclude Include="src\Graphics\PPU.h" />
     <ClInclude Include="src\Graphics\Tile.h" />
     <ClInclude Include="src\Graphics\VRAM.h" />
+    <ClInclude Include="src\IO\IO.h" />
     <ClInclude Include="src\Memory\Address.h" />
     <ClInclude Include="src\Cartridge\Cartridge.h" />
-    <ClInclude Include="src\CPU\CPU2.h" />
+    <ClInclude Include="src\CPU\CPU.h" />
     <ClInclude Include="src\CPU\Interupts.h" />
     <ClInclude Include="src\Memory\AddressBus.h" />
     <ClInclude Include="src\Memory\Memory.h" />
@@ -189,7 +191,7 @@
     <ClInclude Include="src\Temp.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\CPU\CPU2.cpp" />
+    <ClCompile Include="src\CPU\CPU.cpp" />
     <ClCompile Include="src\gbpch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>

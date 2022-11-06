@@ -4,6 +4,11 @@
 
 namespace GB {
 
+	struct BusState
+	{
+		bool bootstrap = true;
+	};
+
 	class AddressBus
 	{
 	public:
@@ -15,7 +20,8 @@ namespace GB {
 
 	private:
 		inline static std::array<Memory*, Memory::BLOCK_COUNT> sMemBlocks;
+		inline static BusState sBusState;
 
-		friend Memory;
+		friend class Memory;
 	};
 }

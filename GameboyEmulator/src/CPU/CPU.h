@@ -59,7 +59,7 @@ namespace GB {
 		Registers mRegisters;
         FRegister mFRegister;
 
-        WRAM mMainMemory;
+        MainMemory mMainMemory;
 
         bool mInteruptsEnabled = false;
         bool mHalted = false;

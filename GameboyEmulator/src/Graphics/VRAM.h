@@ -4,19 +4,19 @@
 
 namespace GB {
 
-	class VRAM : public Memory
+	class VideoRAM : public Memory
 	{
 	public:
 		static constexpr USize _VRAMSize = 0x2000;
 
 	public:
-		VRAM() : Memory(Memory::VRAM) {}
+		VideoRAM() : Memory(VRAM) {}
 
 	protected:
 		Byte& GetMemBlock(Word address) override { return mData[address]; }
 		constexpr USize GetSize() const override { return _VRAMSize; }
 
 	private:
-		Byte mData[_VRAMSize];
+		Byte mData[_VRAMSize] = { 0 };
 	};
 }

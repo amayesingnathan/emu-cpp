@@ -9,7 +9,9 @@ namespace GB {
 	{
 		GB_ASSERT(address < 0xFEA0 || address > 0xFF00, "Restricted memory!");
 
-		if (address < 0x8000)							// ROM
+		if (sBusState.bootstrap && address < 0x0100)
+			return sMemBlocks[Memory::BOOTSTRAP]->read(address);
+		else if (address < 0x8000)							// ROM
 			return sMemBlocks[Memory::ROM]->read(address);
 		else if (address >= 0x8000 && address < 0xA000) // VRAM
 			return sMemBlocks[Memory::VRAM]->read(address - 0x8000);
@@ -32,8 +34,13 @@ namespace GB {
 	void AddressBus::Write(Word address, Byte data)
 	{
         GB_ASSERT(address < 0xFEA0 || address > 0xFF00, "Restricted memory!");
+        GB_ASSERT(!sBusState.bootstrap || address >= 0x0100, "Cannot write to boot ROM except to disable it!");
 
-		if (address < 0x8000)							// ROM
+		if (sBusState.bootstrap && address == 0xFF50)
+			sBusState.bootstrap = false;
+		else if (sBusState.bootstrap && address < 0x0100)
+			sMemBlocks[Memory::BOOTSTRAP]->write(address, data);
+		else if (address < 0x8000)							// ROM
 			sMemBlocks[Memory::ROM]->write(address, data);
 		else if (address >= 0x8000 && address < 0xA000) // VRAM
 			sMemBlocks[Memory::VRAM]->write(address - 0x8000, data);

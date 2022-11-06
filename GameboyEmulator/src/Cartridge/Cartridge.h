@@ -13,7 +13,7 @@ namespace GB {
 
     public:
         Cartridge(std::string_view filename)
-            : Memory(Memory::ROM), mCartridgeMemory((Byte*)::operator new(_ROMSize))
+            : Memory(ROM), mCartridgeMemory((Byte*)::operator new(_ROMSize))
         {
             std::ifstream fileROM(filename.data(), std::ios::binary);
             fileROM.seekg(0, std::ios::end);

@@ -5,3 +5,6 @@ obj/
 #VS files
 .vs/
 .vscode/
+
+#GB ROMs
+**.gb

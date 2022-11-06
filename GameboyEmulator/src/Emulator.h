@@ -6,7 +6,7 @@ namespace GB {
 
     struct Settings
     {
-        std::string_view gamePath;
+        std::string_view gamePath = "Tetris.gb";
     };
 
     class Emulator
@@ -14,19 +14,17 @@ namespace GB {
     public:
         static void Init()
         {
-
+            if (sGameInstance)
+                delete sGameInstance;
+                
+            sGameInstance = new Gameboy(sEmuSettings.gamePath);
         }
 
         static void Run()
         {
-            if (sGameInstance)
-                delete sGameInstance;
-
-            sGameInstance = new Gameboy(sEmuSettings.gamePath);
-
             while (true)
             {
-
+                sGameInstance->update();
             }
         }
 

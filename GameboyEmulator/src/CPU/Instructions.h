@@ -12,7 +12,7 @@ namespace GB {
 
 	//GB_CONST Instruction sInstructions[] =
 	//{
-	//	/*Mnemonic               CB IMM R8  R8  R16 CC  BIT */
+	//	/*Mnemonic                 CB IMM R8  R8  R16 CC  BIT */
  //       { "NOP",                 0, 0,  -1, -1, -1, -1, -1 },
  //       { "LD r16, imm16",       0, 2,  -1, -1,  4, -1, -1 },
  //       { "LD (BC), A",          0, 0,  -1, -1, -1, -1, -1 },

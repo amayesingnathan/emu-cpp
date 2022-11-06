@@ -60,12 +60,12 @@ namespace GB {
 
             InternalRegister()
             {
-                AF = 0x01B0;
-                BC = 0x0013;
-                DE = 0x00D8;
-                HL = 0x014D;
-                SP = 0xFFFE;
-                PC = 0x0100;
+                AF = 0x0000;
+                BC = 0x0000;
+                DE = 0x0000;
+                HL = 0x0000;
+                SP = 0x0000;
+                PC = 0x0000;
             };
         };
 

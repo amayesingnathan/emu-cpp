@@ -11,7 +11,7 @@ namespace GB {
 	public:
 
 	private:
-		VRAM mVRAM;
+		VideoRAM mVRAM;
 		OAM mOAM;
 		Screen mDisplay;
 	};
