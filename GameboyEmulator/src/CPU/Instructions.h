@@ -4,25 +4,21 @@
 
 namespace GB {
 
-	union OpCode
+	struct OpCode
 	{
 		Byte data;
-		union 
-		{
-			Byte x : 2;
-			Byte y : 3;
-			Byte z : 3;
-		};
-		union
-		{
-			Byte _filler1 : 2;
-			Byte p		 : 2;
-			Byte q		 : 1;
-			Byte _filler2 : 3;
-		};
 
 		OpCode(Byte _data) : data(_data) {}
 		operator Byte() const { return data; }
+
+		Byte x() const { return data >> 6; }
+		Byte y() const { return (data >> 3) & 0x07; }
+		Byte z() const { return data & 0x07; }
+
+		Byte p() const { return (data >> 4) & 0x03; }
+		Byte q() const { return (data >> 3) & 0x01; }
+
+		Byte i() const { return (data >> 5) & 0x01; }
 	};
 
 	using RegTarget = std::variant<ByteReg, WordReg>;
@@ -33,41 +29,43 @@ namespace GB {
 	GB_CONST RegPairTargets sRegisterPairs = { WordReg::BC, WordReg::DE, WordReg::HL, WordReg::SP };
 	GB_CONST RegPairTargets sRegisterPairs2 = { WordReg::BC, WordReg::DE, WordReg::HL, WordReg::AF };
 
+#define READ_REG(target, val)	std::visit([&](auto&& arg)\
+								{\
+									using T = std::decay_t<decltype(arg)>;\
+									if_c(std::is_same_v<T, ByteReg>)\
+										val = mRegisters[arg];\
+									else if_c(std::is_same_v<T, WordReg>)\
+										val = AddressBus::Read(mRegisters[arg]);\
+									else\
+										GB_SASSERT(false, "Non-exhaustive visitor!");\
+								}, sRegisters[target]);
 
-#define MAP_LD_SRC(target, mapVal)	std::visit([&](auto&& arg)\
+#define WRITE_REG(target, val)	std::visit([&](auto&& arg)\
+								{\
+									using T = std::decay_t<decltype(arg)>;\
+									if_c(std::is_same_v<T, ByteReg>)\
+										mRegisters[arg] = val;\
+									else if_c(std::is_same_v<T, WordReg>)\
+										AddressBus::Write(mRegisters[arg], val);\
+									else\
+										GB_SASSERT(false, "Non-exhaustive visitor!");\
+								}, sRegisters[target]);
+
+#define WRITE_REG_PAIR(target, val)	std::visit([&](auto&& arg)\
 									{\
 										using T = std::decay_t<decltype(arg)>;\
-										if_c (std::is_same_v<T, ByteReg>)\
-											mapVal = mRegisters[arg];\
-										else if_c (std::is_same_v<T, WordReg>)\
-											mapVal = AddressBus::Read(mRegisters[arg]);\
-										else\
-											GB_SASSERT(false, "Non-exhaustive visitor!");\
-									}, sRegisters[target])
-
-#define MAP_LD_DEST(target, val)	std::visit([&](auto&& arg)\
-									{\
-										using T = std::decay_t<decltype(arg)>;\
-										if_c (std::is_same_v<T, ByteReg>)\
+										if_c(std::is_same_v<T, ByteReg>)\
 											mRegisters[arg] = val;\
-										else if_c (std::is_same_v<T, WordReg>)\
-											AddressBus::Write(mRegisters[arg], val);\
+										else if_c(std::is_same_v<T, WordReg>)\
+											\
 										else\
 											GB_SASSERT(false, "Non-exhaustive visitor!");\
-									}, sRegisters[target])
+									}, sRegisterPairs[target]);
+	GB_CONST int sCycles[256] =
+	{
+		0
+	};
 
-#define LD_R_R(opcode) Byte src; MAP_LD_SRC(opcode.z, src); MAP_LD_DEST(opcode.y, src);
-
-#define MAP_ALU_DEST(target, val)	std::visit([&](auto&& arg)\
-									{\
-										using T = std::decay_t<decltype(arg)>;\
-										if_c (std::is_same_v<T, ByteReg>)\
-											mRegisters[arg] = val;\
-										else if_c (std::is_same_v<T, WordReg>)\
-											AddressBus::Write(mRegisters[arg], val);\
-										else\
-											GB_SASSERT(false, "Non-exhaustive visitor!");\
-									}, sRegisters[target])
 	//GB_CONST Instruction sInstructions[] =
 	//{
 	//	/*Mnemonic                 CB IMM R8  R8  R16 CC  BIT */

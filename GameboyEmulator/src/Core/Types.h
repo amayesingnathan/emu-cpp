@@ -8,6 +8,7 @@ namespace GB {
     using SByte = int8_t;
 
     using Word  = uint16_t;
+    using SWord  = int16_t;
 
     using USize = size_t;
 

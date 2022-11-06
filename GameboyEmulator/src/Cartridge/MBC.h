@@ -14,11 +14,11 @@ namespace GB {
 
 	class MBC1 : public MBC
 	{
-		Word map(Memory::Mode mode, Word address) override {}
+		Word map(Memory::Mode mode, Word address) override { return 0; }
 	};
 
 	class MBC2 : public MBC
 	{
-		Word map(Memory::Mode mode, Word address) override {}
+		Word map(Memory::Mode mode, Word address) override { return 0; }
 	};
 }

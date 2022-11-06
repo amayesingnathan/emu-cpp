@@ -7,7 +7,6 @@ namespace GB {
     union Register
     {
         Word dreg = 0;
-
         struct { Byte hi, lo; };
 
         Register() = default;
@@ -86,6 +85,9 @@ namespace GB {
                 case ByteReg::H: return mRegisters.H;
                 case ByteReg::L: return mRegisters.L;
             }
+
+            GB_ASSERT(false, "Invalid parameter!");
+            return mRegisters.A;
         }
         Byte operator[](ByteReg reg) const
         {
@@ -100,6 +102,9 @@ namespace GB {
             case ByteReg::H: return mRegisters.H;
             case ByteReg::L: return mRegisters.L;
             }
+
+            GB_ASSERT(false, "Invalid parameter!");
+            return mRegisters.A;
         }
 
         Word& operator[](WordReg reg)
@@ -113,6 +118,9 @@ namespace GB {
             case WordReg::SP: return mRegisters.SP;
             case WordReg::PC: return mRegisters.PC;
             }
+
+            GB_ASSERT(false, "Invalid parameter!");
+            return mRegisters.AF;
         }
         Word operator[](WordReg reg) const
         {
@@ -125,6 +133,9 @@ namespace GB {
             case WordReg::SP: return mRegisters.SP;
             case WordReg::PC: return mRegisters.PC;
             }
+
+            GB_ASSERT(false, "Invalid parameter!");
+            return mRegisters.AF;
         }
     private:
         InternalRegister mRegisters;

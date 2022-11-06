@@ -182,7 +182,6 @@
     <ClInclude Include="src\Memory\Memory.h" />
     <ClInclude Include="src\Memory\MemoryBak.h" />
     <ClInclude Include="src\Memory\MemoryBlockIdea.h" />
-    <ClInclude Include="src\Memory\MemoryMap.h" />
     <ClInclude Include="src\Memory\RamBank.h" />
     <ClInclude Include="src\CPU\Register.h" />
     <ClInclude Include="src\Graphics\Screen.h" />
@@ -201,7 +200,6 @@
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Memory\AddressBus.cpp" />
     <ClCompile Include="src\Memory\Memory.cpp" />
-    <ClCompile Include="src\Memory\MemoryMap.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

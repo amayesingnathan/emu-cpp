@@ -4,5 +4,7 @@
 
 int main()
 {
+	GB::Emulator::Init();
 
+	GB::Emulator::Run();
 }

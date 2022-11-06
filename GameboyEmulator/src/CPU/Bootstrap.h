@@ -15,11 +15,13 @@ namespace GB {
 			: Memory(BOOTSTRAP)
 		{
 			std::ifstream bootROM("BootROM.gb", std::ios::binary);
-			bootROM.seekg(0, std::ios::end);
+			GB_ASSERT(bootROM.is_open(), "Could not locate boot ROM!");
 
+			bootROM.seekg(0, std::ios::end);
 			USize cartridgeSize = bootROM.tellg();
 			GB_ASSERT(cartridgeSize == _BootROMSize, "Error! Boot ROM is not 256B");
 
+			bootROM.seekg(0);
 			bootROM.read((char*)mBootROM, _BootROMSize);
 		}
 

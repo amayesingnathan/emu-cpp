@@ -16,11 +16,13 @@ namespace GB {
             : Memory(ROM), mCartridgeMemory((Byte*)::operator new(_ROMSize))
         {
             std::ifstream fileROM(filename.data(), std::ios::binary);
-            fileROM.seekg(0, std::ios::end);
+            GB_ASSERT(fileROM.is_open(), "Could not locate game file!");
 
+            fileROM.seekg(0, std::ios::end);
             USize cartridgeSize = fileROM.tellg();
             GB_ASSERT(cartridgeSize <= _ROMSize, "Gameboy cartridge is too large!");
 
+            fileROM.seekg(0);
             fileROM.read((char*)mCartridgeMemory, cartridgeSize);
 
             switch (mCartridgeMemory[0x147])

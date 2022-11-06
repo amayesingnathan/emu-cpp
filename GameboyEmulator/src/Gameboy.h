@@ -1,11 +1,11 @@
 #pragma once
 
 #include "CPU/CPU.h"
+#include "Graphics/PPU.h"
 #include "Cartridge/Cartridge.h"
 
 namespace GB {
 
-    struct PPU { Byte mVRAM[0x2000]; };
     struct APU {};
 
     class Gameboy
@@ -27,7 +27,7 @@ namespace GB {
                 int cycles = mProcessor.exec();
                 cyclesThisUpdate += cycles;
                 // UpdateTimers(cycles);
-                // UpdateGraphics(cycles);
+                mGraphics.update(cycles);
                 // DoInterupts();
             }
             //RenderScreen();
