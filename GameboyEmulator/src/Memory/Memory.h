@@ -1,21 +1,22 @@
 #pragma once
 
-#include "Core/Types.h"
+#include "Address.h"
 
 namespace GB {
 
 	class Memory
 	{
-	protected:
-		enum Type
-		{
-			BOOTSTRAP, WRAM, VRAM, ROM, OAM, IO, BLOCK_COUNT
-		};
-
+	public:
 		enum Mode
 		{
 			Read = 0,
 			Write = 1
+		};
+
+	protected:
+		enum Type
+		{
+			BOOTSTRAP, WRAM, VRAM, ROM, OAM, IO, BLOCK_COUNT
 		};
 
 	public:
@@ -23,13 +24,13 @@ namespace GB {
 
 	protected:
 		virtual constexpr USize GetSize() const = 0;
-		virtual Byte& GetMemBlock(Word address) = 0;
+		virtual Byte& GetMemBlock(Address address) = 0;
 
 		Mode GetMode() const { return mMode; }
 
 	private:
-		Byte read(Word address) { mMode = Read; return GetMemBlock(address); }
-		void write(Word address, Byte data) { mMode = Write; GetMemBlock(address) = data; }
+		Byte read(Address address) { mMode = Read; return GetMemBlock(address); }
+		void write(Address address, Byte data) { mMode = Write; GetMemBlock(address) = data; }
 
 	private:
 		Mode mMode = Read;

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Memory.h"
+#include "Address.h"
 
 namespace GB {
 
@@ -12,8 +13,8 @@ namespace GB {
 	class AddressBus
 	{
 	public:
-		static Byte Read(Word address);
-		static void Write(Word address, Byte data);
+		static Byte Read(Address address);
+		static void Write(Address address, Byte data);
 
 	private:
 		static void Register(Memory::Type type, Memory* memory) { sMemBlocks[type] = memory; }

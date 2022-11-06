@@ -4,16 +4,18 @@
 
 namespace GB {
 
+	using Address = Word;
+
 	namespace Addr {
 
-		GB_CONST Word DIV	= 0xFF04;
-		GB_CONST Word TIMA	= 0xFF05;
-		GB_CONST Word TMA	= 0xFF06;
-		GB_CONST Word TMC	= 0xFF07;
+		GB_CONST Address DIV = 0xFF04;
+		GB_CONST Address TIMA = 0xFF05;
+		GB_CONST Address TMA = 0xFF06;
+		GB_CONST Address TMC = 0xFF07;
 
-		GB_CONST Word SCANL = 0xFF44;
+		GB_CONST Address SCANL = 0xFF44;
 
-		GB_CONST Word IF	= 0xFF0F;
-		GB_CONST Word IE	= 0xFFFF;
+		GB_CONST Address IF = 0xFF0F;
+		GB_CONST Address IE	= 0xFFFF;
 	}
 }

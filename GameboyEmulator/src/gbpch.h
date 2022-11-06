@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <memory>
+#include <variant>
 
 #include <new>
 

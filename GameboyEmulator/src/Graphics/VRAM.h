@@ -13,7 +13,7 @@ namespace GB {
 		VideoRAM() : Memory(VRAM) {}
 
 	protected:
-		Byte& GetMemBlock(Word address) override { return mData[address]; }
+		Byte& GetMemBlock(Address address) override { return mData[address]; }
 		constexpr USize GetSize() const override { return _VRAMSize; }
 
 	private:

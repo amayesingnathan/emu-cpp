@@ -12,7 +12,7 @@ namespace GB {
 
 	private:
 		VideoRAM mVRAM;
-		OAM mOAM;
+		SpriteMemory mOAM;
 		Screen mDisplay;
 	};
 }

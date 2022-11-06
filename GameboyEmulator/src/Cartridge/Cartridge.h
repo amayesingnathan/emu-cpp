@@ -47,7 +47,7 @@ namespace GB {
         }
 
     protected:
-        Byte& GetMemBlock(Word address) override
+        Byte& GetMemBlock(Address address) override
         {
             if (!mMBC)
                 return mCartridgeMemory[address];

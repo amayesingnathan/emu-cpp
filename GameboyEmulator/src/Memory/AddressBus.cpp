@@ -5,7 +5,7 @@
 
 namespace GB {
 
-	Byte AddressBus::Read(Word address)
+	Byte AddressBus::Read(Address address)
 	{
 		GB_ASSERT(address < 0xFEA0 || address > 0xFF00, "Restricted memory!");
 
@@ -29,9 +29,11 @@ namespace GB {
 			GB_ASSERT(false, "Not yet mapped!");
 		else
 			GB_ASSERT(false, "Not yet mapped!");
+
+		return 0;
 	}
 
-	void AddressBus::Write(Word address, Byte data)
+	void AddressBus::Write(Address address, Byte data)
 	{
         GB_ASSERT(address < 0xFEA0 || address > 0xFF00, "Restricted memory!");
         GB_ASSERT(!sBusState.bootstrap || address >= 0x0100, "Cannot write to boot ROM except to disable it!");

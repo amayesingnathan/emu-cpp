@@ -13,7 +13,7 @@ namespace GB {
         MainMemory() : Memory(WRAM) {}
 
     protected:
-        Byte& GetMemBlock(Word address) override { return mData[address]; }
+        Byte& GetMemBlock(Address address) override { return mData[address]; }
         constexpr USize GetSize() const override { return _WRAMSize; }
 
     private:

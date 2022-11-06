@@ -25,6 +25,9 @@ namespace GB {
     public:
         int exec()
         {
+            if (mHalted)
+                return 0;
+
             OpCode nextOp = AddressBus::Read(mRegisters[WordReg::PC]++);
             return HandleInstruction(nextOp);
         }
@@ -66,10 +69,15 @@ namespace GB {
 
         bool mBranchTaken = false;
 
-#pragma region OpCodeFunctions
 	private:
 		int HandleInstruction(OpCode instruction);
 
+        void Load(OpCode op);
+
+        template<typename Src, typename Dest>
+        int LD(Src src, Dest dest) {}
+
+#pragma region OpCodeFunctions
         /* ADC */
         void _OpcodeADC(Byte value);
         
