@@ -175,6 +175,12 @@ namespace GB {
 			LD_R_STK(instruction);
 			break;
 		}
+		// Load to/from 16bit immediate address
+		case 0xEA: case 0xFA:
+		{
+			LD_R_STK16(instruction);
+			break;
+		}
 
 		// CB Instruction Prefix
 		case 0xCB: 
@@ -212,6 +218,7 @@ namespace GB {
 	}
 
 #pragma region OpCodeFunctions
+
 	void CPU::LD_R_R(OpCode op)
 	{
 		Byte src;
@@ -267,6 +274,18 @@ namespace GB {
 			mRegisters[ByteReg::A] = AddressBus::Read(0xFF00 + (Word)addr);
 		else
 			AddressBus::Write(0xFF00 + (Word)addr, mRegisters[ByteReg::A]);
+
+	}
+	void CPU::LD_R_STK16(OpCode op)
+	{
+		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word imm = lo | hi << 8;
+
+		if (op & GB_BIT(4))
+			mRegisters[ByteReg::A] = AddressBus::Read(imm);
+		else
+			AddressBus::Write(imm, mRegisters[ByteReg::A]);
 
 	}
 

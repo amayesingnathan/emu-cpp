@@ -58,6 +58,7 @@ namespace GB {
         void LD_R_M(OpCode op);
         void LD_R_I8(OpCode op);
         void LD_R_STK(OpCode op);
+        void LD_R_STK16(OpCode op);
 
         void ROT_R(OpCode op);
         void BIT_R(OpCode op);
