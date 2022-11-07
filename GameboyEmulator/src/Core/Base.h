@@ -11,3 +11,5 @@
 
 #define GB_BIG_ENDIAN std::endian::native == std::endian::big
 #define GB_LITTLE_ENDIAN std::endian::native == std::endian::little
+
+#define GB_BIT(x) (1 << x)

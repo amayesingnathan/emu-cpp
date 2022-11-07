@@ -57,6 +57,7 @@ namespace GB {
         void LD_M_R(OpCode op);
         void LD_R_M(OpCode op);
         void LD_R_I8(OpCode op);
+        void LD_R_STK(OpCode op);
 
         void ROT_R(OpCode op);
         void BIT_R(OpCode op);
@@ -65,7 +66,15 @@ namespace GB {
 
         void JR_C8(OpCode op);
 
+        void UN_R(OpCode op);
+
+        void CALL(OpCode op);
+        void RET(OpCode op);
+
+        void REG(OpCode op);
+
     private:
+        // Instruction Implementations
         void ALU_T(Byte target, Byte src);
         void ADD_R(Byte value);
         void ADC_R(Byte value);
@@ -76,6 +85,24 @@ namespace GB {
         void OR_R(Byte value);
         void CP_R(Byte value);
 
+        void PUSH(Byte target);
+        void POP(Byte target);
+
+        void INC(Byte target);
+        void DEC(Byte target);
+        void INC16(Byte target);
+        void DEC16(Byte target);
+
+        void RLCA();
+        void RRCA();
+        void RLA();
+        void RRA();
+        void DAA();
+        void CPL();
+        void SCF();
+        void CCF();
+
+        // CB Instructions
         void RLC_R(Byte target);
         void RRC_R(Byte target);
         void RL_R(Byte target);
@@ -84,9 +111,6 @@ namespace GB {
         void SRA_R(Byte target);
         void SWAP_R(Byte target);
         void SRL_R(Byte target);
-
-        void PUSH(Byte target);
-        void POP(Byte target);
 #pragma endregion
 	
     };

@@ -70,6 +70,22 @@ namespace GB {
 			break;
 		}
 
+		// Unary Inc/Dec
+		case 0x03: case 0x13: case 0x23: case 0x33: case 0x0B: case 0x1B: case 0x2B: case 0x3B:
+		case 0x04: case 0x14: case 0x24: case 0x34: case 0x0C: case 0x1C: case 0x2C: case 0x3C:
+		case 0x05: case 0x15: case 0x25: case 0x35: case 0x0D: case 0x1D: case 0x2D: case 0x3D:
+		{
+			UN_R(instruction);
+			break;
+		}
+
+		// Accumulator/Flag Ops
+		case 0x07: case 0x0F: case 0x17: case 0x1F: case 0x27: case 0x2F: case 0x37: case 0x3F:
+		{
+			REG(instruction);
+			break;
+		}
+
 		// Register-8bit immediate load
 		case 0x06: case 0x16: case 0x26: case 0x36:
 		case 0x0E: case 0x1E: case 0x2E: case 0x3E:
@@ -125,22 +141,54 @@ namespace GB {
 		}
 
 		// Stack Pop
-		case 0xC1: case 0xD1:case 0xE1:case 0xF1:
+		case 0xC1: case 0xD1: case 0xE1:case 0xF1:
 		{
 			POP(instruction.p());
 			break;
 		}
 
 		// Stack Push
-		case 0xC5: case 0xD5:case 0xE5:case 0xF5:
+		case 0xC5: case 0xD5: case 0xE5:case 0xF5:
 		{
 			PUSH(instruction.p());
+			break;
+		}
+
+		// Calls
+		case 0xC4: case 0xD4: case 0xCC: case 0xDC: case 0xCD:
+		{
+			CALL(instruction);
+			break;
+		}
+
+		// Returns
+		case 0xC0: case 0xD0: case 0xC8: case 0xD8: case 0xC9:
+		{
+			RET(instruction);
+			break;
+		}
+
+
+		// Load to/from WRAM/IO
+		case 0xE0: case 0xE2: case 0xF0: case 0xF2:
+		{
+			LD_R_STK(instruction);
 			break;
 		}
 
 		// CB Instruction Prefix
 		case 0xCB: 
 			return HandleCBInstruction();
+
+		// Disable Master Interrupt
+		case 0xF3:
+			mInteruptsEnabled = false;
+			break;
+
+		// Enable Master Interrupt
+		case 0xFB:
+			mInteruptsEnabled = true;
+			break;
 
 		default: GB_ASSERT(false, "Instruction not yet implemented!");
 		}
@@ -211,6 +259,17 @@ namespace GB {
 		WRITE_REG(op.y(), imm);
 	}
 
+	void CPU::LD_R_STK(OpCode op)
+	{
+		Byte addr = (op.z() & GB_BIT(1)) ? mRegisters[ByteReg::C] : AddressBus::Read(mRegisters[WordReg::PC]++);
+
+		if (op & GB_BIT(3))
+			mRegisters[ByteReg::A] = AddressBus::Read(0xFF00 + (Word)addr);
+		else
+			AddressBus::Write(0xFF00 + (Word)addr, mRegisters[ByteReg::A]);
+
+	}
+
 	void CPU::ROT_R(OpCode op)
 	{
 		Byte target = op.z();
@@ -235,7 +294,7 @@ namespace GB {
 		Flag flags = mFRegister.getFlags();
 		flags &= ~_SubtractFlag;
 		flags |= _HCarryFlag;
-		if (value & (1 << op.y()))
+		if (value & GB_BIT(op.y()))
 			flags &= ~_ZeroFlag;
 		else
 			flags |= _ZeroFlag;
@@ -245,7 +304,7 @@ namespace GB {
 	void CPU::RES_R(OpCode op)
 	{
 		Byte targetReg = op.z();
-		Byte bit = 1 << op.y();
+		Byte bit = GB_BIT(op.y());
 		Byte value;
 		READ_REG(targetReg, value);
 		value &= ~bit;
@@ -255,7 +314,7 @@ namespace GB {
 	void CPU::SET_R(OpCode op)
 	{
 		Byte targetReg = op.z();
-		Byte bit = 1 << op.y();
+		Byte bit = GB_BIT(op.y());
 		Byte value;
 		READ_REG(targetReg, value);
 		value |= bit;
@@ -276,6 +335,74 @@ namespace GB {
 		}
 
 		mRegisters[WordReg::PC] += imm;
+	}
+
+	void CPU::UN_R(OpCode op)
+	{
+		switch (op.z())
+		{
+		case 3:
+		{
+			switch (op.q())
+			{
+			case 0: INC16(op.p()); break;
+			case 1: DEC16(op.p()); break;
+			}
+			break;
+		}
+		case 4:
+			INC(op.y());
+			break;
+
+		case 5:
+			DEC(op.y());
+			break;
+		}
+	}
+
+	void CPU::CALL(OpCode op)
+	{
+		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word imm = lo | hi << 8;
+
+		// Condition not met
+		if (!(op & 0x01) && !CheckCondition((Condition)op.y()))
+			return;
+
+		Word& pc = mRegisters[WordReg::PC];
+		Word& sp = mRegisters[WordReg::SP];
+		AddressBus::Write(--sp, (Byte)(pc >> 8));
+		AddressBus::Write(--sp, (Byte)(pc & 0x00FF));
+		pc = imm;
+	}
+
+	void CPU::RET(OpCode op)
+	{
+		// Condition not met
+		if (!(op & 0x01) && !CheckCondition((Condition)op.y()))
+			return;
+
+		Word& sp = mRegisters[WordReg::SP];
+		Word& pc  = mRegisters[WordReg::PC];
+
+		pc = (Word)AddressBus::Read(sp++);
+		pc |= (Word)AddressBus::Read(sp++) << 8;
+	}
+
+	void CPU::REG(OpCode op)
+	{
+		switch (op)
+		{
+		case 0: RLCA(); break;
+		case 1: RRCA(); break;
+		case 2: RLA(); break;
+		case 3: RRA(); break;
+		case 4: DAA(); break;
+		case 5: CPL(); break;
+		case 6: SCF(); break;
+		case 7: CCF(); break;
+		}
 	}
 
 
@@ -404,6 +531,167 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
+	void CPU::PUSH(Byte target)
+	{
+		Word& sp = mRegisters[WordReg::SP];
+		Word regPair = mRegisters[sRegisterPairs2[target]];
+
+		AddressBus::Write(--sp, (Byte)(regPair >> 8));
+		AddressBus::Write(--sp, (Byte)(regPair & 0x00FF));
+	}
+
+	void CPU::POP(Byte target)
+	{
+		Word& sp = mRegisters[WordReg::SP];
+		Word& regPair = mRegisters[sRegisterPairs2[target]];
+
+		regPair = (Word)AddressBus::Read(sp++);
+		regPair |= (Word)AddressBus::Read(sp++) << 8;
+	}
+
+	void CPU::INC(Byte target)
+	{
+		Byte reg;
+		READ_REG(target, reg);
+		reg++;
+		WRITE_REG(target, reg);
+
+		Flag flags = mFRegister.getFlags();
+		flags |= (reg == 0) ? _ZeroFlag : 0;
+		flags &= ~_SubtractFlag;
+		flags |= ((reg & 0x0F) == 0x00) ? _HCarryFlag : 0;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::DEC(Byte target)
+	{
+		Byte reg;
+		READ_REG(target, reg);
+		reg--;
+		WRITE_REG(target, reg);
+
+		Flag flags = mFRegister.getFlags();
+		flags |= (reg == 0) ? _ZeroFlag : 0;
+		flags |= _SubtractFlag;
+		flags |= ((reg & 0x0F) == 0x0F) ? _HCarryFlag : 0;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::INC16(Byte target)
+	{
+		Word& reg = mRegisters[sRegisterPairs[target]];
+		reg++;
+	}
+
+	void CPU::DEC16(Byte target)
+	{
+		Word& reg = mRegisters[sRegisterPairs[target]];
+		reg--;
+	}
+
+	void CPU::RLCA()
+	{
+		Byte& regA = mRegisters[ByteReg::A];
+		Byte finalBit = (regA & GB_BIT(7)) ? GB_BIT(0) : 0;
+		regA = (Byte)(regA << 1) | finalBit;
+
+		Flag flags = 0;
+		flags |= regA == 0 ? _ZeroFlag : 0;
+		flags |= finalBit ? _CarryFlag : 0;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::RRCA()
+	{
+		Byte& regA = mRegisters[ByteReg::A];
+		Byte firstBit = (regA & GB_BIT(0)) ? GB_BIT(7) : 0;
+		regA = (Byte)(regA >> 1) | firstBit;
+
+		Flag flags = 0;
+		flags |= regA == 0 ? _ZeroFlag : 0;
+		flags |= firstBit ? _CarryFlag : 0;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::RLA()
+	{
+		Byte& regA = mRegisters[ByteReg::A];
+		Byte firstBit = mFRegister.carry() ? GB_BIT(0) : 0;
+		regA = (Byte)(regA << 1) | firstBit;
+
+		Flag flags = mFRegister.getFlags();
+		flags &= ~_SubtractFlag;
+		flags &= ~ _HCarryFlag;
+		flags |= (regA == 0) ? _ZeroFlag : 0;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::RRA()
+	{
+		Byte& regA = mRegisters[ByteReg::A];
+		Byte finalBit = mFRegister.carry() ? GB_BIT(7) : 0;
+		regA = (Byte)(regA >> 1) | finalBit;
+
+		Flag flags = mFRegister.getFlags();
+		flags &= ~_SubtractFlag;
+		flags &= ~_HCarryFlag;
+		flags |= (regA == 0) ? _ZeroFlag : 0;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::DAA()
+	{
+		Byte& regA = mRegisters[ByteReg::A];
+
+		Word correction = mFRegister.carry() ? 0x60 : 0x00;
+
+		if (mFRegister.hcarry() || (!mFRegister.subtr() && ((regA & 0x0F) > 9)))
+			correction |= 0x06;
+
+		if (mFRegister.carry() || (!mFRegister.subtr() && (regA > 0x99)))
+			correction |= 0x60;
+
+		if (mFRegister.subtr())
+			regA = (Byte)(regA - correction);
+		else 
+			regA = (Byte)(regA + correction);
+
+		Flag flags = mFRegister.subtr() ? _SubtractFlag : 0;
+		if (((correction << 2) & 0x100) != 0)
+			flags |= _CarryFlag;
+
+		flags &= ~_HCarryFlag;
+		flags |= (regA == 0) ? _ZeroFlag : 0;
+	}
+
+	void CPU::CPL()
+	{
+		Byte& regA = mRegisters[ByteReg::A];
+		regA = ~regA;
+
+		Flag flags = mFRegister.getFlags();
+		flags |= _SubtractFlag | _HCarryFlag;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::SCF()
+	{
+		Flag flags = mFRegister.getFlags();
+		flags &= ~_SubtractFlag & ~_HCarryFlag;
+		flags |= _CarryFlag;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::CCF()
+	{
+		Flag flags = mFRegister.getFlags();
+		flags &= ~_SubtractFlag & ~_HCarryFlag;
+		flags |= !(flags & _CarryFlag) ? _CarryFlag : 0;
+		mFRegister.setFlags(flags);
+	}
+
+	// CB Instructions Implementations
+
 	void CPU::RLC_R(Byte target)
 	{
 	}
@@ -435,25 +723,6 @@ namespace GB {
 	void CPU::SRL_R(Byte target)
 	{
 	}
-
-	void CPU::PUSH(Byte target)
-	{
-		Word& sp = mRegisters[WordReg::SP];
-		Word regPair = mRegisters[sRegisterPairs2[target]];
-
-		AddressBus::Write(--sp, (Byte)(regPair >> 8));
-		AddressBus::Write(--sp, (Byte)(regPair & 0x00FF));
-	}
-
-	void CPU::POP(Byte target)
-	{
-		Word& sp = --mRegisters[WordReg::SP];
-		Word& regPair = mRegisters[sRegisterPairs2[target]];
-
-		regPair = (Word)AddressBus::Read(sp++);
-		regPair |= (Word)AddressBus::Read(sp++) << 8;
-	}
-
 
 #pragma endregion
 }
