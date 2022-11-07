@@ -53,10 +53,10 @@ namespace GB {
 
 #pragma region OpCodeFunctions
     private:
-        void LD_R(OpCode op);
+        void LD_R_R(OpCode op);
         void LD_M_R(OpCode op);
-
-        void ALU_R(OpCode op);
+        void LD_R_M(OpCode op);
+        void LD_R_I8(OpCode op);
 
         void ROT_R(OpCode op);
         void BIT_R(OpCode op);
@@ -66,14 +66,15 @@ namespace GB {
         void JR_C8(OpCode op);
 
     private:
-        void ADD_R(Byte target);
-        void ADC_R(Byte target);
-        void SUB_R(Byte target);
-        void SBC_R(Byte target);
-        void AND_R(Byte target);
-        void XOR_R(Byte target);
-        void OR_R(Byte target);
-        void CP_R(Byte target);
+        void ALU_T(Byte target, Byte src);
+        void ADD_R(Byte value);
+        void ADC_R(Byte value);
+        void SUB_R(Byte value);
+        void SBC_R(Byte value);
+        void AND_R(Byte value);
+        void XOR_R(Byte value);
+        void OR_R(Byte value);
+        void CP_R(Byte value);
 
         void RLC_R(Byte target);
         void RRC_R(Byte target);

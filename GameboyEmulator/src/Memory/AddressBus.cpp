@@ -53,9 +53,11 @@ namespace GB {
 		else if (address >= 0xC000 && address < 0xE000) // WRAM
 			sMemBlocks[Memory::WRAM]->write(address - 0xC000, data);
 		else if (address >= 0xE000 && address < 0xFE00) // Echo of 0xC000 - 0xDFFF
-			sMemBlocks[Memory::WRAM]->write(address - 0xC000, data);
+			sMemBlocks[Memory::WRAM]->write(address - 0xE000, data);
 		else if (address >= 0xFE00 && address < 0xFEA0) // Sprite Attribute Table (OAM)
 			sMemBlocks[Memory::OAM]->write(address - 0xFE00, data);
+		else if (address >= 0xFF00 && address < 0xFF80) // IO Registers
+			; // IO Register still to be mapped!
 		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
 			sMemBlocks[Memory::HRAM]->write(address - 0xFF80, data);
 		else if (address == Addr::TMC)

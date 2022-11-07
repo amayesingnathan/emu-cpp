@@ -47,7 +47,7 @@ namespace GB {
 		case 0x00: case 0x40: case 0x49: case 0x52: case 0x5B: case 0x64: case 0x6D: case 0x7F:
 			break; 
 
-		// 16 bit register load
+		// Register-16bit immediate load
 		case 0x01: case 0x11: case 0x21: case 0x31:
 		{
 			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
@@ -56,10 +56,25 @@ namespace GB {
 			break;
 		}
 
-		// Register-memory load
+		// Register-Memory load
 		case 0x02: case 0x12: case 0x22: case 0x32:
 		{
 			LD_M_R(instruction);
+			break;
+		}
+
+		// Memory-Register load
+		case 0x0A: case 0x1A: case 0x2A: case 0x3A:
+		{
+			LD_R_M(instruction);
+			break;
+		}
+
+		// Register-8bit immediate load
+		case 0x06: case 0x16: case 0x26: case 0x36:
+		case 0x0E: case 0x1E: case 0x2E: case 0x3E:
+		{
+			LD_R_I8(instruction);
 			break;
 		}
 
@@ -68,7 +83,7 @@ namespace GB {
 			JR_C8(instruction);
 			break;
 
-		// 8 bit register-register load
+		// 8 bit Register-Register load
 		case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
 		case 0x48: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F:
 		case 0x50: case 0x51: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
@@ -78,14 +93,14 @@ namespace GB {
 		case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x77:
 		case 0x78: case 0x79: case 0x7A: case 0x7B: case 0x7C: case 0x7D: case 0x7E:
 		{
-			LD_R(instruction);
+			LD_R_R(instruction);
 			break;
 		}
 		case 0x76:
 			mHalted = true;
 			break;
 
-		// Arithmetic/Logic
+		// Register-Register Arithmetic/Logic
 		case 0x81: case 0x82: case 0x83: case 0x84: case 0x85: case 0x86: case 0x87:
 		case 0x88: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
 		case 0x90: case 0x91: case 0x93: case 0x94: case 0x95: case 0x96: case 0x97:
@@ -95,7 +110,17 @@ namespace GB {
 		case 0xB0: case 0xB1: case 0xB2: case 0xB3: case 0xB4: case 0xB5: case 0xB7:
 		case 0xB8: case 0xB9: case 0xBA: case 0xBB: case 0xBC: case 0xBD: case 0xBE:
 		{
-			ALU_R(instruction);
+			Byte value;
+			READ_REG(instruction.z(), value);
+			ALU_T(value, instruction.y());
+			break;
+		}
+
+		// 8 bit immediate Arithmetic/Logic
+		case 0xC6: case 0xCE: case 0xD6: case 0xDE: case 0xE6: case 0xEE: case 0xF6: case 0xFE:
+		{
+			Byte imm = AddressBus::Read(mRegisters[WordReg::PC]++);
+			ALU_T(imm, instruction.y());
 			break;
 		}
 
@@ -139,7 +164,7 @@ namespace GB {
 	}
 
 #pragma region OpCodeFunctions
-	void CPU::LD_R(OpCode op)
+	void CPU::LD_R_R(OpCode op)
 	{
 		Byte src;
 		READ_REG(op.z(), src);
@@ -156,7 +181,7 @@ namespace GB {
 			p--;
 
 		Byte src;
-		READ_REG(7, src);
+		READ_REG(7, src); // 7 targets A register
 		src = (Byte)((SByte)src + incDec);
 
 		Word& address = mRegisters[sRegisterPairs[p]];
@@ -164,20 +189,26 @@ namespace GB {
 		address += incDec;
 	}
 
-	void CPU::ALU_R(OpCode op)
+	void CPU::LD_R_M(OpCode op)
 	{
-		Byte target = op.z();
-		switch (op.y())
-		{
-		case 0: ADD_R(target); break;
-		case 1: ADC_R(target); break;
-		case 2: SUB_R(target); break;
-		case 3: SBC_R(target); break;
-		case 4: AND_R(target); break;
-		case 5: XOR_R(target); break;
-		case 6: OR_R(target); break;
-		case 7: CP_R(target); break;
-		}
+		Byte p = op.p();
+		SByte incDec = 0;
+		if (p > 1)
+			incDec = -1 * ((SByte)(p * 2) - 5);
+		if (p == 3)
+			p--;
+
+		Byte& regA = mRegisters[ByteReg::A];
+		Word& address = mRegisters[sRegisterPairs[p]];
+
+		regA = AddressBus::Read(address);
+		address += incDec;
+	}
+
+	void CPU::LD_R_I8(OpCode op)
+	{
+		Byte imm = AddressBus::Read(mRegisters[WordReg::PC]++);
+		WRITE_REG(op.y(), imm);
 	}
 
 	void CPU::ROT_R(OpCode op)
@@ -251,12 +282,25 @@ namespace GB {
 
 	// Instruction Implementations
 
-	void CPU::ADD_R(Byte target)
+	void CPU::ALU_T(Byte value, Byte op)
+	{
+		switch (op)
+		{
+		case 0: ADD_R(value); break;
+		case 1: ADC_R(value); break;
+		case 2: SUB_R(value); break;
+		case 3: SBC_R(value); break;
+		case 4: AND_R(value); break;
+		case 5: XOR_R(value); break;
+		case 6: OR_R(value); break;
+		case 7: CP_R(value); break;
+		}
+	}
+
+	void CPU::ADD_R(Byte value)
 	{
 		Byte& regA = mRegisters[ByteReg::A];
 		Byte regACpy = regA;
-		Byte value;
-		READ_REG(target, value);
 
 		Word result = regA + value;
 		regA = (Byte)result;
@@ -268,12 +312,10 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::ADC_R(Byte target)
+	void CPU::ADC_R(Byte value)
 	{
 		Byte& regA = mRegisters[ByteReg::A];
 		Byte regACpy = regA;
-		Byte value;
-		READ_REG(target, value);
 
 		Word result = regA + value + (mFRegister.carry() ? 1 : 0);
 		regA = (Byte)result;
@@ -285,12 +327,10 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::SUB_R(Byte target)
+	void CPU::SUB_R(Byte value)
 	{
 		Byte& regA = mRegisters[ByteReg::A];
 		Byte regACpy = regA;
-		Byte value;
-		READ_REG(target, value);
 
 		Byte result = regA - value;
 		regA = result;
@@ -302,12 +342,10 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::SBC_R(Byte target)
+	void CPU::SBC_R(Byte value)
 	{
 		Byte& regA = mRegisters[ByteReg::A];
 		Byte regACpy = regA;
-		Byte value;
-		READ_REG(target, value);
 
 		Byte carry = mFRegister.carry() ? 1 : 0;
 		SWord result = regA - value - carry;
@@ -320,11 +358,9 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::AND_R(Byte target)
+	void CPU::AND_R(Byte value)
 	{
 		Byte& regA = mRegisters[ByteReg::A];
-		Byte value;
-		READ_REG(target, value);
 
 		regA &= value;
 
@@ -333,11 +369,9 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::XOR_R(Byte target)
+	void CPU::XOR_R(Byte value)
 	{
 		Byte& regA = mRegisters[ByteReg::A];
-		Byte value;
-		READ_REG(target, value);
 
 		regA ^= value;
 
@@ -346,11 +380,9 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::OR_R(Byte target)
+	void CPU::OR_R(Byte value)
 	{
 		Byte& regA = mRegisters[ByteReg::A];
-		Byte value;
-		READ_REG(target, value);
 
 		regA |= value;
 
@@ -359,11 +391,9 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::CP_R(Byte target)
+	void CPU::CP_R(Byte value)
 	{
 		Byte regA = mRegisters[ByteReg::A];
-		Byte value;
-		READ_REG(target, value);
 
 		Byte result = regA - value;
 
