@@ -41,7 +41,7 @@ namespace GB {
 
 	int CPU::HandleInstruction(OpCode instruction)
 	{
-		switch (instruction.data)
+		switch (instruction)
 		{
 		// NOP or effective NOPs
 		case 0x00: case 0x40: case 0x49: case 0x52: case 0x5B: case 0x64: case 0x6D: case 0x7F:

@@ -2,9 +2,22 @@
 bin/
 obj/
 
+#ROMS
+**.gb
+
 #VS files
 .vs/
 .vscode/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
+**.csproj
+**.csproj.user
 
-#GB ROMs
-**.gb
+#Makefiles
+Makefile
+Makefile.in
+
+#Python cache files
+__pycache__/
