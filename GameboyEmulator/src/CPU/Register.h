@@ -3,38 +3,6 @@
 #include "Core/Types.h"
 
 namespace GB {
-    
-    union Register
-    {
-        Word dreg = 0;
-        struct { Byte lo, hi; };
-
-        Register() = default;
-        Register(Word val) : dreg(val) {}
-
-        Register& operator++() 
-        { 
-            ++dreg;
-            return *this; 
-        }
-        Register operator++(int)
-        {
-            Register tmp = *this;
-            ++(*this);
-            return tmp;
-        }
-        Register& operator--()
-        {
-            --dreg;
-            return *this;
-        }
-        Register operator--(int)
-        {
-            Register tmp = *this;
-            --(*this);
-            return tmp;
-        }
-    };
 
     enum class ByteReg
     {
