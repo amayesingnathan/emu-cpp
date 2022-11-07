@@ -51,20 +51,8 @@ namespace GB {
 										GB_SASSERT(false, "Non-exhaustive visitor!");\
 								}, sRegisters[target]);
 
-#define WRITE_REG_PAIR(target, val)	std::visit([&](auto&& arg)\
-									{\
-										using T = std::decay_t<decltype(arg)>;\
-										if_c(std::is_same_v<T, ByteReg>)\
-											mRegisters[arg] = val;\
-										else if_c(std::is_same_v<T, WordReg>)\
-											\
-										else\
-											GB_SASSERT(false, "Non-exhaustive visitor!");\
-									}, sRegisterPairs[target]);
-	GB_CONST int sCycles[256] =
-	{
-		0
-	};
+	GB_CONST int sCycles[256] = { 0 };
+	GB_CONST int sCBCycles[256] = { 0 };
 
 	//GB_CONST Instruction sInstructions[] =
 	//{

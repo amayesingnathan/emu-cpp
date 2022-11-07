@@ -14,7 +14,7 @@ namespace GB {
 		return HandleInstruction(nextOp);
 	}
 
-	bool CPU::IsCondition(Condition condition)
+	bool CPU::CheckCondition(Condition condition)
 	{
 		bool shouldBranch = false;
 
@@ -50,32 +50,23 @@ namespace GB {
 		// 16 bit register load
 		case 0x01: case 0x11: case 0x21: case 0x31:
 		{
-			Register imm;
-			imm.hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-			imm.lo = AddressBus::Read(mRegisters[WordReg::PC]++);
-			mRegisters[sRegisterPairs[instruction.p()]] = imm.dreg;
+			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+			mRegisters[sRegisterPairs[instruction.p()]] = lo | hi << 8;
 			break;
 		}
 
 		// Register-memory load
 		case 0x02: case 0x12: case 0x22: case 0x32:
 		{
-			Byte p = instruction.p();
-			SByte incDec = 0;
-			if (p > 1)
-				incDec = -1 * ((SByte)(p * 2) - 5);
-			if (p == 3)
-				p--;
-
-			Byte src;
-			READ_REG(7, src);
-			src = (Byte)((SByte)src + incDec);
-
-			Word& address = mRegisters[sRegisterPairs[p]];
-			AddressBus::Write(address, src);
-			address += incDec;
+			LD_M_R(instruction);
 			break;
 		}
+
+		// 8bit immediate Jump/Conditional Jumps
+		case 0x18: case 0x20: case 0x28: case 0x30: case 0x38:
+			JR_C8(instruction);
+			break;
 
 		// 8 bit register-register load
 		case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
@@ -108,17 +99,43 @@ namespace GB {
 			break;
 		}
 
+		// Stack Pop
+		case 0xC1: case 0xD1:case 0xE1:case 0xF1:
+		{
+			POP(instruction.p());
+			break;
+		}
+
+		// Stack Push
+		case 0xC5: case 0xD5:case 0xE5:case 0xF5:
+		{
+			PUSH(instruction.p());
+			break;
+		}
+
 		// CB Instruction Prefix
 		case 0xCB: 
-			HandleCBInstruction(instruction);
+			return HandleCBInstruction();
+
+		default: GB_ASSERT(false, "Instruction not yet implemented!");
 		}
 
 		return sCycles[instruction];
 	}
 
-	int CPU::HandleCBInstruction(OpCode instruction)
+	int CPU::HandleCBInstruction()
 	{
-		return 0;
+		OpCode instruction = AddressBus::Read(mRegisters[WordReg::PC]++);
+		switch (instruction.x())
+		{
+		case 0: ROT_R(instruction); break;
+		case 1: BIT_R(instruction); break;
+		case 2: RES_R(instruction); break;
+		case 3: SET_R(instruction); break;
+		default: break;
+		}
+
+		return sCBCycles[instruction];
 	}
 
 #pragma region OpCodeFunctions
@@ -127,6 +144,24 @@ namespace GB {
 		Byte src;
 		READ_REG(op.z(), src);
 		WRITE_REG(op.y(), src);
+	}
+
+	void CPU::LD_M_R(OpCode op)
+	{
+		Byte p = op.p();
+		SByte incDec = 0;
+		if (p > 1)
+			incDec = -1 * ((SByte)(p * 2) - 5);
+		if (p == 3)
+			p--;
+
+		Byte src;
+		READ_REG(7, src);
+		src = (Byte)((SByte)src + incDec);
+
+		Word& address = mRegisters[sRegisterPairs[p]];
+		AddressBus::Write(address, src);
+		address += incDec;
 	}
 
 	void CPU::ALU_R(OpCode op)
@@ -145,8 +180,76 @@ namespace GB {
 		}
 	}
 
+	void CPU::ROT_R(OpCode op)
+	{
+		Byte target = op.z();
+		switch (op.y())
+		{
+		case 0: RLC_R(target); break;
+		case 1: RRC_R(target); break;
+		case 2: RL_R(target); break;
+		case 3: RR_R(target); break;
+		case 4: SLA_R(target); break;
+		case 5: SRA_R(target); break;
+		case 6: SWAP_R(target); break;
+		case 7: SRL_R(target); break;
+		}
+	}
+
+	void CPU::BIT_R(OpCode op)
+	{
+		Byte value;
+		READ_REG(op.z(), value);
+
+		Flag flags = mFRegister.getFlags();
+		flags &= ~_SubtractFlag;
+		flags |= _HCarryFlag;
+		if (value & (1 << op.y()))
+			flags &= ~_ZeroFlag;
+		else
+			flags |= _ZeroFlag;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::RES_R(OpCode op)
+	{
+		Byte targetReg = op.z();
+		Byte bit = 1 << op.y();
+		Byte value;
+		READ_REG(targetReg, value);
+		value &= ~bit;
+		WRITE_REG(targetReg, value);
+	}
+
+	void CPU::SET_R(OpCode op)
+	{
+		Byte targetReg = op.z();
+		Byte bit = 1 << op.y();
+		Byte value;
+		READ_REG(targetReg, value);
+		value |= bit;
+		WRITE_REG(targetReg, value);
+	}
+
+	void CPU::JR_C8(OpCode op)
+	{
+		SByte imm = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Byte condTarget = op.y();
+
+		bool hasCondition = (condTarget & 0x04);
+		if (hasCondition) 
+		{
+			if (CheckCondition((Condition)(condTarget - 0x04)))
+				mRegisters[WordReg::PC] += imm;
+			return;
+		}
+
+		mRegisters[WordReg::PC] += imm;
+	}
 
 
+
+	// Instruction Implementations
 
 	void CPU::ADD_R(Byte target)
 	{
@@ -270,5 +373,57 @@ namespace GB {
 		flags |= (regA < value) ? _CarryFlag : 0;
 		mFRegister.setFlags(flags);
 	}
+
+	void CPU::RLC_R(Byte target)
+	{
+	}
+
+	void CPU::RRC_R(Byte target)
+	{
+	}
+
+	void CPU::RL_R(Byte target)
+	{
+	}
+
+	void CPU::RR_R(Byte target)
+	{
+	}
+
+	void CPU::SLA_R(Byte target)
+	{
+	}
+
+	void CPU::SRA_R(Byte target)
+	{
+	}
+
+	void CPU::SWAP_R(Byte target)
+	{
+	}
+
+	void CPU::SRL_R(Byte target)
+	{
+	}
+
+	void CPU::PUSH(Byte target)
+	{
+		Word& sp = mRegisters[WordReg::SP];
+		Word regPair = mRegisters[sRegisterPairs2[target]];
+
+		AddressBus::Write(--sp, (Byte)(regPair >> 8));
+		AddressBus::Write(--sp, (Byte)(regPair & 0x00FF));
+	}
+
+	void CPU::POP(Byte target)
+	{
+		Word& sp = --mRegisters[WordReg::SP];
+		Word& regPair = mRegisters[sRegisterPairs2[target]];
+
+		regPair = (Word)AddressBus::Read(sp++);
+		regPair |= (Word)AddressBus::Read(sp++) << 8;
+	}
+
+
 #pragma endregion
 }
