@@ -23,6 +23,8 @@ namespace GB {
 			return sMemBlocks[Memory::WRAM]->read(address - 0xC000);
 		else if (address >= 0xFE00 && address < 0xFEA0) // Sprite Attribute Table (OAM)
 			return sMemBlocks[Memory::OAM]->read(address - 0xFE00);
+		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
+			return sMemBlocks[Memory::HRAM]->read(address - 0xFF80);
 		else if (address == Addr::TMC)
 			GB_ASSERT(false, "Not yet mapped!");
 		else if (address == Addr::DIV)
@@ -54,6 +56,8 @@ namespace GB {
 			sMemBlocks[Memory::WRAM]->write(address - 0xC000, data);
 		else if (address >= 0xFE00 && address < 0xFEA0) // Sprite Attribute Table (OAM)
 			sMemBlocks[Memory::OAM]->write(address - 0xFE00, data);
+		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
+			sMemBlocks[Memory::HRAM]->write(address - 0xFF80, data);
 		else if (address == Addr::TMC)
 			GB_ASSERT(false, "Not yet mapped!");
 		else if (address == Addr::DIV)

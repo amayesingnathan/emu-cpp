@@ -164,6 +164,7 @@
     <ClInclude Include="src\Core\Types.h" />
     <ClInclude Include="src\CPU\Bootstrap.h" />
     <ClInclude Include="src\CPU\Flags.h" />
+    <ClInclude Include="src\CPU\HRAM.h" />
     <ClInclude Include="src\CPU\Instructions.h" />
     <ClInclude Include="src\CPU\Opcodes.h" />
     <ClInclude Include="src\CPU\WRAM.h" />

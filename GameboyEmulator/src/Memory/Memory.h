@@ -16,7 +16,7 @@ namespace GB {
 	protected:
 		enum Type
 		{
-			BOOTSTRAP, WRAM, VRAM, ROM, OAM, IO, BLOCK_COUNT
+			BOOTSTRAP, WRAM, VRAM, HRAM, ROM, OAM, BLOCK_COUNT
 		};
 
 	public:
