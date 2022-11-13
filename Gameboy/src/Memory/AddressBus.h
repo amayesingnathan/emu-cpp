@@ -5,6 +5,8 @@
 
 namespace GB {
 
+	class Cartridge;
+
 	struct BusState
 	{
 		bool bootstrap = true;
@@ -17,12 +19,12 @@ namespace GB {
 		static void Write(Address address, Byte data);
 
 	private:
-		static void Register(Memory::Type type, Memory* memory) { sMemBlocks[type] = memory; }
+		static void Init(Cartridge* cartridge) { sCartridge = cartridge; }
 
 	private:
-		inline static std::array<Memory*, Memory::BLOCK_COUNT> sMemBlocks;
+		inline static Cartridge* sCartridge = nullptr;
 		inline static BusState sBusState;
 
-		friend class Memory;
+		friend class Gameboy;
 	};
 }

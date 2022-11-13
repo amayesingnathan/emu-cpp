@@ -6,58 +6,30 @@ namespace GB {
 
     struct Pixel
     {
-        Byte r;
-        Byte g;
-        Byte b;
+        Byte b, g, r;
     };
 
     class Screen
     {
+    private:
+        GB_CONST USize _Width = 160;
+        GB_CONST USize _Height = 144;
+        GB_CONST USize _BufSize = _Width * _Height * sizeof(Pixel);
+        
+
+       GB_CONST USize _Map(USize x, USize y) { return ((y * _Width) + x); }
+
     public:
-        enum class Colour
-        {
-            RED, GREEN, BLUE
-        };
-
-        static constexpr USize _Width = 160;
-        static constexpr USize _Height = 144;
-
-        static constexpr USize _Map(USize x, USize y) { return ((y * _Width) + x); }
+        Screen() : mPixels(new Pixel[_Width * _Height]) {}
+        ~Screen() { delete[] mPixels; }
 
     public:
         Pixel& operator()(USize x, USize y) { return mPixels[_Map(x, y)]; }
         const Pixel& operator()(USize x, USize y) const { return mPixels[_Map(x, y)]; }
 
-        Byte& operator()(USize x, USize y, Colour colour)
-        {
-            Pixel& pixel = mPixels[_Map(x, y)];
-
-            switch (colour)
-            {
-            case Colour::RED:   return pixel.r;
-            case Colour::GREEN: return pixel.g;
-            case Colour::BLUE:  return pixel.b;
-            }
-
-            GB_ASSERT(false, "Did not pass a valid colour!");
-            return pixel.r;
-        }
-        const Byte& operator()(USize x, USize y, Colour colour) const
-        {
-            const Pixel& pixel = mPixels[_Map(x, y)];
-
-            switch (colour)
-            {
-            case Colour::RED:   return pixel.r;
-            case Colour::GREEN: return pixel.g;
-            case Colour::BLUE:  return pixel.b;
-            }
-
-            GB_ASSERT(false, "Did not pass a valid colour!");
-            return pixel.r;
-        }
+        const Byte* getBuffer(USize& outSize) const { outSize = _BufSize; return (Byte*)mPixels; }
 
     private:
-        Pixel mPixels[_Width * _Height];
+        Pixel* mPixels = nullptr;
     };
 }

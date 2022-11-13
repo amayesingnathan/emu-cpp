@@ -14,24 +14,11 @@ namespace GB {
         GB_CONST USize _MaxCycles = 69905;
 
     public:
-        Gameboy(std::string_view path)
-            : mCartridge(path) {}
+        Gameboy(std::string_view path);
+        ~Gameboy();
 
     public:
-        void update()
-        {
-            int cyclesThisUpdate = 0;
-
-            while (cyclesThisUpdate < _MaxCycles)
-            {
-                int cycles = mProcessor.exec();
-                cyclesThisUpdate += cycles;
-                // UpdateTimers(cycles);
-                mGraphics.update(cycles);
-                // DoInterupts();
-            }
-            //RenderScreen();
-        }
+        void update();
 
     private:
         void UpdateGraphics(int cycles)
@@ -48,7 +35,7 @@ namespace GB {
         }
 
     private:
-        Cartridge mCartridge;
+        Cartridge* mCartridge = nullptr;
 
         CPU mProcessor;
         PPU mGraphics;

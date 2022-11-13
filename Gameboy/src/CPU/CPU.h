@@ -3,10 +3,7 @@
 #include "Memory/AddressBus.h"
 
 #include "Register.h"
-#include "Bootstrap.h"
 #include "Flags.h"
-#include "WRAM.h"
-#include "HRAM.h"
 
 namespace GB {
 
@@ -39,11 +36,6 @@ namespace GB {
         // Registers
 		Registers mRegisters;
         FRegister mFRegister;
-
-        // Accessible through AddressBus only
-        BootROM mBootROM;
-        MainMemory mMainMemory;
-        StackMemory mStack;
 
         // Flags
         bool mInteruptsEnabled = false;

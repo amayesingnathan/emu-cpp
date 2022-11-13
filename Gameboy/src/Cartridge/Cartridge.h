@@ -1,69 +1,23 @@
 #pragma once
 
-#include "Memory/Memory.h"
+#include "Core/Types.h"
 
 #include "MBC.h"
 
 namespace GB {
 
-    class Cartridge : public Memory
+    class Cartridge
     {
-    private:
-        GB_CONST USize _ROMSize = 0x200000;
+    public:
+        GB_CONST USize _Size = 0x200000;
 
     public:
-        Cartridge(std::string_view filename)
-            : Memory(ROM), mCartridgeMemory((Byte*)::operator new(_ROMSize))
-        {
-            std::ifstream fileROM(filename.data(), std::ios::binary);
-            GB_ASSERT(fileROM.is_open(), "Could not locate game file!");
+        Cartridge(std::string_view filename);
+        ~Cartridge();
 
-            fileROM.seekg(0, std::ios::end);
-            USize cartridgeSize = fileROM.tellg();
-            GB_ASSERT(cartridgeSize <= _ROMSize, "Gameboy cartridge is too large!");
-
-            fileROM.seekg(0);
-            fileROM.read((char*)mCartridgeMemory, cartridgeSize);
-
-            switch (mCartridgeMemory[0x147])
-            {
-            case 1:
-            case 2:
-            case 3:
-                mMBC = new MBC1;
-                break;
-
-            case 5:
-            case 6:
-                mMBC = new MBC2;
-                break;
-
-            default: break;
-            };
-        }
-
-        ~Cartridge()
-        {
-            delete mMBC;
-            ::operator delete(mCartridgeMemory);
-        }
-
-    protected:
-        Byte& GetMemBlock(Address address) override
-        {
-            if (!mMBC)
-                return mCartridgeMemory[address];
-
-            return mCartridgeMemory[mMBC->map(GetMode(), address)];
-        }
-
-        constexpr USize GetSize() const override { return _ROMSize; }
-
-    //private:
-    //    Byte read(Word address) const
-    //    {
-    //        return mCartridgeMemory[address + mCurrentBank * _ROMBankSize];
-    //    }
+    public:
+        Byte read(Word address);
+        void write(Word address, Byte data);
 
     //    void changeLoROMBank(Byte data)
     //    {
@@ -95,9 +49,7 @@ namespace GB {
     //    BankMode getBankMode() const { return mBankMode; }
 
     private:
-        Byte* mCartridgeMemory = nullptr;
+        Byte* mROM = nullptr;
         MBC* mMBC = nullptr;
-
-        friend class CartridgeManager;
     };
 }
