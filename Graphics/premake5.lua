@@ -22,10 +22,14 @@ project "Graphics"
     includedirs
     {
         "%{IncludeDir.Graphics}",
+        "%{IncludeDir.glad}",
+        "%{IncludeDir.glfw}",
     }
 
 	links
 	{
+		"glad",
+		"glfw",
 	}
 	
     filter "system:windows"

@@ -29,8 +29,12 @@ IncludeDir = {}
 IncludeDir["Graphics"] 	= "%{wks.location}/Graphics/src"
 IncludeDir["Gameboy"] 	= "%{wks.location}/Gameboy/src"
 IncludeDir["EmuGB"] 	= "%{wks.location}/EmuGB/src"
+IncludeDir["glad"] 	    = "%{wks.location}/Graphics/dependencies/glad/include"
+IncludeDir["glfw"] 	    = "%{wks.location}/Graphics/dependencies/glfw/include"
 
 group "Dependencies"
+	include "Graphics/dependencies/glad"
+	include "Graphics/dependencies/glfw"
 group ""
 
 group "Core"
