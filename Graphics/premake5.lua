@@ -1,12 +1,12 @@
-project "Gameboy"
+project "Graphics"
     language "C++"
     cppdialect "C++20"
 		
     targetdir 	("%{wks.location}/bin/%{prj.name}/" .. outputDir)
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)
 	
-	pchheader "gbpch.h"
-	pchsource "src/gbpch.cpp"
+	pchheader "glpch.h"
+	pchsource "src/grpch.cpp"
 
     files 
     { 
@@ -21,13 +21,11 @@ project "Gameboy"
 
     includedirs
     {
-        "%{IncludeDir.Gameboy}",
         "%{IncludeDir.Graphics}",
     }
 
 	links
 	{
-        "Graphics",
 	}
 	
     filter "system:windows"
@@ -38,15 +36,13 @@ project "Gameboy"
 	filter "system:linux"
         kind "SharedLib"
         staticruntime "off"
-        defines "GB_SHARED"
         pic "On"
         systemversion "latest"
 
     filter "configurations:Debug"
-        defines { "GB_DEBUG" }
 		runtime "Debug"
         symbols "on"
+        
     filter "configurations:Release"
-        defines { "GB_RELEASE" }
 		runtime "Release"
         optimize "on"

@@ -1,5 +1,5 @@
 workspace "Emulators"
-    startproject "Testbed"
+    startproject "EmuGB"
 
     configurations 
     { 
@@ -26,6 +26,21 @@ workspace "Emulators"
 outputDir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
+IncludeDir["Graphics"] 	= "%{wks.location}/Graphics/src"
 IncludeDir["Gameboy"] 	= "%{wks.location}/Gameboy/src"
+IncludeDir["EmuGB"] 	= "%{wks.location}/EmuGB/src"
 
-include "Gameboy"
+group "Dependencies"
+group ""
+
+group "Core"
+    include "Graphics"
+group ""
+
+group "Emulators"
+    include "Gameboy"
+group ""
+
+group "Application"
+    include "EmuGB"
+group ""
