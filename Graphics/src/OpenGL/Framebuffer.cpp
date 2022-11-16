@@ -11,11 +11,11 @@ namespace GL {
     namespace Utils {
 
         static GLenum TextureTarget(bool multisampled);
-        static void CreateTextures(bool multisampled, UInt32* outID, Int32 count);
-        static void BindTexture(bool multisampled, UInt32 id);
+        static void CreateTextures(bool multisampled, uint* outID, int count);
+        static void BindTexture(bool multisampled, uint id);
 
-        static void AttachColourTexture(UInt32 id, Int32 samples, GLenum internalFormat, GLenum format, Int32 width, Int32 height, Int32 index);
-        static void AttachDepthTexture(UInt32 id, Int32 samples, GLenum format, GLenum attachmentType, Int32 width, Int32 height);
+        static void AttachColourTexture(uint id, int samples, GLenum internalFormat, GLenum format, int width, int height, int index);
+        static void AttachDepthTexture(uint id, int samples, GLenum format, GLenum attachmentType, int width, int height);
         static bool IsDepthFormat(FramebufferTextureFormat format);
     }
 
@@ -50,20 +50,20 @@ namespace GL {
         glBindFramebuffer(GL_FRAMEBUFFER, 0); 
     }
 
-    void Framebuffer::blit(Int32 screenWidth, Int32 screenHeight) 
+    void Framebuffer::blit(int screenWidth, int screenHeight) 
     {
         glBlitNamedFramebuffer(mRendererID, 0, 0, 0, mSpecification.width, mSpecification.height, 0, 0, screenWidth, screenHeight, GL_COLOR_BUFFER_BIT, GL_NEAREST);
     }
 
-    void Framebuffer::resize(USize width, USize height)
+    void Framebuffer::resize(usize width, usize height)
     {
     }
 
-    void Framebuffer::clearAttachment(UInt32 attachmentIndex, Int32 value)
+    void Framebuffer::clearAttachment(uint attachmentIndex, int value)
     {
     }
 
-    void Framebuffer::bindColourAttachment(UInt32 index)
+    void Framebuffer::bindColourAttachment(uint index)
     {
     }
 
@@ -89,7 +89,7 @@ namespace GL {
             mColourAttachments.resize(mColourAttachmentSpecs.size());
             Utils::CreateTextures(multisample, mColourAttachments.data(), mColourAttachments.size());
 
-            for (USize i = 0; i < mColourAttachments.size(); i++)
+            for (usize i = 0; i < mColourAttachments.size(); i++)
             {
                 Utils::BindTexture(multisample, mColourAttachments[i]);
                 switch (mColourAttachmentSpecs[i])
@@ -138,17 +138,17 @@ namespace GL {
             return multisampled ? GL_TEXTURE_2D_MULTISAMPLE : GL_TEXTURE_2D;
         }
 
-        void CreateTextures(bool multisampled, UInt32* outID, Int32 count)
+        void CreateTextures(bool multisampled, uint* outID, int count)
         {
             glCreateTextures(TextureTarget(multisampled), count, outID);
         }
 
-        void BindTexture(bool multisampled, UInt32 id)
+        void BindTexture(bool multisampled, uint id)
         {
             glBindTexture(TextureTarget(multisampled), id);
         }
 
-        void AttachColourTexture(UInt32 id, Int32 samples, GLenum internalFormat, GLenum format, Int32 width, Int32 height, Int32 index)
+        void AttachColourTexture(uint id, int samples, GLenum internalFormat, GLenum format, int width, int height, int index)
         {
             bool multisampled = samples > 1;
             if (multisampled)
@@ -169,7 +169,7 @@ namespace GL {
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + index, TextureTarget(multisampled), id, 0);
         }
 
-        void AttachDepthTexture(UInt32 id, Int32 samples, GLenum format, GLenum attachmentType, Int32 width, Int32 height)
+        void AttachDepthTexture(uint id, int samples, GLenum format, GLenum attachmentType, int width, int height)
         {
             bool multisampled = samples > 1;
             if (multisampled)

@@ -6,8 +6,7 @@
 
 namespace GL {
 
-	using Int32 = int32_t;
-	using UInt32 = uint32_t;
+	using uint = unsigned int;
 
-	using USize = size_t;
+	using usize = size_t;
 }

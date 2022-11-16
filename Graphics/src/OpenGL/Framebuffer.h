@@ -25,9 +25,9 @@ namespace GL {
 
     struct FramebufferSpec
     {
-        Int32 width, height;
+        int width, height;
         FramebufferAttachmentSpec attachments;
-        UInt32 samples = 1;
+        uint samples = 1;
 
         bool swapChainTarget = true;
     };
@@ -41,13 +41,13 @@ namespace GL {
         void bind();
         void unbind();
 
-        void blit(Int32 screenWidth, Int32 screenHeight);
+        void blit(int screenWidth, int screenHeight);
 
-        void resize(USize width, USize height);
+        void resize(usize width, usize height);
 
-        void clearAttachment(UInt32 attachmentIndex, Int32 value);
-        void bindColourAttachment(UInt32 index = 0);
-        UInt32 getColourAttachment(UInt32 index = 0) const { return mColourAttachments[index]; }
+        void clearAttachment(uint attachmentIndex, int value);
+        void bindColourAttachment(uint index = 0);
+        uint getColourAttachment(uint index = 0) const { return mColourAttachments[index]; }
 
         const FramebufferSpec& getSpec() const { return mSpecification; }
 
@@ -55,14 +55,14 @@ namespace GL {
         void Invalidate();
 
     private:
-        UInt32 mRendererID = 0;
+        uint mRendererID = 0;
         FramebufferSpec mSpecification;
 
         std::vector<FramebufferTextureFormat> mColourAttachmentSpecs;
         FramebufferTextureFormat mDepthAttachmentSpec = FramebufferTextureFormat::None;
 
-        std::vector<UInt32> mColourAttachments;
-        UInt32 mDepthAttachment;
+        std::vector<uint> mColourAttachments;
+        uint mDepthAttachment;
 
     };
 }
