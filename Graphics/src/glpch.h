@@ -6,8 +6,10 @@
 #include <fstream>
 #include <memory>
 #include <variant>
+#include <iostream>
 
 #include <new>
+#include <functional>
 
 #include <cstddef>
 #include <cstdint>

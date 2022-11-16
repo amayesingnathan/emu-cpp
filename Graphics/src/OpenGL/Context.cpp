@@ -9,9 +9,7 @@
 namespace GL {
 
     GraphicsContext::GraphicsContext(GLFWwindow* windowHandle)
-        : mWindowHandle(windowHandle) {}
-
-    void GraphicsContext::init()
+        : mWindowHandle(windowHandle)
     {
         glfwMakeContextCurrent(mWindowHandle);
         int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);

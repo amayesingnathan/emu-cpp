@@ -9,7 +9,6 @@ namespace GL {
     public:
         GraphicsContext(GLFWwindow* windowHandle);
 
-        void init();
         void swapBuffers();
 
     private:

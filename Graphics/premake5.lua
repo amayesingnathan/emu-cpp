@@ -44,9 +44,11 @@ project "Graphics"
         systemversion "latest"
 
     filter "configurations:Debug"
+        defines { "GL_DEBUG" }
 		runtime "Debug"
         symbols "on"
         
     filter "configurations:Release"
+        defines { "GL_RELEASE" }
 		runtime "Release"
         optimize "on"
