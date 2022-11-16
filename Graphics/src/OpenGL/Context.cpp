@@ -8,6 +8,9 @@
 
 namespace GL {
 
+    GraphicsContext::GraphicsContext(GLFWwindow* windowHandle)
+        : mWindowHandle(windowHandle) {}
+
     void GraphicsContext::init()
     {
         glfwMakeContextCurrent(mWindowHandle);

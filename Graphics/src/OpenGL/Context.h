@@ -7,8 +7,7 @@ namespace GL {
     class GraphicsContext
     {
     public:
-        GraphicsContext(GLFWwindow* windowHandle)
-            : mWindowHandle(windowHandle) {}
+        GraphicsContext(GLFWwindow* windowHandle);
 
         void init();
         void swapBuffers();

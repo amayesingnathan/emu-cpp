@@ -1,5 +1,7 @@
 #pragma once
 
+#include "EmulatorBase.h"
+
 #include "CPU/CPU.h"
 #include "Graphics/PPU.h"
 #include "Cartridge/Cartridge.h"
@@ -8,17 +10,17 @@ namespace GB {
 
     struct APU {};
 
-    class Gameboy
+    class Gameboy : public Emu::Base
     {
     public:
         GB_CONST USize _MaxCycles = 69905;
 
     public:
         Gameboy(std::string_view path);
-        ~Gameboy();
+        ~Gameboy() override;
 
     public:
-        void update();
+        void update() override;
 
     private:
         void UpdateGraphics(int cycles)

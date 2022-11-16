@@ -1,9 +1,17 @@
 #pragma once
 
+#include "EmulatorBase.h"
+
 #include "Gameboy.h"
+
+enum class EmulatorType
+{
+    GB
+};
 
 struct Settings
 {
+    EmulatorType type = EmulatorType::GB;
     std::string_view gamePath = "Tetris.gb";
 };
 
@@ -15,18 +23,29 @@ public:
         if (sGameInstance)
             delete sGameInstance;
                 
-        sGameInstance = new GB::Gameboy(sEmuSettings.gamePath);
+        switch (sEmuSettings.type)
+        {
+        case EmulatorType::GB:
+            sGameInstance = new GB::Gameboy(sEmuSettings.gamePath);
+            break;
+
+        default:
+            assert(false);
+        }
     }
 
     static void Run()
     {
         while (true)
-        {
             sGameInstance->update();
-        }
+    }
+
+    static void Shutdown()
+    {
+        delete sGameInstance;
     }
 
 private:
-    inline static GB::Gameboy* sGameInstance = nullptr;
+    inline static Emu::Base* sGameInstance = nullptr;
     inline static Settings sEmuSettings;
 };

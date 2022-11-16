@@ -21,12 +21,14 @@ project "Gameboy"
 
     includedirs
     {
+        "%{IncludeDir.Base}",
         "%{IncludeDir.Gameboy}",
         "%{IncludeDir.Graphics}",
     }
 
 	links
 	{
+        "EmulatorBase",
         "Graphics",
 	}
 	

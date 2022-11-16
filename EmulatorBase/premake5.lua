@@ -1,10 +1,12 @@
-project "EmuCpp"
-    kind "ConsoleApp"
+project "EmulatorBase"
     language "C++"
     cppdialect "C++20"
 		
     targetdir 	("%{wks.location}/bin/%{prj.name}/" .. outputDir)
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)
+	
+	pchheader "pch.h"
+	pchsource "src/pch.cpp"
 
     files 
     { 
@@ -19,18 +21,23 @@ project "EmuCpp"
 
     includedirs
     {
-        "%{IncludeDir.EmuCpp}",
         "%{IncludeDir.Base}",
-        "%{IncludeDir.Graphics}",
-        "%{IncludeDir.Gameboy}",
     }
 
 	links
 	{
-        "EmulatorBase",
-        "Graphics",
-        "Gameboy",
 	}
+	
+    filter "system:windows"
+        kind "StaticLib"
+        staticruntime "off"
+        systemversion "latest"
+		
+	filter "system:linux"
+        kind "SharedLib"
+        staticruntime "off"
+        pic "On"
+        systemversion "latest"
 
     filter "configurations:Debug"
 		runtime "Debug"
