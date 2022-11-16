@@ -1,4 +1,4 @@
-project "EmuGB"
+project "EmuCpp"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
@@ -19,6 +19,7 @@ project "EmuGB"
 
     includedirs
     {
+        "%{IncludeDir.EmuCpp}",
         "%{IncludeDir.Graphics}",
         "%{IncludeDir.Gameboy}",
     }

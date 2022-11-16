@@ -6,7 +6,7 @@ project "Graphics"
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)
 	
 	pchheader "glpch.h"
-	pchsource "src/grpch.cpp"
+	pchsource "src/glpch.cpp"
 
     files 
     { 
