@@ -1,6 +1,6 @@
 #pragma once
 
-#include "EmulatorBase.h"
+#include "Emulator/Base.h"
 
 #include "CPU/CPU.h"
 #include "Graphics/PPU.h"

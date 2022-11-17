@@ -20,15 +20,13 @@ project "EmuCpp"
     includedirs
     {
         "%{IncludeDir.EmuCpp}",
-        "%{IncludeDir.Base}",
-        "%{IncludeDir.Graphics}",
+        "%{IncludeDir.EmuBase}",
         "%{IncludeDir.Gameboy}",
     }
 
 	links
 	{
-        "EmulatorBase",
-        "Graphics",
+        "EmuBase",
         "Gameboy",
 	}
 

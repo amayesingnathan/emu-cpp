@@ -42,8 +42,8 @@ namespace GL {
 		inline GraphicsContext* getNativeContext() const { return mContext; }
 
 	private:
-		void init(const WindowProps& props);
-		void shutdown();
+		void Init(const WindowProps& props);
+		void Shutdown();
 
 	private:
 		GLFWwindow* mWindow;

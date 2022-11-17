@@ -27,20 +27,19 @@ outputDir = "%{cfg.buildcfg}-%{cfg.system}-%{cfg.architecture}"
 
 IncludeDir = {}
 IncludeDir["EmuCpp"] 	= "%{wks.location}/EmuCpp/src"
-IncludeDir["Base"] 	    = "%{wks.location}/EmulatorBase/src"
-IncludeDir["Graphics"] 	= "%{wks.location}/Graphics/src"
+IncludeDir["EmuBase"] 	= "%{wks.location}/EmuBase/src"
+IncludeDir["AppCore"] 	= "%{wks.location}/AppCore/src"
 IncludeDir["Gameboy"] 	= "%{wks.location}/Gameboy/src"
-IncludeDir["glad"] 	    = "%{wks.location}/Graphics/dependencies/glad/include"
-IncludeDir["glfw"] 	    = "%{wks.location}/Graphics/dependencies/glfw/include"
+IncludeDir["glad"] 	    = "%{wks.location}/EmuBase/dependencies/glad/include"
+IncludeDir["glfw"] 	    = "%{wks.location}/EmuBase/dependencies/glfw/include"
 
 group "Dependencies"
-	include "Graphics/dependencies/glad"
-	include "Graphics/dependencies/glfw"
+	include "EmuBase/dependencies/glad"
+	include "EmuBase/dependencies/glfw"
 group ""
 
 group "Core"
-    include "EmulatorBase"
-    include "Graphics"
+    include "EmuBase"
 group ""
 
 group "Emulators"

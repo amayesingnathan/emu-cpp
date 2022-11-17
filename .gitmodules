@@ -1,8 +1,6 @@
-[submodule "Graphics/dependencies/glad"]
-	path = Graphics/dependencies/glad
+[submodule "EmuBase/dependencies/glad"]
+	path = EmuBase/dependencies/glad
 	url = git@github.com:amayesingnathan/glad.git
-	update = rebase
-[submodule "Graphics/dependencies/glfw"]
-	path = Graphics/dependencies/glfw
+[submodule "EmuBase/dependencies/glfw"]
+	path = EmuBase/dependencies/glfw
 	url = git@github.com:amayesingnathan/glfw.git
-	update = rebase

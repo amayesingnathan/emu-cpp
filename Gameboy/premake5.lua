@@ -21,15 +21,13 @@ project "Gameboy"
 
     includedirs
     {
-        "%{IncludeDir.Base}",
+        "%{IncludeDir.EmuBase}",
         "%{IncludeDir.Gameboy}",
-        "%{IncludeDir.Graphics}",
     }
 
 	links
 	{
-        "EmulatorBase",
-        "Graphics",
+        "EmuBase",
 	}
 	
     filter "system:windows"

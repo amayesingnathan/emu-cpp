@@ -17,15 +17,15 @@ namespace GL {
 
 	Window::Window(const WindowProps& props)
 	{
-		init(props);
+		Init(props);
 	}
 
 	Window::~Window()
 	{
-		shutdown();
+		Shutdown();
 	}
 
-	void Window::init(const WindowProps& props)
+	void Window::Init(const WindowProps& props)
 	{
 		mData.title = props.title;
 		mData.width = props.width;
@@ -64,7 +64,7 @@ namespace GL {
 		setVSync(true);
 	}
 
-	void Window::shutdown()
+	void Window::Shutdown()
 	{
 		delete mContext;
 
