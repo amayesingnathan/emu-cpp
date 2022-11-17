@@ -7,7 +7,8 @@ namespace GL {
 	class VertexArray
 	{
 	public:
-		~VertexArray() = default;
+		VertexArray();
+		~VertexArray();
 
 		void bind() const;
 		void unbind() const;
@@ -15,8 +16,8 @@ namespace GL {
 		void addVertexBuffer(VertexBuffer* vertexBuffer);
 		void setIndexBuffer(IndexBuffer* indexBuffer);
 
-		const std::vector<VertexBuffer*>& getVertexBuffers() const;
-		IndexBuffer* getIndexBuffer() const;
+		const std::vector<VertexBuffer*>& getVertexBuffers() const { return mVertexBuffers; }
+		const IndexBuffer* getIndexBuffer() const { return mIndexBuffer; }
 
 	private:
 		uint mRendererID;
