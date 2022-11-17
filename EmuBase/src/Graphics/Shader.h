@@ -16,7 +16,7 @@ namespace GL {
 		void bind() const;
 		void unbind() const;
 
-		const std::string& getName() const;
+		const std::string& getName() const { return mName; }
 
 		void setInt(const std::string& name, int value);
 		void setIntArray(const std::string& name, int* values, uint count);
