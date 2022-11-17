@@ -22,6 +22,7 @@ project "EmuBase"
     includedirs
     {
         "%{IncludeDir.EmuBase}",
+        "%{IncludeDir.glm}",
         "%{IncludeDir.glad}",
         "%{IncludeDir.glfw}",
     }

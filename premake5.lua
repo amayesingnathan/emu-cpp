@@ -32,6 +32,7 @@ IncludeDir["AppCore"] 	= "%{wks.location}/AppCore/src"
 IncludeDir["Gameboy"] 	= "%{wks.location}/Gameboy/src"
 IncludeDir["glad"] 	    = "%{wks.location}/EmuBase/dependencies/glad/include"
 IncludeDir["glfw"] 	    = "%{wks.location}/EmuBase/dependencies/glfw/include"
+IncludeDir["glm"] 	    = "%{wks.location}/EmuBase/dependencies/glm/"
 
 group "Dependencies"
 	include "EmuBase/dependencies/glad"
