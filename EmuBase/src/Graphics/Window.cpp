@@ -1,9 +1,9 @@
 #include "glpch.h"
 #include "Window.h"
 
-#include "OpenGL/Context.h"
+#include "GLFW/glfw3.h"
 
-#include "GLFW//glfw3.h"
+#include "Context.h"
 
 namespace GL {
 

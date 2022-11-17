@@ -1,11 +1,12 @@
 #pragma once
 
 #include "Core/Common.h"
-#include "OpenGL/Context.h"
 
 struct GLFWwindow;
 
 namespace GL {
+
+	class GraphicsContext;
 
 	struct WindowProps {
 		std::string title;
