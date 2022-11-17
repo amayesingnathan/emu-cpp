@@ -113,7 +113,9 @@ namespace GL {
 	class VertexBuffer
 	{
 	public:
-		~VertexBuffer() = default;
+		VertexBuffer(uint32_t size);
+		VertexBuffer(float* vertices, uint32_t size);
+		~VertexBuffer();
 
 		void bind() const;
 		void unbind() const;
@@ -131,12 +133,15 @@ namespace GL {
 	class IndexBuffer
 	{
 	public:
-		~IndexBuffer() = default;
+		IndexBuffer(uint32_t* indices, uint32_t count);
+		~IndexBuffer();
 
 		void bind() const;
 		void unbind() const;
 
-		uint getCount() const;
+		void setData(const void* data, uint size);
+
+		uint getCount() const { return mCount; }
 
 	private:
 		uint mRendererID;
