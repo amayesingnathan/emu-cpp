@@ -49,15 +49,13 @@ namespace GL {
 
 		// TODO LOG ("Creating window {0} ({1}, {2})", mData.title, mData.width, mData.height);
 
-		{
 #if defined(GL_DEBUG)
-			glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
-			mWindow = glfwCreateWindow((int)mData.width, (int)mData.height, mData.title.c_str(), nullptr, nullptr);
-			++sGLFWWindowCount;
-		}
+		mWindow = glfwCreateWindow((int)mData.width, (int)mData.height, mData.title.c_str(), nullptr, nullptr);
 		GL_ASSERT(mWindow, "Could not create GLFW window!");
 
+		++sGLFWWindowCount;
 		mContext = new GraphicsContext(mWindow);
 
 		glfwSetWindowUserPointer(mWindow, &mData);
@@ -72,9 +70,7 @@ namespace GL {
 		--sGLFWWindowCount;
 
 		if (sGLFWWindowCount == 0)
-		{
 			glfwTerminate();
-		}
 		// TODO LOG ("Shutdown complete");
 	}
 

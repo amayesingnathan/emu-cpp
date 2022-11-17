@@ -15,7 +15,7 @@ namespace GL {
         int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
         GL_ASSERT(status, "Failed to initialise Glad");
 
-        GL_ASSERT(GLVersion.major > 4, "Require OpenGL version 4 or greater");
+        GL_ASSERT(GLVersion.major >= 4, "Require OpenGL version 4 or greater");
     }
 
     void GraphicsContext::swapBuffers()

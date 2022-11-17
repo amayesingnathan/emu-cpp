@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Emulator/Base.h"
+#include "Graphics/Renderer.h"
+#include "Graphics/Window.h"
 
 #include "Gameboy.h"
 
@@ -18,15 +20,25 @@ struct Settings
 class Emulator
 {
 public:
-    static void Init()
+    static void Run()
     {
-        if (sGameInstance)
-            delete sGameInstance;
-                
-        switch (sEmuSettings.type)
+        Emulator& emu = Get();
+
+        while (true)
+            emu.mGameInstance->update();
+    }
+
+private:
+    Emulator()
+    {
+        mWindow = new GL::Window();
+        GL::Renderer::Init();
+
+        switch (mEmuSettings.type)
         {
         case EmulatorType::GB:
-            sGameInstance = new GB::Gameboy(sEmuSettings.gamePath);
+            std::filesystem::current_path("../Gameboy");
+            mGameInstance = new GB::Gameboy(mEmuSettings.gamePath);
             break;
 
         default:
@@ -34,18 +46,19 @@ public:
         }
     }
 
-    static void Run()
-    {
-        while (true)
-            sGameInstance->update();
+    ~Emulator() 
+    { 
+        delete mGameInstance; 
+        delete mWindow;
     }
 
-    static void Shutdown()
+    static Emulator& Get()
     {
-        delete sGameInstance;
+        static Emulator sInstance;
+        return sInstance;
     }
-
 private:
-    inline static Emu::Base* sGameInstance = nullptr;
-    inline static Settings sEmuSettings;
+    GL::Window* mWindow = nullptr;
+    Emu::Base* mGameInstance = nullptr;
+    Settings mEmuSettings;
 };

@@ -15,8 +15,8 @@ namespace GL {
 		bool fullscreen;
 
 		WindowProps(const std::string& t = "emu-cpp",
-			uint w = 1600,
-			uint h = 900,
+			uint w = 800,
+			uint h = 600,
 			bool f = false)
 			: title(t), width(w), height(h), fullscreen(f) {}
 	};
@@ -25,7 +25,7 @@ namespace GL {
 	{
 	public:
 
-		Window(const WindowProps& props);
+		Window(const WindowProps& props = WindowProps());
 		~Window();
 
 		void onUpdate();

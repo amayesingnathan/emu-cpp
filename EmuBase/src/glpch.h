@@ -10,6 +10,7 @@
 
 #include <new>
 #include <functional>
+#include <filesystem>
 
 #include <cstddef>
 #include <cstdint>
