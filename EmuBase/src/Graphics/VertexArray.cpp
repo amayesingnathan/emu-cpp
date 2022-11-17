@@ -46,7 +46,7 @@ namespace GL {
 		glBindVertexArray(0);
 	}
 
-	void VertexArray::addVertexBuffer(VertexBuffer* vertexBuffer)
+	void VertexArray::addVertexBuffer(Ref<VertexBuffer> vertexBuffer)
 	{
 		GL_ASSERT(vertexBuffer->getLayout().getElements().size(), "Vertex buffer has no layout!");
 
@@ -114,7 +114,7 @@ namespace GL {
 		mVertexBuffers.push_back(vertexBuffer);
 	}
 
-	void VertexArray::setIndexBuffer(IndexBuffer* indexBuffer)
+	void VertexArray::setIndexBuffer(Ref<IndexBuffer> indexBuffer)
 	{
 		glBindVertexArray(mRendererID);
 		indexBuffer->bind();

@@ -122,8 +122,11 @@ namespace GL {
 
 		void setData(const void* data, uint size);
 
-		const BufferLayout& getLayout() const;
-		void setLayout(const BufferLayout& layout);
+		const BufferLayout& getLayout() const { return mLayout; }
+		void setLayout(const BufferLayout& layout) { mLayout = layout; }
+
+		static Ref<VertexBuffer> Create(uint32_t size) { return std::make_shared<VertexBuffer>(size); }
+		static Ref<VertexBuffer> Create(float* vertices, uint32_t size) { return std::make_shared<VertexBuffer>(vertices, size); }
 
 	private:
 		uint mRendererID;
@@ -142,6 +145,8 @@ namespace GL {
 		void setData(const void* data, uint size);
 
 		uint getCount() const { return mCount; }
+
+		static Ref<IndexBuffer> Create(uint32_t* indices, uint32_t count) { return std::make_shared<IndexBuffer>(indices, count); }
 
 	private:
 		uint mRendererID;

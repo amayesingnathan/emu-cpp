@@ -40,16 +40,8 @@ namespace GL {
         glBufferSubData(GL_ARRAY_BUFFER, 0, size, data);
     }
 
-    const BufferLayout& VertexBuffer::getLayout() const
-    {
-        // TODO: insert return statement here
-    }
-
-    void VertexBuffer::setLayout(const BufferLayout& layout)
-    {
-    }
-
     IndexBuffer::IndexBuffer(uint32_t* indices, uint32_t count)
+        : mCount(count)
     {
         // GL_ELEMENT_ARRAY_BUFFER is not valid without an actively bound VAO
 		// Binding with GL_ARRAY_BUFFER allows the data to be loaded regardless of VAO state. 
@@ -78,3 +70,4 @@ namespace GL {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mRendererID);
         glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, 0, size, data);
     }
+}

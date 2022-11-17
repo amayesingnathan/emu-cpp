@@ -9,4 +9,7 @@ namespace GL {
 	using uint = unsigned int;
 
 	using usize = size_t;
+
+	template<typename T>
+	using Ref = std::shared_ptr<T>;
 }

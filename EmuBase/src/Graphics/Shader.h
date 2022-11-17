@@ -25,6 +25,9 @@ namespace GL {
 		void setFloat3(const std::string& name, const glm::vec3& value);
 		void setFloat4(const std::string& name, const glm::vec4& value);
 
+		static Ref<Shader> Create(const std::string& filepath) { return std::make_shared<Shader>(filepath); }
+		static Ref<Shader> Create(const std::string& name, const std::string& vertexSrc, const std::string& fragmentSrc) { return std::make_shared<Shader>(name, vertexSrc, fragmentSrc); }
+
 	private:
 		int GetUniformLocation(const std::string& name) const;
 

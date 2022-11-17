@@ -23,6 +23,7 @@ project "Gameboy"
     {
         "%{IncludeDir.EmuBase}",
         "%{IncludeDir.Gameboy}",
+        "%{IncludeDir.glm}",
     }
 
 	links
