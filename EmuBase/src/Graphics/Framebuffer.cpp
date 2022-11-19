@@ -6,7 +6,7 @@
 #pragma warning(push)
 #pragma warning(disable: 4267)
 
-namespace GL {
+namespace Emu {
 
     namespace Utils {
 

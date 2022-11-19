@@ -4,9 +4,9 @@
 
 struct GLFWwindow;
 
-namespace GL {
+namespace Emu {
 
-	class GraphicsContext;
+	namespace GL { class GraphicsContext; }
 
 	struct WindowProps {
 		std::string title;
@@ -39,8 +39,8 @@ namespace GL {
 		void setVSync(bool enabled);
 		bool isVSync() const;
 
-		inline GLFWwindow* getNativeWindow() const { return mWindow; }
-		inline GraphicsContext* getNativeContext() const { return mContext; }
+		GLFWwindow* getNativeWindow() const { return mWindow; }
+		GL::GraphicsContext* getNativeContext() const { return mContext; }
 
 	private:
 		void Init(const WindowProps& props);
@@ -48,7 +48,7 @@ namespace GL {
 
 	private:
 		GLFWwindow* mWindow;
-		GraphicsContext* mContext;
+		GL::GraphicsContext* mContext;
 
 		struct WindowData
 		{

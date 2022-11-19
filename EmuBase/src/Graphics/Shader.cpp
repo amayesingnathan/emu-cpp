@@ -5,7 +5,7 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-namespace GL {
+namespace Emu {
 
 	static GLenum ShaderTypeFromString(const std::string& type)
 	{

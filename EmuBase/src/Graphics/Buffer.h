@@ -2,7 +2,7 @@
 
 #include "Core/Common.h"
 
-namespace GL {
+namespace Emu {
 
 	enum class ShaderDataType : uint8_t
 	{

@@ -2,7 +2,7 @@
 
 #include "Core/Common.h"
 
-namespace GL {
+namespace Emu {
 
     enum class FramebufferTextureFormat
     {

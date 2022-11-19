@@ -3,9 +3,9 @@
 
 #include "GLFW/glfw3.h"
 
-#include "Context.h"
+#include "Graphics/Context.h"
 
-namespace GL {
+namespace Emu {
 
 	static uint sGLFWWindowCount = 0;
 

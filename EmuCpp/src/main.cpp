@@ -2,5 +2,5 @@
 
 int main()
 {
-	Emulator::Run();
+	Emu::Emulator::Run();
 }

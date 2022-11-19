@@ -2,7 +2,7 @@
 
 #include "Buffer.h"
 
-namespace GL {
+namespace Emu {
 
 	class VertexArray
 	{

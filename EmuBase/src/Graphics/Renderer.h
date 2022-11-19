@@ -4,7 +4,7 @@
 
 #include "Core/Common.h"
 
-namespace GL {
+namespace Emu {
 
     class Renderer
     {

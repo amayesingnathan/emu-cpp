@@ -1,64 +1,66 @@
 #pragma once
 
-#include "Emulator/Base.h"
-#include "Graphics/Renderer.h"
-#include "Graphics/Window.h"
+#include "EmuBase.h"
 
 #include "Gameboy.h"
 
-enum class EmulatorType
-{
-    GB
-};
+namespace Emu {
 
-struct Settings
-{
-    EmulatorType type = EmulatorType::GB;
-    std::string_view gamePath = "Tetris.gb";
-};
-
-class Emulator
-{
-public:
-    static void Run()
+    enum class EmulatorType
     {
-        Emulator& emu = Get();
+        GB
+    };
 
-        while (true)
-            emu.mGameInstance->update();
-    }
-
-private:
-    Emulator()
+    struct Settings
     {
-        mWindow = new GL::Window();
-        GL::Renderer::Init();
+        EmulatorType type = EmulatorType::GB;
+        std::string_view gamePath = "Tetris.gb";
+        std::unordered_map<EmulatorType, InputMappings> ioSettings;
+    };
 
-        switch (mEmuSettings.type)
+    class Emulator
+    {
+    public:
+        static void Run()
         {
-        case EmulatorType::GB:
-            std::filesystem::current_path("../Gameboy");
-            mGameInstance = new GB::Gameboy(mEmuSettings.gamePath);
-            break;
+            Emulator& emu = Get();
 
-        default:
-            assert(false);
+            while (true)
+                emu.mGameInstance->update();
         }
-    }
 
-    ~Emulator() 
-    { 
-        delete mGameInstance; 
-        delete mWindow;
-    }
+    private:
+        Emulator()
+        {
+            mWindow = new Window();
+            Renderer::Init();
 
-    static Emulator& Get()
-    {
-        static Emulator sInstance;
-        return sInstance;
-    }
-private:
-    GL::Window* mWindow = nullptr;
-    Emu::Base* mGameInstance = nullptr;
-    Settings mEmuSettings;
-};
+            switch (mEmuSettings.type)
+            {
+            case EmulatorType::GB:
+                std::filesystem::current_path("../Gameboy");
+                mGameInstance = new GB::Gameboy(mEmuSettings.gamePath);
+                break;
+
+            default:
+                assert(false);
+            }
+        }
+
+        ~Emulator()
+        {
+            delete mGameInstance;
+            delete mWindow;
+        }
+
+        static Emulator& Get()
+        {
+            static Emulator sInstance;
+            return sInstance;
+        }
+    private:
+        Window* mWindow = nullptr;
+        Base* mGameInstance = nullptr;
+        Settings mEmuSettings;
+    };
+}

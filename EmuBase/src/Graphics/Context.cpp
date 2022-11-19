@@ -6,7 +6,7 @@
 
 #include "Core/Common.h"
 
-namespace GL {
+namespace Emu {
 
     GraphicsContext::GraphicsContext(GLFWwindow* windowHandle)
         : mWindowHandle(windowHandle)

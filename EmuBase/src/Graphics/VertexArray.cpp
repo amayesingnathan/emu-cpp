@@ -3,7 +3,7 @@
 
 #include <glad/glad.h>
 
-namespace GL {
+namespace Emu {
 
 	static GLenum ShaderDataTypetoOpenGLType(ShaderDataType type)
 	{

@@ -4,7 +4,7 @@
 
 #define GL_ASSERT(x, ...) assert(x)
 
-namespace GL {
+namespace Emu {
 
 	using uint = unsigned int;
 

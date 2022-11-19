@@ -3,7 +3,7 @@
 
 #include "glad/glad.h"
 
-namespace GL {
+namespace Emu {
 
     VertexBuffer::VertexBuffer(uint32_t size)
     {

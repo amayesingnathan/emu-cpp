@@ -10,7 +10,7 @@
 #include "VertexArray.h"
 #include "Shader.h"
 
-namespace GL {
+namespace Emu {
 
 	void OpenGLMessageCallback(
 		unsigned source,

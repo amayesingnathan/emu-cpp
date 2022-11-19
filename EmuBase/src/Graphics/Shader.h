@@ -4,7 +4,7 @@
 
 #include <glm/glm.hpp>
 
-namespace GL {
+namespace Emu {
 
 	class Shader
 	{
