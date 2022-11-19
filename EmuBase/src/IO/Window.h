@@ -6,7 +6,7 @@ struct GLFWwindow;
 
 namespace Emu {
 
-	namespace GL { class GraphicsContext; }
+	class GraphicsContext;
 
 	struct WindowProps {
 		std::string title;
@@ -28,7 +28,7 @@ namespace Emu {
 		Window(const WindowProps& props = WindowProps());
 		~Window();
 
-		void onUpdate();
+		void update();
 
 		inline uint getWidth() const { return mData.width; }
 		inline uint getHeight() const { return mData.height; }
@@ -40,7 +40,7 @@ namespace Emu {
 		bool isVSync() const;
 
 		GLFWwindow* getNativeWindow() const { return mWindow; }
-		GL::GraphicsContext* getNativeContext() const { return mContext; }
+		GraphicsContext* getNativeContext() const { return mContext; }
 
 	private:
 		void Init(const WindowProps& props);
@@ -48,7 +48,7 @@ namespace Emu {
 
 	private:
 		GLFWwindow* mWindow;
-		GL::GraphicsContext* mContext;
+		GraphicsContext* mContext;
 
 		struct WindowData
 		{

@@ -2,7 +2,7 @@
 
 struct GLFWwindow;
 
-namespace Emu::GL {
+namespace Emu {
 
     class GraphicsContext
     {

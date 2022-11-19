@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Core/Timing.h"
-
 #include "Emulator/Base.h"
 
 #include "Graphics/Renderer.h"

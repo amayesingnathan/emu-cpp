@@ -22,6 +22,8 @@ namespace GB {
     public:
         void update() override;
 
+        Emu::uint getFBO() override { return 0; };
+
     private:
         void UpdateGraphics(int cycles)
         {

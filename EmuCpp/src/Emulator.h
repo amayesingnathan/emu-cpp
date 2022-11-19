@@ -25,8 +25,12 @@ namespace Emu {
         {
             Emulator& emu = Get();
 
-            while (true)
+            while (emu.mRunning)
+            {
                 emu.mGameInstance->update();
+                emu.mImGuiHandler->update();
+                emu.mWindow->update();
+            }
         }
 
     private:
@@ -34,6 +38,7 @@ namespace Emu {
         {
             mWindow = new Window();
             Renderer::Init();
+            mImGuiHandler = new ImGuiHandler(mWindow);
 
             switch (mEmuSettings.type)
             {
@@ -45,11 +50,14 @@ namespace Emu {
             default:
                 assert(false);
             }
+
+            mImGuiHandler->setFBO(mGameInstance->getFBO());
         }
 
         ~Emulator()
         {
             delete mGameInstance;
+            delete mImGuiHandler;
             delete mWindow;
         }
 
@@ -59,7 +67,11 @@ namespace Emu {
             return sInstance;
         }
     private:
+        bool mRunning = true;
+
         Window* mWindow = nullptr;
+        ImGuiHandler* mImGuiHandler = nullptr;
+
         Base* mGameInstance = nullptr;
         Settings mEmuSettings;
     };

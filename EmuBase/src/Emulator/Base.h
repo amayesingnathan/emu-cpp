@@ -8,5 +8,6 @@ namespace Emu {
 		virtual ~Base() {}
 
 		virtual void update() = 0;
+		virtual uint getFBO() = 0;
 	};
 }

@@ -75,7 +75,7 @@ namespace Emu {
 	}
 
 
-	void Window::onUpdate()
+	void Window::update()
 	{
 		glfwPollEvents();
 		mContext->swapBuffers();
