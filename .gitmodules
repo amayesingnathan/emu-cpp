@@ -4,3 +4,7 @@
 [submodule "EmuBase/dependencies/glfw"]
 	path = EmuBase/dependencies/glfw
 	url = git@github.com:amayesingnathan/glfw.git
+[submodule "EmuBase/dependencies/imgui"]
+	path = EmuBase/dependencies/imgui
+	url = git@github.com:amayesingnathan/imgui.git
+	branch = docking

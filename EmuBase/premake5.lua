@@ -25,12 +25,14 @@ project "EmuBase"
         "%{IncludeDir.glm}",
         "%{IncludeDir.glad}",
         "%{IncludeDir.glfw}",
+        "%{IncludeDir.imgui}",
     }
 
 	links
 	{
 		"glad",
 		"glfw",
+		"imgui",
 	}
 	
     filter "system:windows"
