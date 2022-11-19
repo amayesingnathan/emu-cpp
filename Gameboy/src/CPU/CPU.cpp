@@ -199,6 +199,9 @@ namespace GB {
 		default: GB_ASSERT(false, "Instruction not yet implemented!");
 		}
 
+		if (mBranchTaken)
+			return sCyclesBranched[instruction];
+
 		return sCycles[instruction];
 	}
 
@@ -214,7 +217,7 @@ namespace GB {
 		default: break;
 		}
 
-		return sCBCycles[instruction];
+		return sCycles[0xCB] + sCBCycles[instruction];
 	}
 
 #pragma region OpCodeFunctions
