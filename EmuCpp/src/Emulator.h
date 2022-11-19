@@ -36,6 +36,8 @@ namespace Emu {
     private:
         Emulator()
         {
+            Input::Init(mEmuSettings.ioSettings.at(mEmuSettings.type));
+
             mWindow = new Window();
             Renderer::Init();
             mImGuiHandler = new ImGuiHandler(mWindow);
@@ -52,6 +54,7 @@ namespace Emu {
             }
 
             mImGuiHandler->setFBO(mGameInstance->getFBO());
+            mWindow->setActionCallback(mGameInstance->getActionCallback());
         }
 
         ~Emulator()

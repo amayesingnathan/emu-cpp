@@ -5,6 +5,7 @@
 #include "CPU/CPU.h"
 #include "Graphics/PPU.h"
 #include "Cartridge/Cartridge.h"
+#include "IO/Actions.h"
 
 namespace GB {
 
@@ -22,6 +23,7 @@ namespace GB {
     public:
         void update() override;
 
+        Emu::ActionCallback getActionCallback() { return BIND_ACTION_FUNC(Gameboy::HandleEvent); };
         Emu::uint getFBO() override { return 0; };
 
     private:
@@ -36,6 +38,22 @@ namespace GB {
         void Render()
         {
 
+        }
+
+        void HandleEvent(Emu::Action action, bool pressed)
+        {
+            switch (action)
+            {
+            case Buttons::Up: break;
+            case Buttons::Down: break;
+            case Buttons::Left: break;
+            case Buttons::Right: break;
+            case Buttons::A: break;
+            case Buttons::B: break;
+            case Buttons::Start: break;
+            case Buttons::Select: break;
+            default: GB_ASSERT(false);
+            }
         }
 
     private:

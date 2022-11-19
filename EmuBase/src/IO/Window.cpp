@@ -4,6 +4,7 @@
 #include "GLFW/glfw3.h"
 
 #include "Graphics/Context.h"
+#include "ImGui/ImGuiHandler.h"
 
 namespace Emu {
 
@@ -60,6 +61,25 @@ namespace Emu {
 
 		glfwSetWindowUserPointer(mWindow, &mData);
 		setVSync(true);
+
+		glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		{
+			if (!ImGuiHandler::EventHandled(EventType::Keyboard) && Input::IsValid(key))
+			{
+				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+
+				switch (action)
+				{
+				case GLFW_PRESS:
+					data.eventCallback(Input::GetEmuButton(key), true);
+					break;
+
+				case GLFW_RELEASE:
+					data.eventCallback(Input::GetEmuButton(key), false);
+					break;
+				};
+			}
+		});
 	}
 
 	void Window::Shutdown()

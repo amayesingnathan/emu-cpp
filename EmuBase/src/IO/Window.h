@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Common.h"
+#include "IO/Input.h"
 
 struct GLFWwindow;
 
@@ -30,6 +31,8 @@ namespace Emu {
 
 		void update();
 
+		void setActionCallback(const ActionCallback& callback) { mData.eventCallback = callback; }
+
 		inline uint getWidth() const { return mData.width; }
 		inline uint getHeight() const { return mData.height; }
 
@@ -55,6 +58,8 @@ namespace Emu {
 			std::string title;
 			uint width, height;
 			bool vSync;
+
+			ActionCallback eventCallback;
 		};
 
 		WindowData mData;
