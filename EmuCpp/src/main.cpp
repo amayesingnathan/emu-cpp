@@ -1,6 +1,6 @@
-#include "Emulator.h"
+#include "Application.h"
 
 int main()
 {
-	Emu::Emulator::Run();
+	Emu::Application::Run();
 }
