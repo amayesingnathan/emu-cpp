@@ -13,6 +13,8 @@ namespace GB {
 		GB_CONST Address TMA = 0xFF06;
 		GB_CONST Address TMC = 0xFF07;
 
+		GB_CONST Address LCDC = 0xFF40;
+		GB_CONST Address LCDS = 0xFF41;
 		GB_CONST Address SCANL = 0xFF44;
 
 		GB_CONST Address IF = 0xFF0F;

@@ -3,6 +3,10 @@
 
 #include "Graphics/Renderer.h"
 
+#include "Core/Flag.h"
+#include "Graphics/Flags.h"
+#include "Memory/AddressBus.h"
+
 namespace GB {
 
 	PPU::PPU()
@@ -14,22 +18,29 @@ namespace GB {
 	{
 	}
 
-	void PPU::update(int cycles)
+	void PPU::update(Byte cycles)
 	{
-		mDisplay = mPixelBuffer->lock();
+		SetLCDStatus();
 
-		for (USize y = 0; y < Screen::_Height; y++)
-		{
-			for (USize x = 0; x < Screen::_Width; x++)
-			{
-				Emu::Pixel& pixel = mDisplay(x, y);
-				pixel.r = ((x * y) * (x + y)) % 255;
-				pixel.g = ((x * y) - (x + y)) % 255;
-				pixel.b = ((x * y) + (x * y)) % 255;
-				pixel.a = 255;
-			}
-		}
+		if (!IsLCDEnabled())
+			return;
 
-		mPixelBuffer->unlock();
+		mClockCounter += cycles;
+		
+		if (mClockCounter < _CyclesPerScanline)
+			return;
+
+
+
+	}
+
+	void PPU::SetLCDStatus()
+	{
+	}
+
+	bool PPU::IsLCDEnabled()
+	{
+		BitField lcdControl = AddressBus::Read(Addr::LCDC);
+		return lcdControl.bit(_LCDEnableBit);
 	}
 }
