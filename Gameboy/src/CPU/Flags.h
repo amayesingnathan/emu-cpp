@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Flag.h"
+#include "Core/Types.h"
 
 namespace GB {
 

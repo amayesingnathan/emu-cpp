@@ -2,10 +2,10 @@
 
 #include "Core/Types.h"
 
-namespace GB::Interupts {
+namespace GB {
 
-	GB_CONST Byte V_BLNK = 0;
-	GB_CONST Byte LCD    = 1;
-	GB_CONST Byte TIMER  = 2;
-	GB_CONST Byte JYPD   = 4;
+    enum class Interrupt : Byte
+    {
+        VBLANK = 0, LCD_STAT, TIMER, SERIAL, JOYPAD
+    };
 }

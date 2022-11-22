@@ -28,9 +28,9 @@ namespace GB {
         {
             Byte cycles = mProcessor.exec();
             cyclesThisUpdate += cycles;
-            // UpdateTimers(cycles);
+            mProcessor.updateTimers(cycles);
             mGraphics.update(cycles);
-            // DoInterupts();
+            mProcessor.handleInterupts();
         }
     }
 }

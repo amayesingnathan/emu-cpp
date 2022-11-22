@@ -2,6 +2,7 @@
 
 #include "Memory.h"
 #include "Address.h"
+#include "CPU/Interrupts.h"
 
 namespace GB {
 
@@ -18,7 +19,7 @@ namespace GB {
 		static Byte& Read(Address address);
 		static void Write(Address address, Byte data);
 
-		static void RequestInterupt(Byte bit);
+		static void RequestInterrupt(Interrupt interrupt);
 
 	private:
 		static void Init(Cartridge* cartridge) { sCartridge = cartridge; }

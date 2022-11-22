@@ -17,9 +17,15 @@ namespace GB {
 	class CPU
 	{
     public:
-        enum Interupt : Byte
+        GB_CONST USize _ClockSpeed = 4194304;
+        GB_CONST Word _TMC0 = _ClockSpeed / 4096;
+        GB_CONST Word _TMC1 = _ClockSpeed / 262144;
+        GB_CONST Word _TMC2 = _ClockSpeed / 65536;
+        GB_CONST Word _TMC3 = _ClockSpeed / 16382;
+
+        enum TimerControl : Word
         {
-            VBLANK = 0, LCD_STAT, TIMER, SERIAL, JOYPAD
+            TMC0, TMC1, TMC2, TMC3
         };
 
 	public:
@@ -37,14 +43,21 @@ namespace GB {
         Byte HandleInstruction(OpCode instruction);
         Byte HandleCBInstruction();
 
-        void ServiceInterupt(Interupt interupt);
+        void ServiceInterupt(Interrupt interrupt);
 
         bool IsClockEnabled();
+        Byte GetClockFreq();
+        void SetClockFreq();
 
 	private:
         // Registers
 		Registers mRegisters;
         FRegister mFRegister;
+
+        Word mDividerClock = 0;
+        Word mTimerClock = 0;
+
+        TimerControl mCurrentClockSpeed = TMC0;
 
         // Flags
         bool mInteruptsEnabled = false;

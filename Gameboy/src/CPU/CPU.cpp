@@ -16,7 +16,24 @@ namespace GB {
 
 	void CPU::updateTimers(Byte cycles)
 	{
+		mDividerClock += cycles;
+		if (mDividerClock >= 0x100)
+		{
+			mDividerClock -= 0x100;
+			AddressBus::Read(Addr::DIV)++;
+		}
 
+		if (!IsClockEnabled())
+			return;
+
+		mTimerClock += cycles;
+		if (mTimerClock < mCurrentClockSpeed)
+			return;
+
+		mTimerClock -= mCurrentClockSpeed;
+		Byte& timerCounter = AddressBus::Read(Addr::TIMA);
+		if ( < 0xFF)
+			AddressBus::Write(Addr::TIMA)
 	}
 
 	void CPU::handleInterupts()
@@ -38,7 +55,7 @@ namespace GB {
 			if (!enabled.bit(i))
 				continue;
 
-			ServiceInterupt((Interupt)i);
+			ServiceInterupt((Interrupt)i);
 		}
 	}
 
@@ -69,11 +86,13 @@ namespace GB {
 
 	Byte CPU::HandleInstruction(OpCode instruction)
 	{
+		mBranchTaken = false;
+
 		switch (instruction)
 		{
 		// NOP or effective NOPs
 		case 0x00: case 0x40: case 0x49: case 0x52: case 0x5B: case 0x64: case 0x6D: case 0x7F:
-			break; 
+			break;
 
 		// Register-16bit immediate load
 		case 0x01: case 0x11: case 0x21: case 0x31:
@@ -248,29 +267,29 @@ namespace GB {
 		return sCycles[0xCB] + sCBCycles[instruction];
 	}
 
-	void CPU::ServiceInterupt(Interupt interupt)
+	void CPU::ServiceInterupt(Interrupt interrupt)
 	{
 		Word interuptRoutineLoc;
 
-		switch (interupt)
+		switch (interrupt)
 		{
-		case GB::CPU::VBLANK:
+		case Interrupt::VBLANK:
 			interuptRoutineLoc = 0x40;
 			break;
 
-		case GB::CPU::LCD_STAT:
+		case Interrupt::LCD_STAT:
 			interuptRoutineLoc = 0x48;
 			break;
 
-		case GB::CPU::TIMER:
+		case Interrupt::TIMER:
 			interuptRoutineLoc = 0x50;
 			break;
 
-		case GB::CPU::SERIAL:
+		case Interrupt::SERIAL:
 			interuptRoutineLoc = 0x58;
 			break;
 
-		case GB::CPU::JOYPAD:
+		case Interrupt::JOYPAD:
 			interuptRoutineLoc = 0x60;
 			break;
 
@@ -287,10 +306,38 @@ namespace GB {
 		pc = interuptRoutineLoc;
 	}
 
-	bool IsClockEnabled()
+	bool CPU::IsClockEnabled()
 	{
 		BitField timerController = AddressBus::Read(Addr::TMC);
 		return timerController.bit(2);
+	}
+
+	Byte CPU::GetClockFreq()
+	{
+		return AddressBus::Read(Addr::TMC) & 0x3;
+	}
+
+	void CPU::SetClockFreq()
+	{
+		TimerControl freq = (TimerControl)GetClockFreq();
+		switch (freq)
+		{
+		case TMC0:
+			mTimerClock = _TMC0;
+			break;
+
+		case TMC1:
+			mTimerClock = _TMC1;
+			break;
+
+		case TMC2:
+			mTimerClock = _TMC2;
+			break;
+
+		case TMC3:
+			mTimerClock = _TMC3;
+			break;
+		}
 	}
 
 #pragma region OpCodeFunctions

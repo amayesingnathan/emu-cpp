@@ -66,15 +66,23 @@ namespace GB {
 	{
 		switch (address)
 		{
+
 		default:
 			break;
 		}
+
+		GB_ASSERT(false, "Cannot map to this memory!");
+		return MemoryManager::Get(MemoryManager::IO);
 	}
 
 	void AddressBus::WriteIO(Address address, Byte data)
 	{
 		switch (address)
 		{
+		case Addr::DIV:
+			MemoryManager::Get(MemoryManager::IO, Addr::DIV - 0xFF00) = 0;
+			break;
+
 		case Addr::SCANL:
 			MemoryManager::Get(MemoryManager::IO, Addr::SCANL - 0xFF00) = 0;
 			break;
@@ -84,10 +92,10 @@ namespace GB {
 		}
 	}
 
-	void AddressBus::RequestInterupt(Byte interupt)
+	void AddressBus::RequestInterrupt(Interrupt interrupt)
 	{
 		BitField req = Read(Addr::IF);
-		req.set(interupt);
+		req.set((Byte)interrupt);
 		Write(Addr::IF, req);
 	}
 }
