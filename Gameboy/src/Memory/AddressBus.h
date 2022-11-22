@@ -23,6 +23,9 @@ namespace GB {
 	private:
 		static void Init(Cartridge* cartridge) { sCartridge = cartridge; }
 
+		static Byte ReadIO(Address);
+		static void WriteIO(Address address, Byte data);
+
 	private:
 		inline static Cartridge* sCartridge = nullptr;
 		inline static BusState sBusState;

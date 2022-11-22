@@ -14,7 +14,7 @@ namespace GB {
 
 		if (sBusState.bootstrap && address < 0x0100)
 			return MemoryManager::Get(MemoryManager::BOOTSTRAP, address);
-		else if (address < 0x8000)						// ROM
+		else if (address < 0x8000)						// ROM - may have memory bank controller to handle reading
 			return sCartridge->read(address);
 		else if (address >= 0x8000 && address < 0xA000) // VRAM
 			return MemoryManager::Get(MemoryManager::VRAM, address - 0x8000);
@@ -26,12 +26,10 @@ namespace GB {
 			return MemoryManager::Get(MemoryManager::WRAM, address - 0xE000);
 		else if (address >= 0xFE00 && address < 0xFEA0) // Sprite Attribute Table (OAM)
 			return MemoryManager::Get(MemoryManager::OAM, address - 0xFE00);
+		else if (address >= 0xFF00 && address < 0xFF80) // IO Registers
+			return ReadIO(address);
 		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
 			return MemoryManager::Get(MemoryManager::HRAM, address - 0xFF80);
-		else if (address == Addr::TMC)
-			GB_ASSERT(false, "Not yet mapped!");
-		else if (address == Addr::DIV)
-			GB_ASSERT(false, "Not yet mapped!");
 		else
 			GB_ASSERT(false, "Not yet mapped!");
 
@@ -58,15 +56,33 @@ namespace GB {
 		else if (address >= 0xFE00 && address < 0xFEA0) // Sprite Attribute Table (OAM)
 			MemoryManager::Get(MemoryManager::OAM, address - 0xFE00) = data;
 		else if (address >= 0xFF00 && address < 0xFF80) // IO Registers
-			; // IO Register still to be mapped!
+			WriteIO(address, data); 
 		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
 			MemoryManager::Get(MemoryManager::HRAM, address - 0xFF80) = data;
-		else if (address == Addr::TMC)
-			GB_ASSERT(false, "Not yet mapped!");
-		else if (address == Addr::DIV)
-			GB_ASSERT(false, "Not yet mapped!");
 		else
 			GB_ASSERT(false, "Not yet mapped!");
+	}
+
+	Byte AddressBus::ReadIO(Address address)
+	{
+		switch (address)
+		{
+		default:
+			break;
+		}
+	}
+
+	void AddressBus::WriteIO(Address address, Byte data)
+	{
+		switch (address)
+		{
+		case Addr::SCANL:
+			MemoryManager::Get(MemoryManager::IO, Addr::SCANL - 0xFF00) = 0;
+			break;
+
+		default:
+			break;
+		}
 	}
 
 	void AddressBus::RequestInterupt(Byte interupt)

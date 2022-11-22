@@ -11,15 +11,17 @@ namespace GB {
 	GB_CONST USize _WRAMSize	= 0x2000;
 	GB_CONST USize _VRAMSize	= 0x2000;
 	GB_CONST USize _OAMSize		= 0x00A0;
-	GB_CONST USize _MemorySize = _BootROMSize + _StackSize + _WRAMSize + _VRAMSize + _OAMSize + Cartridge::_Size;
+	GB_CONST USize _IOSize		= 0x0080;
+	GB_CONST USize _MemorySize = _BootROMSize + _StackSize + _IOSize + _WRAMSize + _VRAMSize + _OAMSize + Cartridge::_Size;
 
 	// Memory Partition Offsets
 	GB_CONST USize _BootOffset = 0;
 	GB_CONST USize _HRAMOffset = _BootROMSize;
-	GB_CONST USize _WRAMOffset = _BootROMSize + _StackSize;
-	GB_CONST USize _VRAMOffset = _BootROMSize + _StackSize + _WRAMSize;
-	GB_CONST USize _OAMOffset  = _BootROMSize + _StackSize + _WRAMSize + _VRAMSize;
-	GB_CONST USize _ROMOffset  = _BootROMSize + _StackSize + _WRAMSize + _VRAMSize + _OAMSize;
+	GB_CONST USize _IOOffset   = _BootROMSize + _IOSize;
+	GB_CONST USize _WRAMOffset = _BootROMSize + _IOSize + _StackSize;
+	GB_CONST USize _VRAMOffset = _BootROMSize + _IOSize + _StackSize + _WRAMSize;
+	GB_CONST USize _OAMOffset  = _BootROMSize + _IOSize + _StackSize + _WRAMSize + _VRAMSize;
+	GB_CONST USize _ROMOffset  = _BootROMSize + _IOSize + _StackSize + _WRAMSize + _VRAMSize + _OAMSize;
 
 	void MemoryManager::Init()
 	{
@@ -56,6 +58,9 @@ namespace GB {
 
 		case HRAM:
 			return sMemoryBlock + _HRAMOffset;
+
+		case IO:
+			return sMemoryBlock + _IOOffset;
 
 		case WRAM:
 			return sMemoryBlock + _WRAMOffset;
