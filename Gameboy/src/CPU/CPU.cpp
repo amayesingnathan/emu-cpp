@@ -14,6 +14,11 @@ namespace GB {
 		return HandleInstruction(nextOp);
 	}
 
+	void CPU::updateTimers(Byte cycles)
+	{
+
+	}
+
 	void CPU::handleInterupts()
 	{
 		if (!mInteruptsEnabled)
@@ -102,7 +107,7 @@ namespace GB {
 			break;
 		}
 
-		// Accumulator/Flag Ops
+		// Accumulator/BitField Ops
 		case 0x07: case 0x0F: case 0x17: case 0x1F: case 0x27: case 0x2F: case 0x37: case 0x3F:
 		{
 			REG(instruction);

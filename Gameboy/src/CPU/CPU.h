@@ -28,6 +28,7 @@ namespace GB {
 
     public:
         Byte exec();
+        void updateTimers(Byte cycles);
         void handleInterupts();
 
     private:
