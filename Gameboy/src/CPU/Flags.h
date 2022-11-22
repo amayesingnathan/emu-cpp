@@ -1,28 +1,29 @@
 #pragma once
 
-#include "Core/Types.h"
+#include "Core/Flag.h"
 
 namespace GB {
 
-    GB_CONST Flag _CarryFlag = 1 << 4;
-    GB_CONST Flag _HCarryFlag = 1 << 5;
-    GB_CONST Flag _SubtractFlag = 1 << 6;
-    GB_CONST Flag _ZeroFlag = 1 << 7;
+    GB_CONST Byte _CarryBit = 4;
+    GB_CONST Byte _HCarryBit = 5;
+    GB_CONST Byte _SubtractBit = 6;
+    GB_CONST Byte _ZeroBit = 7;
 
     class FRegister
     {
     private:
-        Byte& reg;
+        BitField reg;
 
     public:
         FRegister(Byte& _reg) : reg(_reg) {}
 
-        bool carry() const { return reg & _CarryFlag; }
-        bool hcarry() const { return reg & _HCarryFlag; }
-        bool subtr() const { return reg & _SubtractFlag; }
-        bool zero() const { return reg & _ZeroFlag; }
+        bool carry() const { return reg.bit(_CarryBit); }
+        bool hcarry() const { return reg.bit(_HCarryBit); }
+        bool subtr() const { return reg.bit(_SubtractBit); }
+        bool zero() const { return reg.bit(_ZeroBit); }
 
-        Flag getFlags() const { return reg; }
-        void setFlags(Flag flag) { flag &= 0xF0; reg = flag; }
+        BitField& getFlags() { return reg; }
+        const BitField& getFlags() const { return reg; }
+        void setFlags(BitField flag) { flag &= 0xF0; reg = flag; }
     };
 }

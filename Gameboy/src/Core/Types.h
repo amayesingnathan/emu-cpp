@@ -12,8 +12,6 @@ namespace GB {
 
     using USize = size_t;
 
-    using Flag = Byte;
-
     template<typename T>
     using Instance = std::unique_ptr<T>;
 
@@ -26,24 +24,29 @@ namespace GB {
     template<typename T, typename... TArgs>
     Ref<T> MakeRef(TArgs&&... args) { return make_shared<T>(std::forward<TArgs>(args)...); }
 
-    template<Word _Value, Byte _Bit>
-    struct Bit
-    {
-        GB_CONST bool Value = (_Value & (1 << _Bit)) >> _Bit;
-    };
+	class BitField
+	{
+	public:
+		BitField(Byte byte) : mByte(byte) {}
 
-    inline static bool TestBit(Word value, Byte bit)
-    {
-        return (value & (1 << bit)) >> bit;
-    }
+		bool bit(Byte bit) const { return mByte & GB_BIT(bit); }
+		void set(Byte bit) { mByte |= GB_BIT(bit); }
+		void reset(Byte bit) { mByte &= ~GB_BIT(bit); }
 
-    inline static Word BitSet(Word value, Byte bit)
-    {
-        return value | (1 << bit);
-    }
+		operator Byte() const { return mByte; }
 
-    inline static Word BitReset(Word value, Byte bit)
-    {
-        return value & ~(1 << bit);
-    }
+		BitField& operator&=(Byte flag)
+		{
+			mByte &= flag;
+			return *this;
+		}
+		BitField& operator|=(Byte flag)
+		{
+			mByte |= flag;
+			return *this;
+		}
+
+	private:
+		Byte mByte;
+	};
 }
