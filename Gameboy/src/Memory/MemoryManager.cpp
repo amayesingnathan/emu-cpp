@@ -47,7 +47,7 @@ namespace GB {
 		sMemoryBlock = nullptr;
 	}
 
-	Byte* MemoryManager::Get(Type blockType)
+	Byte* MemoryManager::GetBlock(Type blockType)
 	{
 		GB_ASSERT(sMemoryBlock, "Memory not initialised!");
 
@@ -83,6 +83,6 @@ namespace GB {
 
 	Byte& MemoryManager::Get(Type blockType, USize address)
 	{
-		return *(Get(blockType) + address);
+		return *(GetBlock(blockType) + address);
 	}
 }

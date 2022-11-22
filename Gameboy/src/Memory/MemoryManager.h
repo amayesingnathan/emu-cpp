@@ -19,12 +19,12 @@ namespace GB {
 		friend class Gameboy;
 
 	private:
-		static Byte* Get(Type blockType);
+		static Byte* GetBlock(Type blockType);
 
 		friend class Cartridge;
 
 	private:
-		static Byte& Get(Type blockType, USize address);
+		static Byte& Get(Type blockType, USize address = 0);
 
 		friend class AddressBus;
 

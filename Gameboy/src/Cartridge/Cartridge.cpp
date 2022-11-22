@@ -6,7 +6,7 @@
 namespace GB {
 
 	Cartridge::Cartridge(std::string_view filename)
-        : mROM(MemoryManager::Get(MemoryManager::ROM))
+        : mROM(MemoryManager::GetBlock(MemoryManager::ROM))
     {
         std::ifstream fileROM(filename.data(), std::ios::binary);
         GB_ASSERT(fileROM.is_open(), "Could not locate game file!");
@@ -40,7 +40,7 @@ namespace GB {
         delete mMBC;
     }
 
-    Byte Cartridge::read(Word address)
+    Byte& Cartridge::read(Word address)
     {
         if (!mMBC)
             return mROM[address];

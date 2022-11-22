@@ -8,7 +8,7 @@
 
 namespace GB {
 
-	Byte AddressBus::Read(Address address)
+	Byte& AddressBus::Read(Address address)
 	{
 		GB_ASSERT(address < 0xFEA0 || address > 0xFF00, "Restricted memory!");
 
@@ -30,10 +30,9 @@ namespace GB {
 			return ReadIO(address);
 		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
 			return MemoryManager::Get(MemoryManager::HRAM, address - 0xFF80);
-		else
-			GB_ASSERT(false, "Not yet mapped!");
 
-		return 0;
+		GB_ASSERT(false, "Cannot map to this memory!");
+		return MemoryManager::Get(MemoryManager::BOOTSTRAP);
 	}
 
 	void AddressBus::Write(Address address, Byte data)
@@ -60,10 +59,10 @@ namespace GB {
 		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
 			MemoryManager::Get(MemoryManager::HRAM, address - 0xFF80) = data;
 		else
-			GB_ASSERT(false, "Not yet mapped!");
+			GB_ASSERT(false, "Cannot map to this memory!");
 	}
 
-	Byte AddressBus::ReadIO(Address address)
+	Byte& AddressBus::ReadIO(Address address)
 	{
 		switch (address)
 		{

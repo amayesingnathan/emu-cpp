@@ -15,7 +15,7 @@ namespace GB {
 	class AddressBus
 	{
 	public:
-		static Byte Read(Address address);
+		static Byte& Read(Address address);
 		static void Write(Address address, Byte data);
 
 		static void RequestInterupt(Byte bit);
@@ -23,7 +23,7 @@ namespace GB {
 	private:
 		static void Init(Cartridge* cartridge) { sCartridge = cartridge; }
 
-		static Byte ReadIO(Address);
+		static Byte& ReadIO(Address address);
 		static void WriteIO(Address address, Byte data);
 
 	private:

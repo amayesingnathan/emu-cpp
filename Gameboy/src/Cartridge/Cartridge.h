@@ -16,7 +16,7 @@ namespace GB {
         ~Cartridge();
 
     public:
-        Byte read(Word address);
+        Byte& read(Word address);
         void write(Word address, Byte data);
 
     //    void changeLoROMBank(Byte data)
