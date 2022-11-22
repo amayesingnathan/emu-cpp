@@ -26,7 +26,7 @@ namespace GB {
 
         while (cyclesThisUpdate < _MaxCycles)
         {
-            int cycles = mProcessor.exec();
+            Byte cycles = mProcessor.exec();
             cyclesThisUpdate += cycles;
             // UpdateTimers(cycles);
             mGraphics.update(cycles);

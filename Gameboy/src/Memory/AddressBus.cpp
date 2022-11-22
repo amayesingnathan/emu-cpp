@@ -68,4 +68,11 @@ namespace GB {
 		else
 			GB_ASSERT(false, "Not yet mapped!");
 	}
+
+	void AddressBus::RequestInterupt(Byte interupt)
+	{
+		BitField req = Read(Addr::IF);
+		req.set(interupt);
+		Write(Addr::IF, req);
+	}
 }

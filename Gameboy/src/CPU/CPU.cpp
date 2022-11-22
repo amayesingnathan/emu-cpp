@@ -5,13 +5,36 @@
 
 namespace GB {
 
-	int CPU::exec()
+	Byte CPU::exec()
 	{
 		if (mHalted)
 			return 0;
 
 		OpCode nextOp = AddressBus::Read(mRegisters[WordReg::PC]++);
 		return HandleInstruction(nextOp);
+	}
+
+	void CPU::handleInterupts()
+	{
+		if (!mInteruptsEnabled)
+			return;
+
+		BitField req = AddressBus::Read(Addr::IF);
+		BitField enabled = AddressBus::Read(Addr::IE);
+
+		if (req == 0)
+			return;
+
+		for (Byte i = 0; i < 5; i++)
+		{
+			if (!req.bit(i))
+				continue;
+
+			if (!enabled.bit(i))
+				continue;
+
+			ServiceInterupt((Interupt)i);
+		}
 	}
 
 	bool CPU::CheckCondition(Condition condition)
@@ -39,7 +62,7 @@ namespace GB {
 		return shouldBranch;
 	}
 
-	int CPU::HandleInstruction(OpCode instruction)
+	Byte CPU::HandleInstruction(OpCode instruction)
 	{
 		switch (instruction)
 		{
@@ -205,7 +228,7 @@ namespace GB {
 		return sCycles[instruction];
 	}
 
-	int CPU::HandleCBInstruction()
+	Byte CPU::HandleCBInstruction()
 	{
 		OpCode instruction = AddressBus::Read(mRegisters[WordReg::PC]++);
 		switch (instruction.x())
@@ -218,6 +241,51 @@ namespace GB {
 		}
 
 		return sCycles[0xCB] + sCBCycles[instruction];
+	}
+
+	void CPU::ServiceInterupt(Interupt interupt)
+	{
+		Word interuptRoutineLoc;
+
+		switch (interupt)
+		{
+		case GB::CPU::VBLANK:
+			interuptRoutineLoc = 0x40;
+			break;
+
+		case GB::CPU::LCD_STAT:
+			interuptRoutineLoc = 0x48;
+			break;
+
+		case GB::CPU::TIMER:
+			interuptRoutineLoc = 0x50;
+			break;
+
+		case GB::CPU::SERIAL:
+			interuptRoutineLoc = 0x58;
+			break;
+
+		case GB::CPU::JOYPAD:
+			interuptRoutineLoc = 0x60;
+			break;
+
+		default:
+			GB_ASSERT(false);
+			break;
+		}
+
+		Word& pc = mRegisters[WordReg::PC];
+		Word& sp = mRegisters[WordReg::SP];
+		AddressBus::Write(--sp, (Byte)(pc >> 8));
+		AddressBus::Write(--sp, (Byte)(pc & 0x00FF));
+
+		pc = interuptRoutineLoc;
+	}
+
+	bool IsClockEnabled()
+	{
+		BitField timerController = AddressBus::Read(Addr::TMC);
+		return timerController.bit(2);
 	}
 
 #pragma region OpCodeFunctions

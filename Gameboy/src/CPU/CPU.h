@@ -16,21 +16,29 @@ namespace GB {
 
 	class CPU
 	{
+    public:
+        enum Interupt : Byte
+        {
+            VBLANK = 0, LCD_STAT, TIMER, SERIAL, JOYPAD
+        };
+
 	public:
 		CPU()
-			: mFRegister(mRegisters[ByteReg::F])
-		{
-
-		}
+			: mFRegister(mRegisters[ByteReg::F]) {}
 
     public:
-        int exec();
+        Byte exec();
+        void handleInterupts();
 
     private:
         bool CheckCondition(Condition condition);
 
-        int HandleInstruction(OpCode instruction);
-        int HandleCBInstruction();
+        Byte HandleInstruction(OpCode instruction);
+        Byte HandleCBInstruction();
+
+        void ServiceInterupt(Interupt interupt);
+
+        bool IsClockEnabled();
 
 	private:
         // Registers

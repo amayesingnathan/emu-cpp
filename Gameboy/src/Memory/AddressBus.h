@@ -18,6 +18,8 @@ namespace GB {
 		static Byte Read(Address address);
 		static void Write(Address address, Byte data);
 
+		static void RequestInterupt(Byte bit);
+
 	private:
 		static void Init(Cartridge* cartridge) { sCartridge = cartridge; }
 

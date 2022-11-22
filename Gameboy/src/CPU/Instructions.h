@@ -51,7 +51,7 @@ namespace GB {
 										GB_SASSERT(false, "Non-exhaustive visitor!");\
 								}, sRegisters[target]);
 
-	GB_CONST int sCycles[256] = 
+	GB_CONST Byte sCycles[256] =
 	{ 
 		1, 3, 2, 2, 1, 1, 2, 1, 5, 2, 2, 2, 1, 1, 2, 1,
 		1, 3, 2, 2, 1, 1, 2, 1, 3, 2, 2, 2, 1, 1, 2, 1,
@@ -71,7 +71,7 @@ namespace GB {
 		3, 3, 2, 1, 0, 4, 2, 4, 3, 2, 4, 1, 0, 0, 2, 4
 	};
 
-	GB_CONST int sCyclesBranched[256] = 
+	GB_CONST Byte sCyclesBranched[256] =
 	{ 
 		1, 3, 2, 2, 1, 1, 2, 1, 5, 2, 2, 2, 1, 1, 2, 1,
 		1, 3, 2, 2, 1, 1, 2, 1, 3, 2, 2, 2, 1, 1, 2, 1,
@@ -91,7 +91,7 @@ namespace GB {
 		3, 3, 2, 1, 0, 4, 2, 4, 3, 2, 4, 1, 0, 0, 2, 4 
 	};
 
-	GB_CONST int sCBCycles[256] = 
+	GB_CONST Byte sCBCycles[256] = 
 	{ 
 		2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
 		2, 2, 2, 2, 2, 2, 4, 2, 2, 2, 2, 2, 2, 2, 4, 2,
