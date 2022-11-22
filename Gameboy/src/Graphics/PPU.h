@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Graphics/PixelBuffer.h"
+
 #include "Screen.h"
 
 namespace GB {
@@ -7,12 +9,17 @@ namespace GB {
 	class PPU
 	{
 	public:
-		PPU() = default;
+		GB_CONST USize _BufSize = Screen::_Width * Screen::_Height * sizeof(Emu::Pixel);
 
 	public:
-		void update(int cycles) {}
+		PPU();
+		~PPU();
+
+	public:
+		void update(int cycles);
 
 	private:
+		Ref<Emu::PixelBuffer> mPixelBuffer;
 		Screen mDisplay;
 	};
 }

@@ -32,6 +32,5 @@ namespace GB {
             mGraphics.update(cycles);
             // DoInterupts();
         }
-        //RenderScreen();
     }
 }

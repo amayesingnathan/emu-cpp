@@ -4,6 +4,12 @@
 
 namespace Emu {
 
+	struct Specification
+	{
+		uint displayWidth, displayHeight;
+		std::string_view gamePath;
+	};
+
 	class Base
 	{
 	public:

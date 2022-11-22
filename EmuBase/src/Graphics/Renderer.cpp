@@ -7,8 +7,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Emulator/Base.h"
+
 #include "VertexArray.h"
 #include "Shader.h"
+#include "Texture.h"
+#include "PixelBuffer.h"
 
 namespace Emu {
 
@@ -25,32 +29,26 @@ namespace Emu {
 		GL_ASSERT(false, "Unknown severity level!");
 	}
 
-	struct QuadVertex
+	struct DisplayVertex
 	{
 		glm::vec3 position;
-		glm::vec4 colour;
+		glm::vec2 texCoord;
 	};
 
 	struct RenderData
 	{
-		static const uint MaxQuads = 20000;
-		static const uint MaxVertices = MaxQuads * 4;
-		static const uint MaxIndices = MaxQuads * 6;
+		Ref<VertexArray> displayVertexArray;
+		Ref<VertexBuffer> displayVertexBuffer;
+		Ref<Shader> displayShader;
+		Ref<Texture> displayTex = nullptr;
 
-		Ref<VertexArray> quadVertexArray;
-		Ref<VertexBuffer> quadVertexBuffer;
-		Ref<Shader> quadShader;
-
-		uint quadIndexCount = 0;
-		QuadVertex* quadVertexBufferBase = nullptr;
-		QuadVertex* quadVertexBufferPtr = nullptr;
-
-		glm::vec4 quadVertexPositions[4];
+		DisplayVertex* displayVertexBufferBase = nullptr;
+		DisplayVertex* displayVertexBufferPtr = nullptr;
 	};
 
 	static RenderData sData;
 
-	void Renderer::Init()
+	void Renderer::Init(uint screenWidth, uint screenHeight)
 	{
 #ifdef LAB_DEBUG
 		glEnable(GL_DEBUG_OUTPUT);
@@ -68,126 +66,73 @@ namespace Emu {
 
 		glEnable(GL_LINE_SMOOTH);
 
-		sData.quadVertexArray = VertexArray::Create();
+		sData.displayVertexArray = VertexArray::Create();
 
-		sData.quadVertexBuffer = VertexBuffer::Create(sData.MaxVertices * sizeof(QuadVertex));
-		sData.quadVertexBuffer->setLayout({
-			{ ShaderDataType::Float3, "aPosition"	  },
-			{ ShaderDataType::Float4, "aColour"		  },
-			{ ShaderDataType::Float2, "aTexCoord"	  },
-			{ ShaderDataType::Float,  "aTexIndex"	  },
-			{ ShaderDataType::Float,  "aTilingFactor" },
-			{ ShaderDataType::Int,    "aEntityID"	  }
+		sData.displayVertexBuffer = VertexBuffer::Create(4 * sizeof(DisplayVertex));
+		sData.displayVertexBuffer->setLayout({
+				{ ShaderDataType::Float3, "aPosition" },
+				{ ShaderDataType::Float2, "aTexCoord" }
 			});
 
-		sData.quadVertexArray->addVertexBuffer(sData.quadVertexBuffer);
+		sData.displayVertexArray->addVertexBuffer(sData.displayVertexBuffer);
 
-		sData.quadVertexBufferBase = new QuadVertex[sData.MaxVertices];
+		sData.displayVertexBufferBase = new DisplayVertex[4];
 
-		uint32_t* quadIndices = new uint32_t[sData.MaxIndices];
+		uint32_t displayIndices[6];
+		displayIndices[0] = 0;
+		displayIndices[1] = 1;
+		displayIndices[2] = 2;
+		displayIndices[3] = 2;
+		displayIndices[4] = 3;
+		displayIndices[5] = 0;
 
-		uint32_t offset = 0;
-		for (uint32_t i = 0; i < sData.MaxIndices; i += 6)
-		{
-			quadIndices[i + 0] = offset + 0;
-			quadIndices[i + 1] = offset + 1;
-			quadIndices[i + 2] = offset + 2;
+		Ref<IndexBuffer> displayIB = IndexBuffer::Create(displayIndices, 6);
+		sData.displayVertexArray->setIndexBuffer(displayIB);
 
-			quadIndices[i + 3] = offset + 2;
-			quadIndices[i + 4] = offset + 3;
-			quadIndices[i + 5] = offset + 0;
-
-			offset += 4;
-		}
-
-		Ref<IndexBuffer> quadIB = IndexBuffer::Create(quadIndices, sData.MaxIndices);
-		sData.quadVertexArray->setIndexBuffer(quadIB);
-
-		delete[] quadIndices;
-
-		sData.quadShader = Shader::Create("shaders/quad.glsl");
-
-		sData.quadVertexPositions[0] = { -0.5f, -0.5f, 0.0f, 1.0f };
-		sData.quadVertexPositions[1] = { 0.5f, -0.5f, 0.0f, 1.0f };
-		sData.quadVertexPositions[2] = { 0.5f,  0.5f, 0.0f, 1.0f };
-		sData.quadVertexPositions[3] = { -0.5f,  0.5f, 0.0f, 1.0f };
+		sData.displayShader = Shader::Create("shaders/display.glsl");
+		sData.displayTex = Texture::Create(screenWidth, screenHeight);
 	}
 
 	void Renderer::Shutdown()
 	{
-		delete[] sData.quadVertexBufferBase;
+		delete[] sData.displayVertexBufferBase;
+	}
+
+	void Renderer::Draw(Ref<PixelBuffer> screenBuffer)
+	{
+		constexpr glm::vec4 vertexPositions[] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f,  0.5f, 0.0f, 1.0f }, { -0.5f,  0.5f, 0.0f, 1.0f } };
+		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+
+		screenBuffer->upload(sData.displayTex);
+
+		BeginFrame();
+
+		for (usize i = 0; i < 4; i++)
+		{
+			sData.displayVertexBufferPtr->position = vertexPositions[i];
+			sData.displayVertexBufferPtr->texCoord = textureCoords[i];
+			sData.displayVertexBufferPtr++;
+		}
+
+		EndFrame();
 	}
 
 	void Renderer::BeginFrame()
 	{
-		sData.quadShader->bind();
-		sData.quadShader->setMat4("uViewProjection", glm::mat4(1.0f));
+		sData.displayVertexBufferPtr = sData.displayVertexBufferBase;
 
-		StartBatch();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	}
 
 	void Renderer::EndFrame()
 	{
-		uint32_t dataSize = (uint32_t)((uint8_t*)sData.quadVertexBufferPtr - (uint8_t*)sData.quadVertexBufferBase);
-		sData.quadVertexBuffer->setData(sData.quadVertexBufferBase, dataSize);
+		uint32_t dataSize = (uint32_t)((uint8_t*)sData.displayVertexBufferPtr - (uint8_t*)sData.displayVertexBufferBase);
+		sData.displayVertexBuffer->setData(sData.displayVertexBufferBase, dataSize);
 
-		Flush();
-	}
+		sData.displayVertexArray->bind();
+		sData.displayShader->bind();
+		sData.displayTex->bind(0);
 
-	void Renderer::DrawPixel(usize x, usize y, const glm::vec4& colour)
-	{
-		glm::mat4 transform = glm::translate(glm::mat4(1.0f), { (float)x, (float)y, 0 });
-		DrawPixelImpl(transform, colour);
-	}
-
-	void Renderer::DrawPixelImpl(const glm::mat4& transform, const glm::vec4& colour)
-	{
-		constexpr usize quadVertexCount = 4;
-
-		if (sData.quadIndexCount >= RenderData::MaxIndices)
-			NextBatch();
-
-		for (usize i = 0; i < quadVertexCount; i++)
-		{
-			sData.quadVertexBufferPtr->position = transform * sData.quadVertexPositions[i];
-			sData.quadVertexBufferPtr->colour = colour;
-			sData.quadVertexBufferPtr++;
-		}
-
-		sData.quadIndexCount += 6;
-	}
-
-	void Renderer::StartBatch()
-	{
-		sData.quadIndexCount = 0;
-		sData.quadVertexBufferPtr = sData.quadVertexBufferBase;
-	}
-
-	void Renderer::Flush()
-	{
-		if (!sData.quadIndexCount)
-			return;
-
-		uint quadDataSize = (uint)((uint8_t*)sData.quadVertexBufferPtr - (uint8_t*)sData.quadVertexBufferBase);
-		sData.quadVertexBuffer->setData(sData.quadVertexBufferBase, quadDataSize);
-
-		sData.quadShader->bind();
-		DrawBatch();
-	}
-
-	void Renderer::NextBatch()
-	{
-		Flush();
-		StartBatch();
-	}
-
-	void Renderer::DrawBatch()
-	{
-		uint32_t count = sData.quadIndexCount ? sData.quadIndexCount : sData.quadVertexArray->getIndexBuffer()->getCount();
-		sData.quadVertexArray->bind();
-		glDrawElements(GL_TRIANGLES, count, GL_UNSIGNED_INT, nullptr);
-#if LAB_DEBUG
-		vertexArray->unbind();
-#endif
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 	}
 }

@@ -4,32 +4,26 @@
 
 namespace GB {
 
-    struct Pixel
-    {
-        Byte b, g, r;
-    };
-
     class Screen
     {
-    private:
+    public:
         GB_CONST USize _Width = 160;
         GB_CONST USize _Height = 144;
-        GB_CONST USize _BufSize = _Width * _Height * sizeof(Pixel);
         
-
+    private:
        GB_CONST USize _Map(USize x, USize y) { return ((y * _Width) + x); }
 
     public:
-        Screen() : mPixels(new Pixel[_Width * _Height]) {}
-        ~Screen() { delete[] mPixels; }
+        Screen() = default;
+        Screen(Byte* buffer)
+            : mPixels((Emu::Pixel*)buffer)
+        {}
 
     public:
-        Pixel& operator()(USize x, USize y) { return mPixels[_Map(x, y)]; }
-        const Pixel& operator()(USize x, USize y) const { return mPixels[_Map(x, y)]; }
-
-        const Byte* getBuffer(USize& outSize) const { outSize = _BufSize; return (Byte*)mPixels; }
+        Emu::Pixel& operator()(USize x, USize y) { return mPixels[_Map(x, y)]; }
+        const Emu::Pixel& operator()(USize x, USize y) const { return mPixels[_Map(x, y)]; }
 
     private:
-        Pixel* mPixels = nullptr;
+        Emu::Pixel* mPixels = nullptr;
     };
 }

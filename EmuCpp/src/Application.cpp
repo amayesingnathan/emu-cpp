@@ -27,13 +27,14 @@ namespace Emu {
         Input::Init(mEmuSettings.ioSettings.at(mEmuSettings.type));
 
         mWindow = new Window();
-        Renderer::Init();
-        mImGuiHandler = new ImGuiHandler(mWindow);
 
+        uint displayWidth, displayHeight;
         switch (mEmuSettings.type)
         {
         case EmulatorType::GB:
             std::filesystem::current_path("../Gameboy");
+            displayWidth = 160;
+            displayHeight = 144;
             mGameInstance = new GB::Gameboy(mEmuSettings.gamePath);
             break;
 
@@ -41,12 +42,18 @@ namespace Emu {
             assert(false);
         }
 
+        std::filesystem::current_path("../EmuCpp");
+        Renderer::Init(displayWidth, displayHeight);
+        mImGuiHandler = new ImGuiHandler(mWindow);
+
         mImGuiHandler->setFBO(mGameInstance->getFBO());
         mWindow->setActionCallback(mGameInstance->getActionCallback());
     }
 
     Application::~Application()
     {
+        Renderer::Shutdown();
+
         delete mGameInstance;
         delete mImGuiHandler;
         delete mWindow;

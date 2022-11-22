@@ -13,7 +13,7 @@ namespace Emu {
     {
         EmulatorType type = EmulatorType::GB;
         std::string_view gamePath = "Tetris.gb";
-        std::unordered_map<EmulatorType, InputMappings> ioSettings;
+        std::unordered_map<EmulatorType, InputMappings> ioSettings = { { EmulatorType::GB, {} } };
     };
 
     class Application
