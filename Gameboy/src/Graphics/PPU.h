@@ -13,6 +13,12 @@ namespace GB {
 		GB_CONST USize _BufSize = Screen::_Width * Screen::_Height * sizeof(Emu::Pixel);
 
 		GB_CONST Word _CyclesPerScanline = 456;
+		GB_CONST Byte _ScanlineCount	 = 144;
+		GB_CONST Byte _ScanlineCountMax	 = 154;
+
+		GB_CONST Byte _HBlankCycles		 = 204;
+		GB_CONST Byte _OAMCycles		 = 80;
+		GB_CONST Byte _LCDTransferCycles = 172;
 
 		enum Mode : Byte
 		{
@@ -31,8 +37,15 @@ namespace GB {
 
 		Emu::uint getDisplayTex() const { return mDisplayTexture->getTexID(); }
 
-		void SetLCDStatus();
+	private:
 		bool IsLCDEnabled();
+
+		void HBlankMode();
+		void VBlankMode();
+		void OAMMode();
+		void LCDTransferMode();
+
+		void DrawSprites();
 
 	private:
 		Ref<Emu::PixelBuffer> mPixelBuffer;
@@ -40,5 +53,6 @@ namespace GB {
 		Screen mDisplay;
 
 		Word mClockCounter = 0;
+		Mode mCurrentMode = OAM;
 	};
 }

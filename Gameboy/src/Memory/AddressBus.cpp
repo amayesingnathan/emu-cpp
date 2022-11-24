@@ -79,6 +79,10 @@ namespace GB {
 	{
 		switch (address)
 		{
+		case Addr::TMC:
+
+			break;
+
 		case Addr::DIV:
 			MemoryManager::Get(MemoryManager::IO, Addr::DIV - 0xFF00) = 0;
 			break;

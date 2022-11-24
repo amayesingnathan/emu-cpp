@@ -17,27 +17,86 @@ namespace GB {
 
 	void PPU::update(Byte cycles)
 	{
-		SetLCDStatus();
-
+		BitField lcdStatus = AddressBus::Read(Addr::LCDS);
 		if (!IsLCDEnabled())
+		{
+			mClockCounter = 0;
+			AddressBus::Write(Addr::SCANL, 0);
+			lcdStatus &= 0xFC;
+			lcdStatus.set(0);
+			AddressBus::Write(Addr::LCDS, lcdStatus);
 			return;
+		}
 
 		mClockCounter += cycles;
-		
-		if (mClockCounter < _CyclesPerScanline)
-			return;
+		switch (mCurrentMode)
+		{
+		case HBLANK:
+			HBlankMode();
+			break;
 
+		case VBLANK:
+			VBlankMode();
+			break;
 
+		case OAM:
+			OAMMode();
+			break;
 
-	}
-
-	void PPU::SetLCDStatus()
-	{
+		case LCD_TR:
+			LCDTransferMode();
+			break;
+		}
 	}
 
 	bool PPU::IsLCDEnabled()
 	{
 		BitField lcdControl = AddressBus::Read(Addr::LCDC);
 		return lcdControl.bit(_LCDEnableBit);
+	}
+
+	void PPU::HBlankMode()
+	{
+		if (mClockCounter < _HBlankCycles)
+			return;
+
+		mClockCounter -= _HBlankCycles;
+		Byte& scanline = AddressBus::Read(Addr::SCANL);
+		scanline++;
+
+
+	}
+
+	void PPU::VBlankMode()
+	{
+		if (mClockCounter < _CyclesPerScanline)
+			return;
+
+		mClockCounter -= _CyclesPerScanline;
+		Byte& scanline = ++AddressBus::Read(Addr::SCANL);
+
+		if (scanline < _ScanlineCountMax)
+			return;
+
+		DrawSprites();
+
+		BitField lcdStatus = AddressBus::Read(Addr::LCDS);
+		mClockCounter = 0;
+		AddressBus::Write(Addr::SCANL, 0);
+		lcdStatus &= 0xFC;
+		lcdStatus.set(1);
+		AddressBus::Write(Addr::LCDS, lcdStatus);
+
+	}
+
+	void PPU::OAMMode()
+	{
+	}
+
+	void PPU::LCDTransferMode()
+	{
+	}
+	void PPU::DrawSprites()
+	{
 	}
 }

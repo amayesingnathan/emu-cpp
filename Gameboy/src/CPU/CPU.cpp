@@ -31,9 +31,16 @@ namespace GB {
 			return;
 
 		mTimerClock -= mCurrentClockSpeed;
+
 		Byte& timerCounter = AddressBus::Read(Addr::TIMA);
-		if ( < 0xFF)
-			AddressBus::Write(Addr::TIMA)
+		if (timerCounter < 0xFF)
+		{
+			timerCounter++;
+			return;
+		}
+
+		timerCounter = AddressBus::Read(Addr::TMA);
+		AddressBus::RequestInterrupt(Interrupt::TIMER);
 	}
 
 	void CPU::handleInterupts()
