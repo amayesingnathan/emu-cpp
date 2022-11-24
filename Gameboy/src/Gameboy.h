@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Emulator/Base.h"
+#include "EmuBase.h"
 
 #include "CPU/CPU.h"
 #include "Graphics/PPU.h"
@@ -24,7 +24,8 @@ namespace GB {
         void update() override;
 
         Emu::ActionCallback getActionCallback() { return BIND_ACTION_FUNC(Gameboy::HandleEvent); };
-        Emu::uint getFBO() override { return 0; };
+        Emu::uint getDisplayTex() override { return mGraphics.getDisplayTex(); };
+        Emu::Duration getFrameTime() override { return _FrameLength; };
 
     private:
         void UpdateGraphics(int cycles)

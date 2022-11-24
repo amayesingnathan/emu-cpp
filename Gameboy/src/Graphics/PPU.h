@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Graphics/PixelBuffer.h"
+#include "Graphics/Texture.h"
 
 #include "Screen.h"
 
@@ -23,17 +24,19 @@ namespace GB {
 		~PPU();
 
 	public:
+		void startFrame() { mDisplay = mPixelBuffer->lock(); }
+		void endFrame() { mPixelBuffer->upload(mDisplayTexture); }
+
 		void update(Byte cycles);
 
-	private:
-		void BeginFrame() { mDisplay = mPixelBuffer->lock(); }
-		void EndFrame() { mPixelBuffer->unlock(); }
+		Emu::uint getDisplayTex() const { return mDisplayTexture->getTexID(); }
 
 		void SetLCDStatus();
 		bool IsLCDEnabled();
 
 	private:
 		Ref<Emu::PixelBuffer> mPixelBuffer;
+		Ref<Emu::Texture> mDisplayTexture;
 		Screen mDisplay;
 
 		Word mClockCounter = 0;

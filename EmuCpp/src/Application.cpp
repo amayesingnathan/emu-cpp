@@ -11,7 +11,6 @@ namespace Emu {
         while (emu.mRunning)
         {
             emu.mGameInstance->update();
-            emu.mImGuiHandler->update();
             emu.mWindow->update();
         }
     }
@@ -44,10 +43,9 @@ namespace Emu {
 
         std::filesystem::current_path("../EmuCpp");
         Renderer::Init(displayWidth, displayHeight);
-        mImGuiHandler = new ImGuiHandler(mWindow);
 
-        mImGuiHandler->setFBO(mGameInstance->getFBO());
         mWindow->setActionCallback(mGameInstance->getActionCallback());
+        mWindow->setDisplayTex(mGameInstance->getDisplayTex())
     }
 
     Application::~Application()
@@ -55,7 +53,6 @@ namespace Emu {
         Renderer::Shutdown();
 
         delete mGameInstance;
-        delete mImGuiHandler;
         delete mWindow;
     }
 }

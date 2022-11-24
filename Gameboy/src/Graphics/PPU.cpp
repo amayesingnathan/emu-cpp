@@ -1,15 +1,13 @@
 #include "gbpch.h"
 #include "PPU.h"
 
-#include "Graphics/Renderer.h"
-
 #include "Graphics/Flags.h"
 #include "Memory/AddressBus.h"
 
 namespace GB {
 
 	PPU::PPU()
-		: mPixelBuffer(Emu::PixelBuffer::Create(_BufSize))
+		: mPixelBuffer(Emu::PixelBuffer::Create(_BufSize)), mDisplayTexture(Emu::Texture::Create(Screen::_Width, Screen::_Height))
 	{
 	}
 

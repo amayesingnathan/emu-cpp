@@ -24,7 +24,7 @@ namespace Emu {
             EndFrame();
         }
 
-        void setFBO(uint fbo) { mDisplay = fbo; }
+        void setDisplay(uint tex) { mDisplay = tex; }
 
         static bool EventHandled(EventType type);
 

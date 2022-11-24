@@ -15,6 +15,8 @@ namespace Emu {
 		uint getWidth() const { return mWidth; }
 		uint getHeight() const { return mHeight; }
 
+		uint getTexID() const { return mRendererID; }
+
 		static Ref<Texture> Create(uint width, uint height) { return std::make_shared<Texture>(width, height); }
 
 	private:

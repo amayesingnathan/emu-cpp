@@ -32,7 +32,6 @@ namespace Emu {
         bool mRunning = true;
 
         Window* mWindow = nullptr;
-        ImGuiHandler* mImGuiHandler = nullptr;
 
         Base* mGameInstance = nullptr;
         Settings mEmuSettings;

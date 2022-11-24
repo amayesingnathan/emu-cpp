@@ -66,36 +66,36 @@ namespace Emu {
 
 		glEnable(GL_LINE_SMOOTH);
 
-		sData.displayVertexArray = VertexArray::Create();
+		//sData.displayVertexArray = VertexArray::Create();
 
-		sData.displayVertexBuffer = VertexBuffer::Create(4 * sizeof(DisplayVertex));
-		sData.displayVertexBuffer->setLayout({
-				{ ShaderDataType::Float3, "aPosition" },
-				{ ShaderDataType::Float2, "aTexCoord" }
-			});
+		//sData.displayVertexBuffer = VertexBuffer::Create(4 * sizeof(DisplayVertex));
+		//sData.displayVertexBuffer->setLayout({
+		//		{ ShaderDataType::Float3, "aPosition" },
+		//		{ ShaderDataType::Float2, "aTexCoord" }
+		//	});
 
-		sData.displayVertexArray->addVertexBuffer(sData.displayVertexBuffer);
+		//sData.displayVertexArray->addVertexBuffer(sData.displayVertexBuffer);
 
-		sData.displayVertexBufferBase = new DisplayVertex[4];
+		//sData.displayVertexBufferBase = new DisplayVertex[4];
 
-		uint32_t displayIndices[6];
-		displayIndices[0] = 0;
-		displayIndices[1] = 1;
-		displayIndices[2] = 2;
-		displayIndices[3] = 2;
-		displayIndices[4] = 3;
-		displayIndices[5] = 0;
+		//uint32_t displayIndices[6];
+		//displayIndices[0] = 0;
+		//displayIndices[1] = 1;
+		//displayIndices[2] = 2;
+		//displayIndices[3] = 2;
+		//displayIndices[4] = 3;
+		//displayIndices[5] = 0;
 
-		Ref<IndexBuffer> displayIB = IndexBuffer::Create(displayIndices, 6);
-		sData.displayVertexArray->setIndexBuffer(displayIB);
+		//Ref<IndexBuffer> displayIB = IndexBuffer::Create(displayIndices, 6);
+		//sData.displayVertexArray->setIndexBuffer(displayIB);
 
-		sData.displayShader = Shader::Create("shaders/display.glsl");
+		//sData.displayShader = Shader::Create("shaders/display.glsl");
 		sData.displayTex = Texture::Create(screenWidth, screenHeight);
 	}
 
 	void Renderer::Shutdown()
 	{
-		delete[] sData.displayVertexBufferBase;
+		//delete[] sData.displayVertexBufferBase;
 	}
 
 	void Renderer::Draw(Ref<PixelBuffer> screenBuffer)

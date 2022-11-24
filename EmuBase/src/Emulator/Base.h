@@ -1,14 +1,9 @@
 #pragma once
 
+#include "Graphics/Texture.h"
 #include "IO/Input.h"
 
 namespace Emu {
-
-	struct Specification
-	{
-		uint displayWidth, displayHeight;
-		std::string_view gamePath;
-	};
 
 	class Base
 	{
@@ -17,6 +12,7 @@ namespace Emu {
 
 		virtual void update() = 0;
 		virtual ActionCallback getActionCallback() = 0;
-		virtual uint getFBO() = 0;
+		virtual uint getDisplayTex() = 0;
+		virtual Duration getFrameTime() = 0;
 	};
 }
