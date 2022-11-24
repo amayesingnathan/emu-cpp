@@ -7,11 +7,20 @@ namespace Emu {
     void Application::Run()
     {
         Application& emu = Get();
+        const Duration FrameLength = emu.mGameInstance->getFrameTime();
 
         while (emu.mRunning)
         {
+            Time::Begin();
+
             emu.mGameInstance->update();
             emu.mWindow->update();
+
+            Duration ts = Time::Elapsed();
+            if (ts < FrameLength)
+                Time::Sleep(FrameLength - ts);
+            else
+                ; // Debug output frame overran!
         }
     }
 

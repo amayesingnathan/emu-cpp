@@ -22,9 +22,10 @@ namespace GB {
 
     void Gameboy::update()
     {
-        int cyclesThisUpdate = 0;
+        mGraphics.startFrame();
 
-        while (cyclesThisUpdate < _MaxCycles)
+        int cyclesThisUpdate = 0;
+        while (cyclesThisUpdate < _CyclesPerFrame)
         {
             Byte cycles = mProcessor.exec();
             cyclesThisUpdate += cycles;
@@ -32,5 +33,7 @@ namespace GB {
             mGraphics.update(cycles);
             mProcessor.handleInterupts();
         }
+
+        mGraphics.endFrame();
     }
 }

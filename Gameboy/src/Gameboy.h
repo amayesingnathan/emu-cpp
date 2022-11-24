@@ -14,7 +14,9 @@ namespace GB {
     class Gameboy : public Emu::Base
     {
     public:
-        GB_CONST USize _MaxCycles = 69905;
+        GB_CONST USize _ClockSpeed          = 4194304;
+        GB_CONST USize _CyclesPerFrame      = 70224;
+        GB_CONST Emu::Duration _FrameLength = Emu::Duration((float)_CyclesPerFrame / (float)_ClockSpeed);
 
     public:
         Gameboy(std::string_view path);
