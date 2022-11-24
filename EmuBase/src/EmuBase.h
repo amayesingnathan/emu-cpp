@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Core/Utils.h"
+
 #include "Emulator/Base.h"
 
 #include "Graphics/Renderer.h"
