@@ -20,6 +20,7 @@ namespace Emu {
     }
 
     Framebuffer::Framebuffer(const FramebufferSpec& spec)
+        : mSpecification(spec)
     {
         for (auto spec : mSpecification.attachments.attachments)
         {

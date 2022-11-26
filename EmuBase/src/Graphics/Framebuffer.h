@@ -51,6 +51,8 @@ namespace Emu {
 
         const FramebufferSpec& getSpec() const { return mSpecification; }
 
+        static Ref<Framebuffer> Create(const FramebufferSpec& spec) { return std::make_shared<Framebuffer>(spec); }
+
     private:
         void Invalidate();
 
