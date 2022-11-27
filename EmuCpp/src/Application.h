@@ -6,14 +6,15 @@ namespace Emu {
 
     enum class EmulatorType
     {
-        GB
+        None, GB
     };
 
     struct Settings
     {
-        EmulatorType type = EmulatorType::GB;
-        std::string_view gamePath = "Tetris.gb";
-        std::unordered_map<EmulatorType, InputMappings> ioSettings = { { EmulatorType::GB, {} } };
+        EmulatorType type = EmulatorType::None;
+        std::string gamePath;
+        Duration frameLength = std::chrono::milliseconds(16);
+        std::unordered_map<EmulatorType, InputMappings> ioSettings = { { EmulatorType::None, {} }, { EmulatorType::GB, {} } };
     };
 
     class Application
@@ -31,6 +32,9 @@ namespace Emu {
         void RenderUI();
         void UI_MenuBar();
         void UI_Viewport();
+
+        void LaunchEmulator();
+        void GetROMData(const fs::path& file);
 
     private:
         bool mRunning = true;

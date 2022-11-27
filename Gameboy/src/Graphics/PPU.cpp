@@ -304,13 +304,12 @@ namespace GB {
 				BitField data1 = AddressBus::Read(dataAddress);
 				BitField data2 = AddressBus::Read(dataAddress + 1);
 
-				for (SWord tilePixel = 7; tilePixel >= 0; tilePixel--)
+				for (Byte tilePixel = 0; tilePixel < 8; tilePixel++)
 				{
 					Byte colourBit = tilePixel;
-					if (xFlip)
+					if (!xFlip)
 						colourBit = 7 - colourBit;
 
-					// the rest is the same as for tiles
 					Byte colourNum = data2.val(colourBit);
 					colourNum <<= 1;
 					colourNum |= data1.val(colourBit);
@@ -331,10 +330,7 @@ namespace GB {
 					case BLACK:		 colour = _Black;	  break;
 					}
 
-					int xPix = 0 - tilePixel;
-					xPix += 7;
-
-					int pixel = spriteData.xPos + xPix;
+					Byte pixel = spriteData.xPos + tilePixel;
 
 					if ((scanline < 0) || (scanline > 143) || (pixel < 0) || (pixel > 159))
 						continue;

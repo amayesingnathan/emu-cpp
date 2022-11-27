@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Utils.h"
+#include "Core/Timing.h"
 #include "Graphics/Texture.h"
 #include "IO/Input.h"
 #include "ImGui/ImGuiHandler.h"

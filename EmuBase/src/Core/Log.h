@@ -14,7 +14,7 @@ namespace Emu {
 	class Log
 	{
 	public:
-		static void Init(const std::string& emulator, LogWidget& widget);
+		static void Init(LogWidget& widget);
 
 		static Ref<spdlog::logger>& GetCoreLogger() { return sCoreLogger; }
 		static Ref<spdlog::logger>& GetEmuLogger() { return sEmuLogger; }

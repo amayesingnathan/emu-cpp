@@ -1,7 +1,8 @@
 #pragma once
 
+#include "Core/FileDialog.h"
 #include "Core/Log.h"
-#include "Core/Utils.h"
+#include "Core/Timing.h"
 
 #include "Emulator/Base.h"
 

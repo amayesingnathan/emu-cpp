@@ -8,7 +8,7 @@
 
 namespace Emu {
 
-	void Log::Init(const std::string& emulator, LogWidget& widget)
+	void Log::Init(LogWidget& widget)
 	{
 		std::vector<spdlog::sink_ptr> logSinks;
 		//logSinks.emplace_back(std::make_shared<spdlog::sinks::stdout_color_sink_mt>());
@@ -24,7 +24,7 @@ namespace Emu {
 		sCoreLogger->set_level(spdlog::level::trace);
 		sCoreLogger->flush_on(spdlog::level::trace);
 
-		sEmuLogger = std::make_shared<spdlog::logger>(emulator, begin(logSinks), end(logSinks));
+		sEmuLogger = std::make_shared<spdlog::logger>("Emulator", begin(logSinks), end(logSinks));
 		spdlog::register_logger(sEmuLogger);
 		sEmuLogger->set_level(spdlog::level::trace);
 		sEmuLogger->flush_on(spdlog::level::trace);

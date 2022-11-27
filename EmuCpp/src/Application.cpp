@@ -9,21 +9,20 @@ namespace Emu {
     void Application::Run()
     {
         Application& emu = Get();
-        const Duration FrameLength = emu.mGameInstance->getFrameTime();
-
         while (emu.mRunning)
         {
             Time::Begin();
 
-            emu.mGameInstance->update();
+            if (emu.mGameInstance)
+                emu.mGameInstance->update();
             emu.RenderUI();
             emu.mWindow->update();
 
             Duration ts = Time::Elapsed();
-            if (ts < FrameLength)
-                Time::Sleep(FrameLength - ts);
+            if (ts < emu.mEmuSettings.frameLength)
+                Time::Sleep(emu.mEmuSettings.frameLength - ts);
             else
-                EMU_CORE_WARN("Frame running behind by {:03.2f}ms!", (ts - FrameLength).count());
+                EMU_CORE_WARN("Frame running behind by {:03.2f}ms!", (ts - emu.mEmuSettings.frameLength).count());
         }
     }
 
@@ -35,32 +34,10 @@ namespace Emu {
 
     Application::Application()
     {
-        Input::Init(mEmuSettings.ioSettings.at(mEmuSettings.type));
-
         mWindow = new Window();
         mImGuiHandler = new ImGuiHandler(mWindow);
 
-        uint displayWidth, displayHeight;
-        std::string emuName;
-        switch (mEmuSettings.type)
-        {
-        case EmulatorType::GB:
-            std::filesystem::current_path("../Gameboy");
-            displayWidth = 160;
-            displayHeight = 144;
-            emuName = "DMG";
-            mGameInstance = new GB::Gameboy(mWindow, mEmuSettings.gamePath);
-            break;
-
-        default:
-            assert(false);
-        }
-
-        std::filesystem::current_path("../EmuCpp");
-
-        mWindow->setActionCallback(mGameInstance->getActionCallback());
-
-        Emu::Log::Init(emuName, mLogWidget);
+        Emu::Log::Init(mLogWidget);
     }
 
     Application::~Application()
@@ -108,7 +85,9 @@ namespace Emu {
         UI_Viewport();
 
         mLogWidget.draw();
-        mGameInstance->imguiRender();
+
+        if (mGameInstance)
+            mGameInstance->imguiRender();
 
         ImGui::End();
 
@@ -121,6 +100,8 @@ namespace Emu {
         {
             if (ImGui::BeginMenu("File"))
             {
+                if (ImGui::MenuItem("Open"))
+                    LaunchEmulator();
                 if (ImGui::MenuItem("Exit"))
                     mRunning = false;
                 ImGui::EndMenu();
@@ -136,9 +117,38 @@ namespace Emu {
         ImGui::Begin("Viewport");
 
         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-        ImGui::Image((ImTextureID)(intptr_t)mGameInstance->getDisplayTex(), viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
+        uint tex = mGameInstance ? mGameInstance->getDisplayTex() : 0;
+        ImGui::Image((ImTextureID)(intptr_t)tex, viewportSize);
 
         ImGui::End();
         ImGui::PopStyleVar();
+    }
+
+    void Application::LaunchEmulator()
+    {
+        fs::path openFile = File::OpenFile({ "GB ROM (*.gb)", "*.gb" });
+        GetROMData(openFile);
+
+        switch (mEmuSettings.type)
+        {
+        case EmulatorType::GB:
+            std::filesystem::current_path("../Gameboy");
+            mGameInstance = new GB::Gameboy(mWindow, mEmuSettings.gamePath);
+            break;
+
+        default:
+            assert(false);
+        }
+
+        mEmuSettings.frameLength = mGameInstance->getFrameTime();
+        Input::Init(mEmuSettings.ioSettings.at(mEmuSettings.type));
+        mWindow->setActionCallback(mGameInstance->getActionCallback());
+    }
+
+    void Application::GetROMData(const fs::path& file)
+    {
+        mEmuSettings.gamePath = file.string();
+        if (file.extension() == ".gb")
+            mEmuSettings.type = EmulatorType::GB;
     }
 }
