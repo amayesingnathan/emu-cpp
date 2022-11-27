@@ -11,7 +11,7 @@ namespace GB {
     {
         MemoryManager::Init();
         mCartridge = new Cartridge(path);
-        AddressBus::Init(mCartridge);
+        AddressBus::Init(mCartridge, mProcessor.getClockSpeed());
     }
 
     Gameboy::~Gameboy()

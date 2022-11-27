@@ -37,6 +37,8 @@ namespace GB {
         void updateTimers(Byte cycles);
         void handleInterupts();
 
+        Word& getClockSpeed() { return mCurrentClockSpeed; }
+
     private:
         bool CheckCondition(Condition condition);
 
@@ -57,13 +59,15 @@ namespace GB {
         Word mDividerClock = 0;
         Word mTimerClock = 0;
 
-        TimerControl mCurrentClockSpeed = TMC0;
+        Word mCurrentClockSpeed = _TMC0;
 
         // Flags
         bool mInteruptsEnabled = false;
         bool mHalted = false;
 
         bool mBranchTaken = false;
+
+        friend class Gameboy;
 
 #pragma region OpCodeFunctions
     private:
@@ -80,11 +84,14 @@ namespace GB {
         void SET_R(OpCode op);
 
         void JR_C8(OpCode op);
+        void JR_C16(OpCode op);
 
         void UN_R(OpCode op);
 
         void CALL(OpCode op);
         void RET(OpCode op);
+
+        void RST(OpCode op);
 
         void REG(OpCode op);
 
@@ -99,6 +106,8 @@ namespace GB {
         void XOR_R(Byte value);
         void OR_R(Byte value);
         void CP_R(Byte value);
+
+        void ADD_HL(Word value);
 
         void PUSH(Byte target);
         void POP(Byte target);

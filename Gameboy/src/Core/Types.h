@@ -27,8 +27,10 @@ namespace GB {
 	class BitField
 	{
 	public:
+		BitField() = default;
 		BitField(Byte byte) : mByte(byte) {}
 
+		Byte val(Byte bit) const { return (mByte & GB_BIT(bit)) >> bit; }
 		bool bit(Byte bit) const { return mByte & GB_BIT(bit); }
 		void set(Byte bit) { mByte |= GB_BIT(bit); }
 		void reset(Byte bit) { mByte &= ~GB_BIT(bit); }

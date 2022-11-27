@@ -1,14 +1,16 @@
 #include "gbpch.h"
 #include "CPU.h"
 
+#include "Memory/Address.h"
+
 #include "Instructions.h"
 
 namespace GB {
 
 	Byte CPU::exec()
 	{
-		if (mHalted)
-			return 0;
+		if (mHalted)	
+			return 1;
 
 		OpCode nextOp = AddressBus::Read(mRegisters[WordReg::PC]++);
 		return HandleInstruction(nextOp);
@@ -133,6 +135,14 @@ namespace GB {
 			break;
 		}
 
+		// Register-8bit immediate load
+		case 0x06: case 0x16: case 0x26: case 0x36:
+		case 0x0E: case 0x1E: case 0x2E: case 0x3E:
+		{
+			LD_R_I8(instruction);
+			break;
+		}
+
 		// Accumulator/BitField Ops
 		case 0x07: case 0x0F: case 0x17: case 0x1F: case 0x27: case 0x2F: case 0x37: case 0x3F:
 		{
@@ -140,11 +150,9 @@ namespace GB {
 			break;
 		}
 
-		// Register-8bit immediate load
-		case 0x06: case 0x16: case 0x26: case 0x36:
-		case 0x0E: case 0x1E: case 0x2E: case 0x3E:
+		case 0x09: case 0x19: case 0x29: case 0x39:
 		{
-			LD_R_I8(instruction);
+			ADD_HL(mRegisters[sRegisterPairs[instruction.p()]]);
 			break;
 		}
 
@@ -171,14 +179,14 @@ namespace GB {
 			break;
 
 		// Register-Register Arithmetic/Logic
-		case 0x81: case 0x82: case 0x83: case 0x84: case 0x85: case 0x86: case 0x87:
-		case 0x88: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
-		case 0x90: case 0x91: case 0x93: case 0x94: case 0x95: case 0x96: case 0x97:
-		case 0x98: case 0x99: case 0x9A: case 0x9C: case 0x9D: case 0x9E: case 0x9F:
-		case 0xA0: case 0xA1: case 0xA2: case 0xA3: case 0xA5: case 0xA6: case 0xA7:
-		case 0xA8: case 0xA9: case 0xAA: case 0xAB: case 0xAC: case 0xAE: case 0xAF:
-		case 0xB0: case 0xB1: case 0xB2: case 0xB3: case 0xB4: case 0xB5: case 0xB7:
-		case 0xB8: case 0xB9: case 0xBA: case 0xBB: case 0xBC: case 0xBD: case 0xBE:
+		case 0x80: case 0x81: case 0x82: case 0x83: case 0x84: case 0x85: case 0x86: case 0x87:
+		case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
+		case 0x90: case 0x91: case 0x92: case 0x93: case 0x94: case 0x95: case 0x96: case 0x97:
+		case 0x98: case 0x99: case 0x9A: case 0x9B: case 0x9C: case 0x9D: case 0x9E: case 0x9F:
+		case 0xA0: case 0xA1: case 0xA2: case 0xA3: case 0xA4: case 0xA5: case 0xA6: case 0xA7:
+		case 0xA8: case 0xA9: case 0xAA: case 0xAB: case 0xAC: case 0xAD: case 0xAE: case 0xAF:
+		case 0xB0: case 0xB1: case 0xB2: case 0xB3: case 0xB4: case 0xB5: case 0xB6: case 0xB7:
+		case 0xB8: case 0xB9: case 0xBA: case 0xBB: case 0xBC: case 0xBD: case 0xBE: case 0xBF:
 		{
 			Byte value;
 			READ_REG(instruction.z(), value);
@@ -198,6 +206,13 @@ namespace GB {
 		case 0xC1: case 0xD1: case 0xE1:case 0xF1:
 		{
 			POP(instruction.p());
+			break;
+		}
+
+		// 16 bit Conditional Jumps
+		case 0xC2: case 0xD2: case 0xCA :case 0xDA:
+		{
+			JR_C16(instruction);
 			break;
 		}
 
@@ -222,6 +237,15 @@ namespace GB {
 			break;
 		}
 
+		// 16 bit immediate jump
+		case 0xC3:
+		{
+			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+			Word imm = lo | hi << 8;
+			mRegisters[WordReg::PC] = imm;
+			break;
+		}
 
 		// Load to/from WRAM/IO
 		case 0xE0: case 0xE2: case 0xF0: case 0xF2:
@@ -249,6 +273,12 @@ namespace GB {
 		case 0xFB:
 			mInteruptsEnabled = true;
 			break;
+
+		case 0xCF: case 0xDF: case 0xEF: case 0xFF:
+		{
+			RST(instruction);
+			break;
+		}
 
 		default: GB_ASSERT(false, "Instruction not yet implemented!");
 		}
@@ -400,7 +430,7 @@ namespace GB {
 	{
 		Byte addr = (op.z() & GB_BIT(1)) ? mRegisters[ByteReg::C] : AddressBus::Read(mRegisters[WordReg::PC]++);
 
-		if (op & GB_BIT(3))
+		if (op & GB_BIT(4))
 			mRegisters[ByteReg::A] = AddressBus::Read(0xFF00 + (Word)addr);
 		else
 			AddressBus::Write(0xFF00 + (Word)addr, mRegisters[ByteReg::A]);
@@ -437,15 +467,12 @@ namespace GB {
 
 	void CPU::BIT_R(OpCode op)
 	{
-		Byte value;
+		BitField value;
 		READ_REG(op.z(), value);
 
-		BitField flags = mFRegister.getFlags();
-		flags &= ~GB_BIT(_SubtractBit);
+		BitField flags = mFRegister.getFlags() & GB_BIT(_CarryBit);
 		flags |= GB_BIT(_HCarryBit);
-		if (value & GB_BIT(op.y()))
-			flags &= ~GB_BIT(_ZeroBit);
-		else
+		if (!value.bit(op.y()))
 			flags |= GB_BIT(_ZeroBit);
 		mFRegister.setFlags(flags);
 	}
@@ -484,6 +511,17 @@ namespace GB {
 		}
 
 		mRegisters[WordReg::PC] += imm;
+	}
+
+	void CPU::JR_C16(OpCode op)
+	{
+		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word imm = lo | hi << 8;
+
+		Byte condTarget = op.y();
+		if (CheckCondition((Condition)(condTarget)))
+			mRegisters[WordReg::PC] = imm;
 	}
 
 	void CPU::UN_R(OpCode op)
@@ -537,6 +575,15 @@ namespace GB {
 
 		pc = (Word)AddressBus::Read(sp++);
 		pc |= (Word)AddressBus::Read(sp++) << 8;
+	}
+
+	void CPU::RST(OpCode op)
+	{
+		Word& pc = mRegisters[WordReg::PC];
+		Word& sp = mRegisters[WordReg::SP];
+		AddressBus::Write(--sp, (Byte)(pc >> 8));
+		AddressBus::Write(--sp, (Byte)(pc & 0x00FF));
+		pc = op.y() * 0x08;
 	}
 
 	void CPU::REG(OpCode op)
@@ -674,9 +721,23 @@ namespace GB {
 		Byte result = regA - value;
 
 		BitField flags = GB_BIT(_SubtractBit);
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
+		flags |= (result == 0) ? GB_BIT(_ZeroBit) : 0;
 		flags |= ((regA & 0xf) - (value & 0xf) < 0) ? GB_BIT(_HCarryBit) : 0;
 		flags |= (regA < value) ? GB_BIT(_CarryBit) : 0;
+		mFRegister.setFlags(flags);
+	}
+
+	void CPU::ADD_HL(Word value)
+	{
+		Word& regHL = mRegisters[WordReg::HL];
+		Word regHLCpy = regHL;
+
+		Word result = regHL + value;
+		regHL = (Byte)result;
+
+		BitField flags = mFRegister.getFlags() & GB_BIT(_ZeroBit);
+		flags |= ((regHLCpy & 0xfff) + (value & 0xfff) > 0xfff) ? GB_BIT(_HCarryBit) : 0;
+		flags |= ((result & 0x10000) != 0) ? GB_BIT(_CarryBit) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -705,9 +766,8 @@ namespace GB {
 		reg++;
 		WRITE_REG(target, reg);
 
-		BitField flags = mFRegister.getFlags();
+		BitField flags = mFRegister.getFlags() & GB_BIT(_CarryBit);
 		flags |= (reg == 0) ? GB_BIT(_ZeroBit) : 0;
-		flags &= ~GB_BIT(_SubtractBit);
 		flags |= ((reg & 0x0F) == 0x00) ? GB_BIT(_HCarryBit) : 0;
 		mFRegister.setFlags(flags);
 	}
@@ -719,7 +779,7 @@ namespace GB {
 		reg--;
 		WRITE_REG(target, reg);
 
-		BitField flags = mFRegister.getFlags();
+		BitField flags = mFRegister.getFlags() & GB_BIT(_CarryBit);
 		flags |= (reg == 0) ? GB_BIT(_ZeroBit) : 0;
 		flags |= GB_BIT(_SubtractBit);
 		flags |= ((reg & 0x0F) == 0x0F) ? GB_BIT(_HCarryBit) : 0;

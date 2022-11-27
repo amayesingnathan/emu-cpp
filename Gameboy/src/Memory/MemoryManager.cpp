@@ -2,6 +2,7 @@
 #include "MemoryManager.h"
 
 #include "Cartridge/Cartridge.h"
+#include "CPU/Boot.h"
 
 namespace GB {
 
@@ -11,7 +12,7 @@ namespace GB {
 	GB_CONST USize _WRAMSize	= 0x2000;
 	GB_CONST USize _VRAMSize	= 0x2000;
 	GB_CONST USize _OAMSize		= 0x00A0;
-	GB_CONST USize _IOSize		= 0x0080;
+	GB_CONST USize _IOSize		= 0x0081; // Interrupt Enabled (0xFFFF) added here
 	GB_CONST USize _MemorySize = _BootROMSize + _StackSize + _IOSize + _WRAMSize + _VRAMSize + _OAMSize + Cartridge::_Size;
 
 	// Memory Partition Offsets
@@ -27,17 +28,10 @@ namespace GB {
 	{
 		GB_ASSERT(!sMemoryBlock, "Memory already initialised!");
 		sMemoryBlock = (Byte*)::operator new(_MemorySize);
+		memset(sMemoryBlock, 0, _MemorySize);
 
 		// Load Boot ROM into first 256 bytes
-		std::ifstream bootROM("BootROM.gb", std::ios::binary);
-		GB_ASSERT(bootROM.is_open(), "Could not locate boot ROM!");
-
-		bootROM.seekg(0, std::ios::end);
-		USize cartridgeSize = bootROM.tellg();
-		GB_ASSERT(cartridgeSize == _BootROMSize, "Error! Boot ROM is not 256B");
-
-		bootROM.seekg(0);
-		bootROM.read((char*)sMemoryBlock, _BootROMSize);
+		memcpy(sMemoryBlock, Boot::_BootROM, _BootROMSize);
 	}
 
 	void MemoryManager::Shutdown()

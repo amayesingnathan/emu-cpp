@@ -5,12 +5,14 @@
 #include "MemoryManager.h"
 
 #include "Cartridge/Cartridge.h"
+#include "Graphics/Screen.h"
 
 namespace GB {
 
-	Byte& AddressBus::Read(Address address)
+	Byte& AddressBus::Read(Word address)
 	{
-		GB_ASSERT(address < 0xFEA0 || address > 0xFF00, "Restricted memory!");
+		if (address >= 0xFEA0 && address < 0xFF00)
+			return sErrorByte; // Warn: restricted memory!
 
 		if (sBusState.bootstrap && address < 0x0100)
 			return MemoryManager::Get(MemoryManager::BOOTSTRAP, address);
@@ -27,17 +29,21 @@ namespace GB {
 		else if (address >= 0xFE00 && address < 0xFEA0) // Sprite Attribute Table (OAM)
 			return MemoryManager::Get(MemoryManager::OAM, address - 0xFE00);
 		else if (address >= 0xFF00 && address < 0xFF80) // IO Registers
-			return ReadIO(address);
+			return MemoryManager::Get(MemoryManager::IO, address - 0xFF00);
 		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
 			return MemoryManager::Get(MemoryManager::HRAM, address - 0xFF80);
+		else if (address == 0xFFFF)						// Interrupt Enable Register
+			return MemoryManager::Get(MemoryManager::IO, 0x80);
 
 		GB_ASSERT(false, "Cannot map to this memory!");
-		return MemoryManager::Get(MemoryManager::BOOTSTRAP);
+		return sErrorByte;
 	}
 
-	void AddressBus::Write(Address address, Byte data)
+	void AddressBus::Write(Word address, Byte data)
 	{
-        GB_ASSERT(address < 0xFEA0 || address > 0xFF00, "Restricted memory!");
+		if (address >= 0xFEA0 && address < 0xFF00)
+			return; // Warn: restricted memory!
+
         GB_ASSERT(!sBusState.bootstrap || address >= 0x0100, "Cannot write to boot ROM except to disable it!");
 
 		if (sBusState.bootstrap && address == 0xFF50)
@@ -58,41 +64,86 @@ namespace GB {
 			WriteIO(address, data); 
 		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
 			MemoryManager::Get(MemoryManager::HRAM, address - 0xFF80) = data;
+		else if (address == 0xFFFF)						// Interrupt Enable Register
+			MemoryManager::Get(MemoryManager::IO, 0x80) = data;
 		else
 			GB_ASSERT(false, "Cannot map to this memory!");
 	}
 
-	Byte& AddressBus::ReadIO(Address address)
+	const Sprite& AddressBus::ReadSprite(Word address)
 	{
-		switch (address)
-		{
+		GB_ASSERT(address >= 0xFE00 || address < 0xFEA0, "Not sprite memory!");
 
-		default:
-			break;
-		}
-
-		GB_ASSERT(false, "Cannot map to this memory!");
-		return MemoryManager::Get(MemoryManager::IO);
+		return *(Sprite*)&MemoryManager::Get(MemoryManager::OAM, address - 0xFE00);
 	}
 
-	void AddressBus::WriteIO(Address address, Byte data)
+	Byte& AddressBus::ReadIO(Word address)
 	{
 		switch (address)
 		{
-		case Addr::TMC:
+		// Undocumented IO registers
+		case 0xFF08: case 0xFF09: case 0xFF27: case 0xFF28: case 0xFF29:
+		case 0xFF4C: case 0xFF4D: case 0xFF4E: case 0xFF56: case 0xFF57:
+		case 0xFF58: case 0xFF59: case 0xFF5A: case 0xFF5B: case 0xFF5C:
+		case 0xFF5D: case 0xFF5E: case 0xFF5F: case 0xFF60: case 0xFF61:
+		case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:
+		case 0xFF67: case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74:
+		case 0xFF75: case 0xFF78: case 0xFF79:
+			return sErrorByte;
 
-			break;
+		default:
+			return MemoryManager::Get(MemoryManager::IO, address - 0xFF00);
+		}
+	}
 
+	void AddressBus::WriteIO(Word address, Byte data)
+	{
+		switch (address)
+		{
 		case Addr::DIV:
 			MemoryManager::Get(MemoryManager::IO, Addr::DIV - 0xFF00) = 0;
 			break;
 
-		case Addr::SCANL:
-			MemoryManager::Get(MemoryManager::IO, Addr::SCANL - 0xFF00) = 0;
+		case Addr::TMC:
+		{
+			Byte& tmc = MemoryManager::Get(MemoryManager::IO, Addr::TMC - 0xFF00);
+			Byte currentFreq = tmc & 0x3;
+			tmc = data;
+			Byte newFreq = tmc & 0x3;
+
+			if (currentFreq != newFreq)
+				SetClockFreq(newFreq);
+			break;
+		}
+
+		case Addr::LYC:
+			MemoryManager::Get(MemoryManager::IO, Addr::LYC - 0xFF00) = 0;
+			break;
+
+		// Undocumented IO registers
+		case 0xFF08: case 0xFF09: case 0xFF27: case 0xFF28: case 0xFF29:
+		case 0xFF4C: case 0xFF4D: case 0xFF4E: case 0xFF56: case 0xFF57:
+		case 0xFF58: case 0xFF59: case 0xFF5A: case 0xFF5B: case 0xFF5C:
+		case 0xFF5D: case 0xFF5E: case 0xFF5F: case 0xFF60: case 0xFF61:
+		case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:
+		case 0xFF67: case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74:
+		case 0xFF75: case 0xFF78: case 0xFF79:
 			break;
 
 		default:
+			MemoryManager::Get(MemoryManager::IO, address - 0xFF00) = data;
 			break;
+		}
+	}
+
+	void AddressBus::SetClockFreq(Byte freq)
+	{
+		switch (freq)
+		{
+		case 0: *sClockSpeed = 1024; break; // freq 4096
+		case 1: *sClockSpeed = 16; break;// freq 262144
+		case 2: *sClockSpeed = 64; break;// freq 65536
+		case 3: *sClockSpeed = 256; break;// freq 16382
 		}
 	}
 
