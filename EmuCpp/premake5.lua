@@ -24,6 +24,7 @@ project "EmuCpp"
         "%{IncludeDir.Gameboy}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.imgui}",
+        "%{IncludeDir.spdlog}",
     }
 
 	links

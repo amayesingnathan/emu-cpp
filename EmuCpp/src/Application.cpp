@@ -41,12 +41,14 @@ namespace Emu {
         mImGuiHandler = new ImGuiHandler(mWindow);
 
         uint displayWidth, displayHeight;
+        std::string emuName;
         switch (mEmuSettings.type)
         {
         case EmulatorType::GB:
             std::filesystem::current_path("../Gameboy");
             displayWidth = 160;
             displayHeight = 144;
+            emuName = "DMG";
             mGameInstance = new GB::Gameboy(mWindow, mEmuSettings.gamePath);
             break;
 
@@ -58,6 +60,8 @@ namespace Emu {
         Renderer::Init(displayWidth, displayHeight);
 
         mWindow->setActionCallback(mGameInstance->getActionCallback());
+
+        Emu::Log::Init(emuName, mLogWidget);
     }
 
     Application::~Application()
@@ -106,6 +110,7 @@ namespace Emu {
         UI_MenuBar();
         UI_Viewport();
 
+        mLogWidget.draw();
         mGameInstance->imguiRender();
 
         ImGui::End();

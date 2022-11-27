@@ -26,6 +26,7 @@ project "EmuBase"
         "%{IncludeDir.glad}",
         "%{IncludeDir.glfw}",
         "%{IncludeDir.imgui}",
+        "%{IncludeDir.spdlog}",
     }
 
 	links
@@ -33,6 +34,7 @@ project "EmuBase"
 		"glad",
 		"glfw",
 		"imgui",
+		"spdlog",
 	}
 	
     filter "system:windows"
@@ -47,11 +49,11 @@ project "EmuBase"
         systemversion "latest"
 
     filter "configurations:Debug"
-        defines { "GL_DEBUG" }
+        defines { "EMU_DEBUG" }
 		runtime "Debug"
         symbols "on"
         
     filter "configurations:Release"
-        defines { "GL_RELEASE" }
+        defines { "EMU_RELEASE" }
 		runtime "Release"
         optimize "on"

@@ -5,6 +5,9 @@ obj/
 #ROMS
 **.gb
 
+#Log files
+**.log
+
 #VS files
 .vs/
 .vscode/

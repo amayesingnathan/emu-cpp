@@ -1,10 +1,17 @@
 [submodule "EmuBase/dependencies/glad"]
 	path = EmuBase/dependencies/glad
 	url = git@github.com:amayesingnathan/glad.git
+	update = rebase
 [submodule "EmuBase/dependencies/glfw"]
 	path = EmuBase/dependencies/glfw
 	url = git@github.com:amayesingnathan/glfw.git
+	update = rebase
 [submodule "EmuBase/dependencies/imgui"]
 	path = EmuBase/dependencies/imgui
 	url = git@github.com:amayesingnathan/imgui.git
+	update = rebase
 	branch = docking
+[submodule "EmuBase/dependencies/spdlog"]
+	path = EmuBase/dependencies/spdlog
+	url = git@github.com:amayesingnathan/spdlog.git
+	update = rebase

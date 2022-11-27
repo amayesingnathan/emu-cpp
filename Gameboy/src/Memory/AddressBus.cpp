@@ -89,6 +89,7 @@ namespace GB {
 		case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:
 		case 0xFF67: case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74:
 		case 0xFF75: case 0xFF78: case 0xFF79:
+			EMU_WARN("Reading from undocumented IO Register: {:X}", address);
 			return sErrorByte;
 
 		default:
@@ -128,6 +129,7 @@ namespace GB {
 		case 0xFF62: case 0xFF63: case 0xFF64: case 0xFF65: case 0xFF66:
 		case 0xFF67: case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74:
 		case 0xFF75: case 0xFF78: case 0xFF79:
+			EMU_ERROR("Writing to undocumented IO Register: {:X}", address);
 			break;
 
 		default:

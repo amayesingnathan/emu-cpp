@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/Log.h"
 #include "Core/Utils.h"
 
 #include "Emulator/Base.h"
@@ -12,3 +13,4 @@
 #include "IO/Input.h"
 
 #include "ImGui/ImGuiHandler.h"
+#include "ImGui/ImGuiLogger.h"

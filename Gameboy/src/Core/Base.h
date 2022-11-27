@@ -1,6 +1,7 @@
 #pragma once
 
 #include "gbpch.h"
+#include "Core/Log.h"
 
 #define GB_ASSERT(x, ...) assert(x)
 #define GB_SASSERT(x, ...) static_assert(x)

@@ -40,5 +40,7 @@ namespace Emu {
 
         Base* mGameInstance = nullptr;
         Settings mEmuSettings;
+
+        LogWidget mLogWidget;
     };
 }

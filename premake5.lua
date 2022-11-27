@@ -34,11 +34,13 @@ IncludeDir["glad"] 	    = "%{wks.location}/EmuBase/dependencies/glad/include"
 IncludeDir["glfw"] 	    = "%{wks.location}/EmuBase/dependencies/glfw/include"
 IncludeDir["glm"] 	    = "%{wks.location}/EmuBase/dependencies/glm"
 IncludeDir["imgui"] 	= "%{wks.location}/EmuBase/dependencies/imgui"
+IncludeDir["spdlog"] 	= "%{wks.location}/EmuBase/dependencies/spdlog/include"
 
 group "Dependencies"
 	include "EmuBase/dependencies/glad"
 	include "EmuBase/dependencies/glfw"
 	include "EmuBase/dependencies/imgui"
+	include "EmuBase/dependencies/spdlog"
 group ""
 
 group "Core"
