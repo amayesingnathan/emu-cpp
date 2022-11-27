@@ -1,8 +1,18 @@
 #pragma once
 
+#include "Graphics/PixelBuffer.h"
+
 #include "Core/Types.h"
 
 namespace GB {
+
+    struct Sprite
+    {
+        Byte xPos;
+        Byte yPos;
+        Byte tileLoc;
+        BitField flags;
+    };
 
     class Screen
     {
@@ -14,10 +24,15 @@ namespace GB {
        GB_CONST USize _Map(USize x, USize y) { return ((y * _Width) + x); }
 
     public:
-        Screen() = default;
+        Screen()
+            : mPixels((Emu::Pixel*)::operator new(Screen::_Width* Screen::_Height * sizeof(Emu::Pixel)))
+        {}
         Screen(Byte* buffer)
             : mPixels((Emu::Pixel*)buffer)
         {}
+        ~Screen() { ::operator delete(mPixels); }
+
+        operator Emu::Pixel* () { return mPixels; }
 
     public:
         Emu::Pixel& operator()(USize x, USize y) { return mPixels[_Map(x, y)]; }

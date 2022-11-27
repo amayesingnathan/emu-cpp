@@ -98,23 +98,33 @@ namespace Emu {
 		//delete[] sData.displayVertexBufferBase;
 	}
 
-	void Renderer::Draw(Ref<PixelBuffer> screenBuffer)
+	//void Renderer::Draw(Ref<PixelBuffer> screenBuffer)
+	//{
+	//	constexpr glm::vec4 vertexPositions[] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f,  0.5f, 0.0f, 1.0f }, { -0.5f,  0.5f, 0.0f, 1.0f } };
+	//	constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+
+	//	screenBuffer->upload(sData.displayTex);
+
+	//	BeginFrame();
+
+	//	for (usize i = 0; i < 4; i++)
+	//	{
+	//		sData.displayVertexBufferPtr->position = vertexPositions[i];
+	//		sData.displayVertexBufferPtr->texCoord = textureCoords[i];
+	//		sData.displayVertexBufferPtr++;
+	//	}
+
+	//	EndFrame();
+	//}
+
+	void Renderer::Clear()
 	{
-		constexpr glm::vec4 vertexPositions[] = { { -0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f, -0.5f, 0.0f, 1.0f }, { 0.5f,  0.5f, 0.0f, 1.0f }, { -0.5f,  0.5f, 0.0f, 1.0f } };
-		constexpr glm::vec2 textureCoords[] = { { 0.0f, 0.0f }, { 1.0f, 0.0f }, { 1.0f, 1.0f }, { 0.0f, 1.0f } };
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	}
 
-		screenBuffer->upload(sData.displayTex);
-
-		BeginFrame();
-
-		for (usize i = 0; i < 4; i++)
-		{
-			sData.displayVertexBufferPtr->position = vertexPositions[i];
-			sData.displayVertexBufferPtr->texCoord = textureCoords[i];
-			sData.displayVertexBufferPtr++;
-		}
-
-		EndFrame();
+	void Renderer::DrawPixels(Pixel* pixels, usize width, usize height)
+	{
+		glDrawPixels(width, height, GL_BGRA, GL_UNSIGNED_BYTE, pixels);
 	}
 
 	void Renderer::BeginFrame()

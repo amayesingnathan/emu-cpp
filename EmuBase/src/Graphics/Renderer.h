@@ -6,7 +6,7 @@
 
 namespace Emu {
 
-    class PixelBuffer;
+    struct Pixel;
 
     class Renderer
     {
@@ -14,7 +14,8 @@ namespace Emu {
         static void Init(uint screenWidth, uint screenHeight);
         static void Shutdown();
 
-        static void Draw(Ref<PixelBuffer> screenTex);
+        static void Clear();
+        static void DrawPixels(Pixel* pixels, usize width, usize height);
 
     private:
         static void BeginFrame();
