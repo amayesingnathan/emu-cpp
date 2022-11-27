@@ -44,9 +44,13 @@ namespace GB {
 
         Emu::ImGuiHandler* mImGuiHandler = nullptr;
 
+        USize mLastCycles = 0;
+
+        // Debug
         bool mPaused = false;
         bool mStep = false;
 
-        USize mLastCycles = 0;
+        Word mPCBreakpoint = 0x0100;
+        bool mUseBreakpoint = true;
     };
 }

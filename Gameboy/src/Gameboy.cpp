@@ -35,7 +35,13 @@ namespace GB {
 
         while (cyclesThisUpdate < _CyclesPerFrame)
         {
-            Byte cycles = mProcessor.exec();
+            Byte cycles = 0;
+            if (!mUseBreakpoint)
+                cycles = mProcessor.exec();
+            else
+                cycles = mProcessor.execDebug(mPCBreakpoint, mPaused, mStep);
+
+
             cyclesThisUpdate += cycles;
             mProcessor.updateTimers(cycles);
             mGraphics.update(cycles);
@@ -91,18 +97,36 @@ namespace GB {
                 if (ImGui::Button("Step"))
                     mStep = true;
             }
+
+            ImGui::SameLine();
+            ImGui::Checkbox("Breakpoint", &mUseBreakpoint);
+
+            static Word sStepSize = 1;
+            ImGui::InputScalar("PC", ImGuiDataType_U16, &mPCBreakpoint, &sStepSize, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
         }
 
         ImGui::Separator();
 
         {   // Registers
             Registers& registers = mProcessor.mRegisters;
+            BitField flagReg = mProcessor.mFRegister.getFlags();
+
+            ImGui::Text("CPU Registers");
 
             ImGui::Text("A: %02X", registers[ByteReg::A]);
             ImGui::SameLine();
             ImGui::Text("F: %02X", registers[ByteReg::F]);
             ImGui::SameLine();
             ImGui::Text("AF: %04X", registers[WordReg::AF]);
+
+            ImGui::Text("Flag Register");
+            ImGui::Text("Zero : %1i", flagReg.val(_ZeroBit));
+            ImGui::SameLine();
+            ImGui::Text("Sub : %1i", flagReg.val(_SubtractBit));
+            ImGui::SameLine();
+            ImGui::Text("HCarry : %1i", flagReg.val(_HCarryBit));
+            ImGui::SameLine();
+            ImGui::Text("Carry : %1i", flagReg.val(_CarryBit));
 
             ImGui::Text("B: %02X", registers[ByteReg::B]);
             ImGui::SameLine();
@@ -125,6 +149,50 @@ namespace GB {
             ImGui::Text("SP: %04X", registers[WordReg::SP]);
 
             ImGui::Text("PC: %04X", registers[WordReg::PC]);
+        }
+
+        ImGui::Separator();
+
+        {   // Registers
+            Byte* ioRegisters = MemoryManager::GetBlock(MemoryManager::IO);
+
+            ImGui::Text("IO Registers");
+
+            ImGui::Text("JOYP: %02X", ioRegisters[0x0]);
+
+            ImGui::Text("SB: %02X", ioRegisters[0x1]);
+            ImGui::SameLine();
+            ImGui::Text("SC: %02X", ioRegisters[0x2]);
+
+            ImGui::Text("DIV: %02X", ioRegisters[0x4]);
+            ImGui::SameLine();
+            ImGui::Text("TIMA: %02X", ioRegisters[0x5]);
+            ImGui::SameLine();
+            ImGui::Text("TMA: %02X", ioRegisters[0x6]);
+            ImGui::SameLine();
+            ImGui::Text("TMC: %02X", ioRegisters[0x7]);
+
+            ImGui::Text("LCDC: %02X", ioRegisters[0x40]);
+            ImGui::SameLine();
+            ImGui::Text("LCDS: %02X", ioRegisters[0x41]);
+
+            ImGui::Text("SCY: %02X", ioRegisters[0x42]);
+            ImGui::SameLine();
+            ImGui::Text("SCX: %02X", ioRegisters[0x43]);
+
+            ImGui::Text("LY: %03i", ioRegisters[0x44]);
+            ImGui::SameLine();
+            ImGui::Text("LYC: %03i", ioRegisters[0x45]);
+
+            ImGui::Text("BGP: %02X", ioRegisters[0x47]);
+            ImGui::SameLine();
+            ImGui::Text("OPB0: %02X", ioRegisters[0x48]);
+            ImGui::SameLine();
+            ImGui::Text("OPB1: %02X", ioRegisters[0x49]);
+
+            ImGui::Text("WY: %02X", ioRegisters[0x4A]);
+            ImGui::SameLine();
+            ImGui::Text("WX: %02X", ioRegisters[0x4B]);
         }
 
         ImGui::End();

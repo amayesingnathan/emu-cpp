@@ -34,6 +34,7 @@ namespace GB {
 
     public:
         Byte exec();
+        Byte execDebug(Word breakpoint, bool& pause, bool& step);
         void updateTimers(Byte cycles);
         void handleInterupts();
 

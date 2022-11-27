@@ -16,6 +16,23 @@ namespace GB {
 		return HandleInstruction(nextOp);
 	}
 
+	Byte CPU::execDebug(Word breakpoint, bool& pause, bool& step)
+	{
+		if (mHalted)
+			return 1;
+
+		Word& pc = mRegisters[WordReg::PC];
+		if (pc == breakpoint)
+		{
+			pause = true;
+			step = true;
+			return 0;
+		}
+
+		OpCode nextOp = AddressBus::Read(pc++);
+		return HandleInstruction(nextOp);
+	}
+
 	void CPU::updateTimers(Byte cycles)
 	{
 		mDividerClock += cycles;

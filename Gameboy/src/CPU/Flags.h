@@ -12,18 +12,17 @@ namespace GB {
     class FRegister
     {
     private:
-        BitField reg;
+        Byte& reg;
 
     public:
         FRegister(Byte& _reg) : reg(_reg) {}
 
-        bool carry() const { return reg.bit(_CarryBit); }
-        bool hcarry() const { return reg.bit(_HCarryBit); }
-        bool subtr() const { return reg.bit(_SubtractBit); }
-        bool zero() const { return reg.bit(_ZeroBit); }
+        bool carry() const { BitField flags = reg; return flags.bit(_CarryBit); }
+        bool hcarry() const { BitField flags = reg; return flags.bit(_HCarryBit); }
+        bool subtr() const { BitField flags = reg; return flags.bit(_SubtractBit); }
+        bool zero() const { BitField flags = reg; return flags.bit(_ZeroBit); }
 
-        BitField& getFlags() { return reg; }
-        const BitField& getFlags() const { return reg; }
+        BitField getFlags() const { return reg; }
         void setFlags(BitField flag) { flag &= 0xF0; reg = flag; }
     };
 }
