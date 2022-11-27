@@ -1,7 +1,5 @@
 #pragma once
 
-#include "EmuBase.h"
-
 #include "CPU/CPU.h"
 #include "Graphics/PPU.h"
 #include "Cartridge/Cartridge.h"
@@ -51,6 +49,6 @@ namespace GB {
         bool mStep = false;
 
         Word mPCBreakpoint = 0x0100;
-        bool mUseBreakpoint = true;
+        bool mUseBreakpoint = false;
     };
 }

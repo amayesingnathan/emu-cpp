@@ -10,7 +10,7 @@ namespace Emu {
 		Texture(uint width, uint height);
 		~Texture();
 
-		void bind(uint slot);
+		void bind();
 
 		uint getWidth() const { return mWidth; }
 		uint getHeight() const { return mHeight; }

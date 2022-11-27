@@ -7,8 +7,8 @@
 
 namespace Emu {
 
-	PixelBuffer::PixelBuffer(uint size)
-        : mSize(size)
+	PixelBuffer::PixelBuffer(uint width, uint height)
+        : mWidth(width), mHeight(height), mSize(width * height * sizeof(Pixel)), mTexture(Texture::Create(width, height))
     {
         glGenBuffers(1, &mRendererID);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mRendererID);
@@ -20,7 +20,7 @@ namespace Emu {
         glDeleteBuffers(1, &mRendererID);
     }
 
-    uint8_t* PixelBuffer::lock()
+    void PixelBuffer::lock()
     {
         GL_ASSERT(!mLocked, "Buffer memory already mapped!");
 
@@ -31,7 +31,7 @@ namespace Emu {
         void* data = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 
         GL_ASSERT(data, "Could not read data from pixel buffer!");
-        return (uint8_t*)data;
+        mPixels = (Pixel*)data;
     }
 
     void PixelBuffer::unlock()
@@ -40,19 +40,25 @@ namespace Emu {
 
         mLocked = false;
 
+        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mRendererID);
         int success = glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
+        GL_ASSERT(success, "Could not unmap buffer");
+
+        glTextureSubImage2D(mTexture->getTexID(), 0, 0, 0, mWidth, mHeight, GL_BGRA, GL_UNSIGNED_BYTE, 0);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     }
 
-    void PixelBuffer::upload(Ref<Texture> tex)
+    uint PixelBuffer::getTexID() const { return mTexture->getTexID(); }
+
+    Pixel& PixelBuffer::at(usize x, usize y)
     {
-        if (mLocked)
-            unlock();
+        GL_ASSERT(mLocked, "Buffer must be locked!");
+        return mPixels[_Map(x, y)];
+    }
 
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mRendererID);
-        tex->bind(0);
-
-        glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, tex->getWidth(), tex->getHeight(), GL_BGRA, GL_UNSIGNED_BYTE, 0);
-        glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
+    const Pixel& PixelBuffer::at(usize x, usize y) const
+    {
+        GL_ASSERT(mLocked, "Buffer must be locked!");
+        return mPixels[_Map(x, y)];
     }
 }

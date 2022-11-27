@@ -1,6 +1,6 @@
 #pragma once
 
-#include "IO/Input.h"
+#include "Core/Base.h"
 
 namespace GB::Buttons {
 

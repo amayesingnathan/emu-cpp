@@ -22,8 +22,8 @@ namespace Emu {
             Duration ts = Time::Elapsed();
             if (ts < FrameLength)
                 Time::Sleep(FrameLength - ts);
-            else
-                ; // Debug output frame overran!
+            //else
+            //    EMU_CORE_WARN("Frame running behind by {:03.2f}ms!", (ts - FrameLength).count());
         }
     }
 
@@ -57,7 +57,7 @@ namespace Emu {
         }
 
         std::filesystem::current_path("../EmuCpp");
-        Renderer::Init(displayWidth, displayHeight);
+        //Renderer::Init(displayWidth, displayHeight);
 
         mWindow->setActionCallback(mGameInstance->getActionCallback());
 
@@ -66,7 +66,7 @@ namespace Emu {
 
     Application::~Application()
     {
-        Renderer::Shutdown();
+        //Renderer::Shutdown();
 
         delete mGameInstance;
         delete mImGuiHandler;

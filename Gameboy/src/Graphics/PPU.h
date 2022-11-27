@@ -1,16 +1,22 @@
 #pragma once
 
-#include "Graphics/Framebuffer.h"
-#include "Graphics/Texture.h"
-
-#include "Screen.h"
+#include "Core/Types.h"
 
 namespace GB {
 
+	struct Sprite
+	{
+		Byte xPos;
+		Byte yPos;
+		Byte tileLoc;
+		BitField flags;
+	};
+
 	class PPU
 	{
-	public:
-		GB_CONST USize _BufSize = Screen::_Width * Screen::_Height * sizeof(Emu::Pixel);
+	private:
+		GB_CONST Byte _ScreenWidth  = 160;
+		GB_CONST Byte _ScreenHeight = 144;
 
 		GB_CONST Word _CyclesPerScanline = 456;
 		GB_CONST Byte _ScanlineCount	 = 144;
@@ -34,12 +40,12 @@ namespace GB {
 		~PPU();
 
 	public:
-		void startFrame();// { mDisplay = mPixelBuffer->lock(); }
-		void endFrame();// { mPixelBuffer->upload(mDisplayTexture); }
+		void startFrame() { mDisplayPB->lock(); }
+		void endFrame() { mDisplayPB->unlock(); }
 
 		void update(Byte cycles);
 
-		Emu::uint getDisplayTex() const { return mFramebuffer->getColourAttachment(); }
+		Emu::uint getDisplayTex() const { return mDisplayPB->getTexID(); }
 
 	private:
 		bool IsLCDEnabled();
@@ -59,9 +65,7 @@ namespace GB {
 		Colour GetColour(Byte colourNum, Word address);
 
 	private:
-		Ref<Emu::Framebuffer> mFramebuffer;
-		//Ref<Emu::Texture> mDisplayTexture;
-		Screen mDisplay;
+		Ref<Emu::PixelBuffer> mDisplayPB, mSpritesPB;
 
 		Word mClockCounter = 0;
 		Mode mCurrentMode = OAM;

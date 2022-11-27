@@ -1,8 +1,6 @@
 #include "gbpch.h"
 #include "PPU.h"
 
-#include "Graphics/Renderer.h"
-
 #include "Graphics/Flags.h"
 #include "Memory/Address.h"
 #include "Memory/AddressBus.h"
@@ -10,33 +8,12 @@
 namespace GB {
 
 	PPU::PPU()
-		//: mDisplayTexture(Emu::Texture::Create(Screen::_Width, Screen::_Height))
+		: mDisplayPB(Emu::PixelBuffer::Create(_ScreenWidth, _ScreenHeight))
 	{
-		Emu::FramebufferSpec fbSpec;
-		fbSpec.width = Screen::_Width;
-		fbSpec.height = Screen::_Height;
-		fbSpec.attachments = { Emu::FramebufferTextureFormat::RGBA8, Emu::FramebufferTextureFormat::Depth };
-		fbSpec.samples = 1;
-
-		mFramebuffer = Emu::Framebuffer::Create(fbSpec);
 	}
 
 	PPU::~PPU()
 	{
-	}
-
-	void PPU::startFrame()
-	{
-		mFramebuffer->bind();
-		Emu::Renderer::Clear();
-		mFramebuffer->unbind();
-	}
-
-	void PPU::endFrame()
-	{
-		mFramebuffer->bind();
-		Emu::Renderer::DrawPixels(mDisplay, Screen::_Width, Screen::_Height);
-		mFramebuffer->unbind();
 	}
 
 	void PPU::update(Byte cycles)
@@ -80,8 +57,7 @@ namespace GB {
 	{
 		mClockCounter = 0;
 		AddressBus::Write(Addr::LY, 0);
-		CompareScanline(0);
-		SetLCDStatus(VBLANK);
+		SetLCDStatus(HBLANK);
 	}
 
 	void PPU::SetLCDStatus(Mode newMode)
@@ -167,7 +143,7 @@ namespace GB {
 		if (scanline < _ScanlineCountMax)
 			return;
 
-		mClockCounter = 0;
+ 		mClockCounter = 0;
 		scanline = 0;
 		CompareScanline(scanline);
 
@@ -242,39 +218,35 @@ namespace GB {
 
 		Word tileRow = yPos * 4;
 
-		for (Byte pixel = 0; pixel < Screen::_Width; pixel++)
+		for (Byte pixel = 0; pixel < _ScreenWidth; pixel++)
 		{
 			Byte xPos = pixel + scrollX;
 			if (usingWindow && pixel >= windowX)
 				xPos = pixel - windowX;
 
-			Word tileCol = xPos / 8;
 			SWord tileNum;
-
-			Word tileAddrss = backgroundMemory + tileRow + tileCol;
-			if (unsig)
-				tileNum = (Byte)AddressBus::Read(tileAddrss);
-			else
-				tileNum = (SByte)AddressBus::Read(tileAddrss);
-
 			Word tileLocation = tileData;
+			Word tileAddress = backgroundMemory + tileRow + (xPos / 8);
 			if (unsig)
+			{
+				tileNum = (Byte)AddressBus::Read(tileAddress);
 				tileLocation += (tileNum * 16);
+			}
 			else
-				tileLocation += ((tileNum + 128) * 16);
+			{
+				tileNum = (SByte)AddressBus::Read(tileAddress);
+				tileLocation += ((tileNum + 0x80) * 16);
+			}
 
-			Byte line = yPos % 8;
-			line *= 2;
-			BitField data1 = AddressBus::Read(tileLocation + line);
-			BitField data2 = AddressBus::Read(tileLocation + line + 1);
+			Byte line = (yPos % 8) * 2;
+			BitField hiByte = AddressBus::Read(tileLocation + line);
+			BitField loByte = AddressBus::Read(tileLocation + line + 1);
 
-			Byte colourBit = xPos % 8;
-			colourBit -= 7;
-			colourBit *= -1;
+			Byte colourBit = 7 - (xPos % 8);
 
-			Byte colourNum = data2.val(colourBit);
+			Byte colourNum = loByte.val(colourBit);
 			colourNum <<= 1;
-			colourNum |= data1.val(colourBit);
+			colourNum |= hiByte.val(colourBit);
 
 			Colour col = GetColour(colourNum, Addr::BGP);
 			Emu::Pixel colour = _White;
@@ -292,7 +264,7 @@ namespace GB {
 			if ((finalY < 0) || (finalY > 143) || (pixel < 0) || (pixel > 159))
 				continue;
 
-			mDisplay(pixel, finalY) = colour;
+			mDisplayPB->at(pixel, finalY) = colour;
 		}
 	}
 
@@ -332,7 +304,7 @@ namespace GB {
 				BitField data1 = AddressBus::Read(dataAddress);
 				BitField data2 = AddressBus::Read(dataAddress + 1);
 
-				for (Byte tilePixel = 7; tilePixel >= 0; tilePixel--)
+				for (SWord tilePixel = 7; tilePixel >= 0; tilePixel--)
 				{
 					Byte colourBit = tilePixel;
 					if (xFlip)
@@ -367,7 +339,7 @@ namespace GB {
 					if ((scanline < 0) || (scanline > 143) || (pixel < 0) || (pixel > 159))
 						continue;
 
-					mDisplay(pixel, scanline) = colour;
+					mDisplayPB->at(pixel, scanline) = colour;
 				}
 			}
 		}

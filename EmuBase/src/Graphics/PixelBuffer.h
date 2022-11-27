@@ -8,26 +8,38 @@ namespace Emu {
 
 	struct Pixel
 	{
-		uint8_t b, g, r, a;
+		uint8_t r;
+		uint8_t g;
+		uint8_t b;
+		uint8_t a;
 	};
+
+#define _Map(x, y) ((y * mWidth) + x)
 
 	class PixelBuffer
 	{
 	public:
-		PixelBuffer(uint size);
+		PixelBuffer(uint width, uint height);
 		~PixelBuffer();
 
-		uint8_t* lock();
+		void lock();
 		void unlock();
 
-		void upload(Ref<Texture> tex);
+		uint getTexID() const;
 
-		static Ref<PixelBuffer> Create(uint size) { return std::make_shared<PixelBuffer>(size); }
+		Pixel& at(usize x, usize y);
+		const Pixel& at(usize x, usize y) const;
+
+		static Ref<PixelBuffer> Create(uint width, uint height) { return std::make_shared<PixelBuffer>(width, height); }
 
 	private:
 		uint mRendererID = 0;
 		uint mSize = 0;
+		uint mWidth = 0, mHeight = 0;
 
 		bool mLocked = false;
+
+		Ref<Texture> mTexture = nullptr;
+		Pixel* mPixels = nullptr;
 	};
 }

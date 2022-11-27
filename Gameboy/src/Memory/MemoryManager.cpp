@@ -12,7 +12,7 @@ namespace GB {
 	GB_CONST USize _WRAMSize	= 0x2000;
 	GB_CONST USize _VRAMSize	= 0x2000;
 	GB_CONST USize _OAMSize		= 0x00A0;
-	GB_CONST USize _IOSize		= 0x0081; // Interrupt Enabled (0xFFFF) added here
+	GB_CONST USize _IOSize		= 0x0080 + 1; // Interrupt Enabled (0xFFFF) added here
 	GB_CONST USize _MemorySize = _BootROMSize + _StackSize + _IOSize + _WRAMSize + _VRAMSize + _OAMSize + Cartridge::_Size;
 
 	// Memory Partition Offsets

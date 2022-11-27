@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Memory.h"
 #include "CPU/Interrupts.h"
 
 namespace GB {

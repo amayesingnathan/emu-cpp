@@ -1,6 +1,7 @@
 project "Gameboy"
     language "C++"
     cppdialect "C++20"
+	staticruntime "on"
 		
     targetdir 	("%{wks.location}/bin/%{prj.name}/" .. outputDir)
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)
@@ -35,12 +36,10 @@ project "Gameboy"
 	
     filter "system:windows"
         kind "StaticLib"
-        staticruntime "off"
         systemversion "latest"
 		
 	filter "system:linux"
         kind "SharedLib"
-        staticruntime "off"
         defines "GB_SHARED"
         pic "On"
         systemversion "latest"

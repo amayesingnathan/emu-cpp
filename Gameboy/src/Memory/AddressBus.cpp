@@ -5,7 +5,6 @@
 #include "MemoryManager.h"
 
 #include "Cartridge/Cartridge.h"
-#include "Graphics/Screen.h"
 
 namespace GB {
 
@@ -14,7 +13,7 @@ namespace GB {
 		if (address >= 0xFEA0 && address < 0xFF00)
 			return sErrorByte; // Warn: restricted memory!
 
-		if (sBusState.bootstrap && address < 0x0100)
+		if (sBusState.bootstrap && address < 0x0100)	// Boot ROM
 			return MemoryManager::Get(MemoryManager::BOOTSTRAP, address);
 		else if (address < 0x8000)						// ROM - may have memory bank controller to handle reading
 			return sCartridge->read(address);

@@ -2,6 +2,7 @@ project "EmuCpp"
     kind "ConsoleApp"
     language "C++"
     cppdialect "C++20"
+	staticruntime "on"
 		
     targetdir 	("%{wks.location}/bin/%{prj.name}/" .. outputDir)
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)

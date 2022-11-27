@@ -136,13 +136,6 @@ namespace GB {
 			break;
 		}
 
-		// Memory-Register load
-		case 0x0A: case 0x1A: case 0x2A: case 0x3A:
-		{
-			LD_R_M(instruction);
-			break;
-		}
-
 		// Unary Inc/Dec
 		case 0x03: case 0x13: case 0x23: case 0x33: case 0x0B: case 0x1B: case 0x2B: case 0x3B:
 		case 0x04: case 0x14: case 0x24: case 0x34: case 0x0C: case 0x1C: case 0x2C: case 0x3C:
@@ -167,9 +160,34 @@ namespace GB {
 			break;
 		}
 
+		case 0x08:
+		{
+			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+			Word address = lo | hi << 8;
+
+			Word spLo = AddressBus::Read(address++);
+			Word spHi = AddressBus::Read(address);
+			mRegisters[WordReg::SP] = spLo | spHi << 8;
+			break;
+		}
+
 		case 0x09: case 0x19: case 0x29: case 0x39:
 		{
 			ADD_HL(mRegisters[sRegisterPairs[instruction.p()]]);
+			break;
+		}
+
+		// Memory-Register load
+		case 0x0A: case 0x1A: case 0x2A: case 0x3A:
+		{
+			LD_R_M(instruction);
+			break;
+		}
+
+		case 0x10:
+		{
+			mRegisters[WordReg::PC]++;
 			break;
 		}
 
@@ -414,7 +432,6 @@ namespace GB {
 
 		Byte src;
 		READ_REG(7, src); // 7 targets A register
-		src = (Byte)((SByte)src + incDec);
 
 		Word& address = mRegisters[sRegisterPairs[p]];
 		AddressBus::Write(address, src);
@@ -921,34 +938,119 @@ namespace GB {
 
 	void CPU::RLC_R(Byte target)
 	{
+		Byte reg;
+		READ_REG(target, reg);
+		Byte finalBit = (reg & GB_BIT(7)) ? GB_BIT(0) : 0;
+		reg = (Byte)(reg << 1) | finalBit;
+		WRITE_REG(target, reg);
+
+		BitField flags = 0;
+		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
+		flags |= finalBit ? GB_BIT(_CarryBit) : 0;
+		mFRegister.setFlags(flags);
+
 	}
 
 	void CPU::RRC_R(Byte target)
 	{
+		Byte reg;
+		READ_REG(target, reg);
+		Byte firstBit = (reg & GB_BIT(0)) ? GB_BIT(7) : 0;
+		reg = (Byte)(reg >> 1) | firstBit;
+		WRITE_REG(target, reg);
+
+		BitField flags = 0;
+		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
+		flags |= firstBit ? GB_BIT(_CarryBit) : 0;
+		mFRegister.setFlags(flags);
 	}
 
 	void CPU::RL_R(Byte target)
 	{
+		Byte reg;
+		READ_REG(target, reg);
+		Byte firstBit = mFRegister.carry() ? GB_BIT(0) : 0;
+		reg = (Byte)(reg << 1) | firstBit;
+		WRITE_REG(target, reg);
+
+		BitField flags = mFRegister.getFlags();
+		flags &= ~GB_BIT(_SubtractBit);
+		flags &= ~GB_BIT(_HCarryBit);
+		flags |= (reg == 0) ? GB_BIT(_ZeroBit) : 0;
+		mFRegister.setFlags(flags);
 	}
 
 	void CPU::RR_R(Byte target)
 	{
+		Byte reg;
+		READ_REG(target, reg);
+		Byte finalBit = mFRegister.carry() ? GB_BIT(7) : 0;
+		reg = (Byte)(reg >> 1) | finalBit;
+		WRITE_REG(target, reg);
+
+		BitField flags = mFRegister.getFlags();
+		flags &= ~GB_BIT(_SubtractBit);
+		flags &= ~GB_BIT(_HCarryBit);
+		flags |= (reg == 0) ? GB_BIT(_ZeroBit) : 0;
+		mFRegister.setFlags(flags);
 	}
 
 	void CPU::SLA_R(Byte target)
 	{
+		Byte reg;
+		READ_REG(target, reg);
+		Byte finalBit = reg & GB_BIT(7);
+		reg <<= 1;
+		WRITE_REG(target, reg);
+
+		BitField flags = 0;
+		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
+		flags |= finalBit ? GB_BIT(_CarryBit) : 0;
+		mFRegister.setFlags(flags);
 	}
 
 	void CPU::SRA_R(Byte target)
 	{
+		Byte reg;
+		READ_REG(target, reg);
+		Byte firstBit = reg & GB_BIT(0);
+		Byte finalBit = reg & GB_BIT(7);
+		reg >>= 1;
+		reg |= finalBit;
+		WRITE_REG(target, reg);
+
+		BitField flags = 0;
+		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
+		flags |= firstBit ? GB_BIT(_CarryBit) : 0;
+		mFRegister.setFlags(flags);
 	}
 
 	void CPU::SWAP_R(Byte target)
 	{
+		Byte reg;
+		READ_REG(target, reg);
+		Byte lo = (reg & 0x0F) << 4;
+		Byte hi = (reg & 0xF0) >> 4;
+		reg = hi | lo;
+		WRITE_REG(target, reg);
+
+		BitField flags = 0;
+		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
+		mFRegister.setFlags(flags);
 	}
 
 	void CPU::SRL_R(Byte target)
 	{
+		Byte reg;
+		READ_REG(target, reg);
+		Byte firstBit = reg & GB_BIT(0);
+		reg >>= 1;
+		WRITE_REG(target, reg);
+
+		BitField flags = 0;
+		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
+		flags |= firstBit ? GB_BIT(_CarryBit) : 0;
+		mFRegister.setFlags(flags);
 	}
 
 #pragma endregion

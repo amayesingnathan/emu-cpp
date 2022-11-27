@@ -1,6 +1,7 @@
 project "EmuBase"
     language "C++"
     cppdialect "C++20"
+	staticruntime "on"
 		
     targetdir 	("%{wks.location}/bin/%{prj.name}/" .. outputDir)
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)
@@ -12,6 +13,8 @@ project "EmuBase"
     { 
         "src/**.h", 
         "src/**.cpp",
+        "dependencies/stb_image/**.cpp",
+        "dependencies/stb_image/**.cpp",
     }
 	
 	defines
@@ -39,12 +42,10 @@ project "EmuBase"
 	
     filter "system:windows"
         kind "StaticLib"
-        staticruntime "off"
         systemversion "latest"
 		
 	filter "system:linux"
         kind "SharedLib"
-        staticruntime "off"
         pic "On"
         systemversion "latest"
 

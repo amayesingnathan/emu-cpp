@@ -15,7 +15,7 @@ namespace GB {
     }
 
     Gameboy::~Gameboy()
-    {
+    {   
         delete mCartridge;
         mCartridge = nullptr;
 
@@ -155,6 +155,7 @@ namespace GB {
 
         {   // Registers
             Byte* ioRegisters = MemoryManager::GetBlock(MemoryManager::IO);
+            BitField IE = ioRegisters[0x80];
 
             ImGui::Text("IO Registers");
 
@@ -193,6 +194,21 @@ namespace GB {
             ImGui::Text("WY: %02X", ioRegisters[0x4A]);
             ImGui::SameLine();
             ImGui::Text("WX: %02X", ioRegisters[0x4B]);
+
+            ImGui::Text("IE: %02X", &IE);
+            ImGui::SameLine();
+            ImGui::Text("IF: %02X", ioRegisters[0x0F]);
+
+            ImGui::Text("Interupt Enable Register");
+            ImGui::Text("VBlank : %1i", IE.val(_VBlankBit));
+            ImGui::SameLine();
+            ImGui::Text("LCD Status : %1i", IE.val(_LCDStatBit));
+
+            ImGui::Text("Timer : %1i", IE.val(_TimerBit));
+            ImGui::SameLine();
+            ImGui::Text("Serial : %1i", IE.val(_SerialBit));
+            ImGui::SameLine();
+            ImGui::Text("Joypad : %1i", IE.val(_JoypadBit));
         }
 
         ImGui::End();
