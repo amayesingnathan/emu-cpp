@@ -17,28 +17,15 @@ namespace Emu {
         ImGuiHandler(Window* window);
         ~ImGuiHandler();
 
-        void update()
-        {
-            BeginFrame();
-            RenderUI();
-            EndFrame();
-        }
-
-        void setDisplay(uint tex) { mDisplay = tex; }
+        void begin();
+        void end();
 
         static bool EventHandled(EventType type);
 
     private:
-        void BeginFrame();
-        void EndFrame();
-
         void SetDarkThemeColours();
 
-        void RenderUI();
-        void UI_Viewport();
-
     private:
-        uint mDisplay = 0;
         Window* mWindow;
     };
 }

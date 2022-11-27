@@ -28,10 +28,15 @@ namespace Emu {
         Application();
         ~Application();
 
+        void RenderUI();
+        void UI_MenuBar();
+        void UI_Viewport();
+
     private:
         bool mRunning = true;
 
         Window* mWindow = nullptr;
+        ImGuiHandler* mImGuiHandler = nullptr;
 
         Base* mGameInstance = nullptr;
         Settings mEmuSettings;

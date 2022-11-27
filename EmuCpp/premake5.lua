@@ -23,6 +23,7 @@ project "EmuCpp"
         "%{IncludeDir.EmuBase}",
         "%{IncludeDir.Gameboy}",
         "%{IncludeDir.glm}",
+        "%{IncludeDir.imgui}",
     }
 
 	links

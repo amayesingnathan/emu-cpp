@@ -59,14 +59,14 @@ namespace Emu {
         return false;
     };
 
-    void ImGuiHandler::BeginFrame()
+    void ImGuiHandler::begin()
     {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
     }
 
-    void ImGuiHandler::EndFrame()
+    void ImGuiHandler::end()
     {
         ImGuiIO& io = ImGui::GetIO();
 
@@ -117,56 +117,4 @@ namespace Emu {
         colours[ImGuiCol_TitleBgCollapsed] = ImVec4{ 0.15f, 0.1505f, 0.151f, 1.0f };
     }
 
-    void ImGuiHandler::RenderUI()
-    {
-        static bool dockspaceOpen = true;
-
-        ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
-            ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-
-        ImGuiViewport* viewport = ImGui::GetMainViewport();
-        ImGui::SetNextWindowPos(viewport->Pos);
-        ImGui::SetNextWindowSize(viewport->Size);
-        ImGui::SetNextWindowViewport(viewport->ID);
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("DockSpace Demo", &dockspaceOpen, windowFlags);
-        ImGui::PopStyleVar(3);
-
-        ImGuiIO& io = ImGui::GetIO();
-        ImGuiStyle& style = ImGui::GetStyle();
-        float minWinSizeX = style.WindowMinSize.x;
-        style.WindowMinSize.x = 370.0f;
-
-        if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        {
-            ImGuiID dockspaceID = ImGui::GetID("MyDockSpace");
-            ImGui::DockSpace(dockspaceID, ImVec2(0.0f, 0.0f), ImGuiDockNodeFlags_None);
-        }
-
-        style.WindowMinSize.x = minWinSizeX;
-
-        UI_Viewport();
-
-        ImGui::End();
-    }
-
-    void ImGuiHandler::UI_Viewport()
-    {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        ImGui::Begin("Viewport");
-
-        auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
-        auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
-        auto viewportOffset = ImGui::GetWindowPos();
-
-        ImVec2 viewportSize = ImGui::GetContentRegionAvail();
-        ImGui::Image((ImTextureID)(intptr_t)mDisplay, viewportSize, ImVec2{ 0, 1 }, ImVec2{ 1, 0 });
-
-        ImGui::End();
-        ImGui::PopStyleVar();
-    }
 }

@@ -33,7 +33,6 @@ namespace Emu {
 		void update();
 
 		void setActionCallback(const ActionCallback& callback) { mData.eventCallback = callback; }
-		void setDisplayTex(uint displayTex) { mImGuiHandler->setDisplay(displayTex); }
 
 		inline uint getWidth() const { return mData.width; }
 		inline uint getHeight() const { return mData.height; }
@@ -54,7 +53,6 @@ namespace Emu {
 	private:
 		GLFWwindow* mWindow;
 		GraphicsContext* mContext;
-		ImGuiHandler* mImGuiHandler;
 
 		struct WindowData
 		{

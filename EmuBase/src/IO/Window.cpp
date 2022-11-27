@@ -80,13 +80,10 @@ namespace Emu {
 				};
 			}
 		});
-
-		mImGuiHandler = new ImGuiHandler(this);
 	}
 
 	void Window::Shutdown()
 	{
-		delete mImGuiHandler;
 		delete mContext;
 
 		glfwDestroyWindow(mWindow);
@@ -100,8 +97,6 @@ namespace Emu {
 
 	void Window::update()
 	{
-		mImGuiHandler->update();
-
 		glfwPollEvents();
 		mContext->swapBuffers();
 	}
