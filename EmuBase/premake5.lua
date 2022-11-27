@@ -13,8 +13,6 @@ project "EmuBase"
     { 
         "src/**.h", 
         "src/**.cpp",
-        "dependencies/stb_image/**.cpp",
-        "dependencies/stb_image/**.cpp",
     }
 	
 	defines
