@@ -34,6 +34,8 @@ namespace Emu {
         void UI_Viewport();
 
         void LaunchEmulator();
+        void CloseEmulator();
+
         void GetROMData(const fs::path& file);
 
     private:

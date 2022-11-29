@@ -102,6 +102,8 @@ namespace Emu {
             {
                 if (ImGui::MenuItem("Open"))
                     LaunchEmulator();
+                if (ImGui::MenuItem("Close"))
+                    CloseEmulator();
                 if (ImGui::MenuItem("Exit"))
                     mRunning = false;
                 ImGui::EndMenu();
@@ -127,7 +129,13 @@ namespace Emu {
     void Application::LaunchEmulator()
     {
         fs::path openFile = File::OpenFile({ "GB ROM (*.gb)", "*.gb" });
+        if (openFile.empty())
+            return;
+
         GetROMData(openFile);
+
+        if (mGameInstance)
+            delete mGameInstance;
 
         switch (mEmuSettings.type)
         {
@@ -145,9 +153,21 @@ namespace Emu {
         mWindow->setActionCallback(mGameInstance->getActionCallback());
     }
 
+    void Application::CloseEmulator()
+    {
+        delete mGameInstance;
+        mGameInstance = nullptr;
+
+        mEmuSettings.frameLength = std::chrono::milliseconds(16);
+        mEmuSettings.gamePath = "";
+        mEmuSettings.type = EmulatorType::None;
+    }
+
     void Application::GetROMData(const fs::path& file)
     {
+        mEmuSettings.type = EmulatorType::None;
         mEmuSettings.gamePath = file.string();
+
         if (file.extension() == ".gb")
             mEmuSettings.type = EmulatorType::GB;
     }
