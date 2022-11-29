@@ -17,13 +17,13 @@ namespace GB {
 	class CPU
 	{
     public:
-        GB_CONST USize _ClockSpeed = 4194304;
-        GB_CONST Word _TMC0 = _ClockSpeed / 4096;
-        GB_CONST Word _TMC1 = _ClockSpeed / 262144;
-        GB_CONST Word _TMC2 = _ClockSpeed / 65536;
-        GB_CONST Word _TMC3 = _ClockSpeed / 16382;
+        GB_CONST USize CLOCK_SPEED  = 4194304;
+        GB_CONST Word TMC0          = CLOCK_SPEED / 4096;
+        GB_CONST Word TMC1          = CLOCK_SPEED / 262144;
+        GB_CONST Word TMC2          = CLOCK_SPEED / 65536;
+        GB_CONST Word TMC3          = CLOCK_SPEED / 16382;
 
-        enum TimerControl : Word
+        enum class Timer : Word
         {
             TMC0, TMC1, TMC2, TMC3
         };
@@ -60,7 +60,7 @@ namespace GB {
         Word mDividerClock = 0;
         Word mTimerClock = 0;
 
-        Word mCurrentClockSpeed = _TMC0;
+        Word mCurrentClockSpeed = TMC0;
 
         // Flags
         bool mInteruptsEnabled = false;

@@ -8,7 +8,7 @@
 namespace GB {
 
 	PPU::PPU()
-		: mDisplayPB(Emu::PixelBuffer::Create(_ScreenWidth, _ScreenHeight))
+		: mDisplayPB(Emu::PixelBuffer::Create(SCREEN_WIDTH, SCREEN_HEIGHT))
 	{
 	}
 
@@ -18,8 +18,6 @@ namespace GB {
 
 	void PPU::update(Byte cycles)
 	{
-		Byte& scanline = AddressBus::Read(Addr::LY);
-		BitField lcdStatus = AddressBus::Read(Addr::LCDS);
 		if (!IsLCDEnabled())
 		{
 			DisableLCD();
@@ -29,19 +27,19 @@ namespace GB {
 		mClockCounter += cycles;
 		switch (mCurrentMode)
 		{
-		case HBLANK:
+		case Mode::HBLANK:
 			HBlankMode();
 			break;
 
-		case VBLANK:
+		case Mode::VBLANK:
 			VBlankMode();
 			break;
 
-		case OAM:
+		case Mode::OAM:
 			OAMMode();
 			break;
 
-		case LCD_TR:
+		case Mode::LCD_TR:
 			LCDTransferMode();
 			break;
 		}
@@ -50,14 +48,14 @@ namespace GB {
 	bool PPU::IsLCDEnabled()
 	{
 		BitField lcdControl = AddressBus::Read(Addr::LCDC);
-		return lcdControl.bit(_LCDEnableBit);
+		return lcdControl.bit(LCD_ENABLE_BIT);
 	}
 
 	void PPU::DisableLCD()
 	{
 		mClockCounter = 0;
 		AddressBus::Write(Addr::LY, 0);
-		SetLCDStatus(HBLANK);
+		SetLCDStatus(Mode::HBLANK);
 	}
 
 	void PPU::SetLCDStatus(Mode newMode)
@@ -67,26 +65,26 @@ namespace GB {
 
 		switch (newMode)
 		{
-		case HBLANK:
-			if (lcdStatus.bit(3))
+		case Mode::HBLANK:
+			if (lcdStatus.bit(LCD_INTERRUPT_BIT0))
 				AddressBus::RequestInterrupt(Interrupt::LCD_STAT);
 			break;
 
-		case VBLANK:
-			if (lcdStatus.bit(4))
+		case Mode::VBLANK:
+			if (lcdStatus.bit(LCD_INTERRUPT_BIT1))
 				AddressBus::RequestInterrupt(Interrupt::LCD_STAT);
-			lcdStatus.set(0);
+			lcdStatus.set(LCD_MODE_BIT0);
 			break;
 
-		case OAM:
-			if (lcdStatus.bit(5))
+		case Mode::OAM:
+			if (lcdStatus.bit(LCD_INTERRUPT_BIT2))
 				AddressBus::RequestInterrupt(Interrupt::LCD_STAT);
-			lcdStatus.set(1);
+			lcdStatus.set(LCD_MODE_BIT1);
 			break;
 
-		case LCD_TR:
-			lcdStatus.set(0);
-			lcdStatus.set(1);
+		case Mode::LCD_TR:
+			lcdStatus.set(LCD_MODE_BIT0);
+			lcdStatus.set(LCD_MODE_BIT1);
 			break;
 		}
 
@@ -100,11 +98,11 @@ namespace GB {
 		Byte& lcds = AddressBus::Read(Addr::LCDS);
 		BitField lcdStatus = lcds;
 
-		lcdStatus.reset(2);
+		lcdStatus.reset(LY_COMPARISON_BIT);
 		if (scanline == scanlineComparison)
 		{
-			lcdStatus.set(2);
-			if (lcdStatus.bit(6))
+			lcdStatus.set(LY_COMPARISON_BIT);
+			if (lcdStatus.bit(LCD_INTERRUPT_BIT3))
 				AddressBus::RequestInterrupt(Interrupt::LCD_STAT);
 		}
 
@@ -113,17 +111,17 @@ namespace GB {
 
 	void PPU::HBlankMode()
 	{
-		if (mClockCounter < _HBlankCycles)
+		if (mClockCounter < HBLANK_CYCLES)
 			return;
 
-		mClockCounter -= _HBlankCycles;
+		mClockCounter -= HBLANK_CYCLES;
 		Byte& scanline = ++AddressBus::Read(Addr::LY);
 		CompareScanline(scanline);
 
-		Mode nextMode = OAM;
-		if (scanline == _ScanlineCount)
+		Mode nextMode = Mode::OAM;
+		if (scanline == SCANLINE_COUNT)
 		{
-			nextMode = HBLANK;
+			nextMode = Mode::VBLANK;
 			AddressBus::RequestInterrupt(Interrupt::VBLANK);
 		}
 
@@ -133,40 +131,40 @@ namespace GB {
 
 	void PPU::VBlankMode()
 	{
-		if (mClockCounter < _CyclesPerScanline)
+		if (mClockCounter < CYCLES_PER_SCANLINE)
 			return;
 
-		mClockCounter -= _CyclesPerScanline;
+		mClockCounter -= CYCLES_PER_SCANLINE;
 		Byte& scanline = ++AddressBus::Read(Addr::LY);
 		CompareScanline(scanline);
 
-		if (scanline < _ScanlineCountMax)
+		if (scanline < SCANLINE_COUNT_MAX)
 			return;
 
  		mClockCounter = 0;
 		scanline = 0;
 		CompareScanline(scanline);
 
-		SetLCDStatus(OAM);
+		SetLCDStatus(Mode::OAM);
 
 	}
 
 	void PPU::OAMMode()
 	{
-		if (mClockCounter < _OAMCycles)
+		if (mClockCounter < OAM_CYCLES)
 			return;
 
-		mClockCounter -= _OAMCycles;
-		SetLCDStatus(LCD_TR);
+		mClockCounter -= OAM_CYCLES;
+		SetLCDStatus(Mode::LCD_TR);
 	}
 
 	void PPU::LCDTransferMode()
 	{
-		if (mClockCounter < _LCDTransferCycles)
+		if (mClockCounter < LCD_TRANSFER_CYCLES)
 			return;
 
-		mClockCounter -= _LCDTransferCycles;
-		SetLCDStatus(HBLANK);
+		mClockCounter -= LCD_TRANSFER_CYCLES;
+		SetLCDStatus(Mode::HBLANK);
 		DrawScanline();
 	}
 
@@ -174,17 +172,21 @@ namespace GB {
 	{
 		BitField lcdControl = AddressBus::Read(Addr::LCDC);
 
-		if (lcdControl.bit(_BGEnableBit))
-			DrawTiles(lcdControl);
-		if (lcdControl.bit(_OBJEnableBit))
-			DrawSprites(lcdControl);
+		if (!lcdControl.bit(LCD_ENABLE_BIT))
+			return;
+
+		DrawTiles(lcdControl);
+		DrawSprites(lcdControl);
 	}
 
 	void PPU::DrawTiles(BitField lcdControl)
 	{
-		Word tileData = 0x8000;
+		if (!lcdControl.bit(BG_ENABLE_BIT))
+			return;
+
+		Word tileData = 0x8800;
 		Word backgroundMemory = 0;
-		bool unsig = true;
+		bool unsig = false;
 
 		// where to draw the visual area and the window
 		Byte scrollY = AddressBus::Read(Addr::SCY);
@@ -193,20 +195,20 @@ namespace GB {
 		Byte windowX = AddressBus::Read(Addr::WX) - 7;
 
 		bool usingWindow = false;
-		if (lcdControl.bit(_WindowEnableBit))
+		if (lcdControl.bit(WINDOW_ENABLE_BIT))
 		{
 			if (windowY <= AddressBus::Read(Addr::LY))
 				usingWindow = true;
 		}
 
-		if (!lcdControl.bit(_BGTileDataBit))
+		if (lcdControl.bit(BG_TILEDATA_BIT))
 		{
-			tileData = 0x8800;
-			unsig = false;
+			tileData = 0x8000;
+			unsig = true;
 		}
 
 		backgroundMemory = 0x9800;
-		Byte testBit = (usingWindow) ? _WindowTilemapBit : _BGTilemapBit;
+		Byte testBit = (usingWindow) ? WINDOW_TILEMAP_BIT : BG_TILEMAP_BIT;
 		if (lcdControl.bit(testBit))
 			backgroundMemory = 0x9C00;
 
@@ -216,9 +218,9 @@ namespace GB {
 		if (usingWindow)
 			yPos = scanline - windowY;
 
-		Word tileRow = yPos * 4;
+		Word tileRow = (((Byte)(yPos / 8)) * 32);
 
-		for (Byte pixel = 0; pixel < _ScreenWidth; pixel++)
+		for (Byte pixel = 0; pixel < SCREEN_WIDTH; pixel++)
 		{
 			Byte xPos = pixel + scrollX;
 			if (usingWindow && pixel >= windowX)
@@ -238,7 +240,8 @@ namespace GB {
 				tileLocation += ((tileNum + 0x80) * 16);
 			}
 
-			Byte line = (yPos % 8) * 2;
+			Byte line = (yPos % 8);
+			line *= 2;
 			BitField hiByte = AddressBus::Read(tileLocation + line);
 			BitField loByte = AddressBus::Read(tileLocation + line + 1);
 
@@ -249,29 +252,31 @@ namespace GB {
 			colourNum |= hiByte.val(colourBit);
 
 			Colour col = GetColour(colourNum, Addr::BGP);
-			Emu::Pixel colour = _White;
+			Emu::Pixel colour = WHITE;
 
 			// setup the RGB values
 			switch (col)
 			{
-			case WHITE:		 colour = _White;	  break;
-			case LIGHT_GREY: colour = _LightGrey; break;
-			case DARK_GREY:  colour = _DarkGrey;  break;
-			case BLACK:		 colour = _Black;	  break;
+			case Colour::WHITE:		 colour = WHITE;	  break;
+			case Colour::LIGHT_GREY: colour = LIGHT_GREY; break;
+			case Colour::DARK_GREY:  colour = DARK_GREY;  break;
+			case Colour::BLACK:		 colour = BLACK;	  break;
 			}
 
-			int finalY = AddressBus::Read(Addr::LY);
-			if ((finalY < 0) || (finalY > 143) || (pixel < 0) || (pixel > 159))
+			if ((scanline < 0) || (scanline > 143) || (pixel < 0) || (pixel > 159))
 				continue;
 
-			mDisplayPB->at(pixel, finalY) = colour;
+			mDisplayPB->at(pixel, scanline) = colour;
 		}
 	}
 
 	void PPU::DrawSprites(BitField lcdControl)
 	{
+		if (lcdControl.bit(OBJ_ENABLE_BIT))
+			return;
+
 		bool use8x16 = false;
-		if (lcdControl.bit(_OBJSizeBit))
+		if (lcdControl.bit(OBJ_SIZE_BIT))
 			use8x16 = true;
 
 		for (Byte sprite = 0; sprite < 40; sprite++)
@@ -281,23 +286,20 @@ namespace GB {
 			spriteData.yPos -= 16;
 			spriteData.xPos -= 8;
 
-			bool yFlip = spriteData.flags.bit(_YFlipBit);
-			bool xFlip = spriteData.flags.bit(_XFlipBit);
+			bool yFlip = spriteData.flags.bit(Y_FLIP_BIT);
+			bool xFlip = spriteData.flags.bit(X_FLIP_BIT);
 
-			int scanline = AddressBus::Read(Addr::LY);
+			Byte scanline = AddressBus::Read(Addr::LY);
 
-			int ysize = 8;
+			Byte ysize = 8;
 			if (use8x16)
 				ysize = 16;
 
 			if ((scanline >= spriteData.yPos) && (scanline < (spriteData.yPos + ysize)))
 			{
-				int line = scanline - spriteData.yPos;
+				Byte line = scanline - spriteData.yPos;
 				if (yFlip)
-				{
-					line -= ysize;
-					line *= -1;
-				}
+					line = ysize - line;
 
 				line *= 2;
 				Word dataAddress = (0x8000 + (spriteData.tileLoc * 16)) + line;
@@ -314,20 +316,20 @@ namespace GB {
 					colourNum <<= 1;
 					colourNum |= data1.val(colourBit);
 
-					Word colourAddress = spriteData.flags.bit(_PaletteNum) ? Addr::OBP1 : Addr::OBP0;
+					Word colourAddress = spriteData.flags.bit(PALETTE_NUM_BIT) ? Addr::OBP1 : Addr::OBP0;
 					Colour col = GetColour(colourNum, colourAddress);
 
 					// white is transparent for sprites.
-					if (col == WHITE)
+					if (col == Colour::WHITE)
 						continue;
 
-					Emu::Pixel colour = _White;
+					Emu::Pixel colour = WHITE;
 					switch (col)
 					{
-					case WHITE:		 colour = _White;	  break;
-					case LIGHT_GREY: colour = _LightGrey; break;
-					case DARK_GREY:  colour = _DarkGrey;  break;
-					case BLACK:		 colour = _Black;	  break;
+					case Colour::WHITE:		 colour = WHITE;	  break;
+					case Colour::LIGHT_GREY: colour = LIGHT_GREY; break;
+					case Colour::DARK_GREY:  colour = DARK_GREY;  break;
+					case Colour::BLACK:		 colour = BLACK;	  break;
 					}
 
 					Byte pixel = spriteData.xPos + tilePixel;
@@ -343,7 +345,7 @@ namespace GB {
 
 	PPU::Colour PPU::GetColour(Byte colourNum, Word address)
 	{
-		Colour res = WHITE;
+		Colour res = Colour::WHITE;
 		BitField palette = AddressBus::Read(address);
 		int hi = 0;
 		int lo = 0;
@@ -357,17 +359,17 @@ namespace GB {
 		}
 
 		// use the palette to get the colour
-		int colour = 0;
+		Byte colour = 0;
 		colour = palette.val(hi) << 1;
 		colour |= palette.val(lo);
 
 		// convert the game colour to emulator colour
 		switch (colour)
 		{
-		case 0: res = WHITE; break;
-		case 1: res = LIGHT_GREY; break;
-		case 2: res = DARK_GREY; break;
-		case 3: res = BLACK; break;
+		case 0: res = Colour::WHITE; break;
+		case 1: res = Colour::LIGHT_GREY; break;
+		case 2: res = Colour::DARK_GREY; break;
+		case 3: res = Colour::BLACK; break;
 		}
 
 		return res;

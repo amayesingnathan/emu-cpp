@@ -9,7 +9,7 @@ namespace GB {
     class Cartridge
     {
     public:
-        GB_CONST USize _Size = 0x200000;
+        GB_CONST USize SIZE = 0x200000;
 
     public:
         Cartridge(std::string_view filename);

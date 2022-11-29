@@ -5,6 +5,7 @@
 #include "MemoryManager.h"
 
 #include "Cartridge/Cartridge.h"
+#include "CPU/CPU.h"
 
 namespace GB {
 
@@ -141,10 +142,10 @@ namespace GB {
 	{
 		switch (freq)
 		{
-		case 0: *sClockSpeed = 1024; break; // freq 4096
-		case 1: *sClockSpeed = 16; break;// freq 262144
-		case 2: *sClockSpeed = 64; break;// freq 65536
-		case 3: *sClockSpeed = 256; break;// freq 16382
+		case 0: *sClockSpeed = CPU::TMC0; break;
+		case 1: *sClockSpeed = CPU::TMC1; break;
+		case 2: *sClockSpeed = CPU::TMC2; break;
+		case 3: *sClockSpeed = CPU::TMC3; break;
 		}
 	}
 

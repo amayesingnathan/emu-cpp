@@ -4,11 +4,11 @@
 
 namespace GB {
 
-    GB_CONST Byte _VBlankBit  = 0;
-    GB_CONST Byte _LCDStatBit = 1;
-    GB_CONST Byte _TimerBit   = 2;
-    GB_CONST Byte _SerialBit  = 3;
-    GB_CONST Byte _JoypadBit  = 4;
+    GB_CONST Byte VBLANK_BIT     = 0;
+    GB_CONST Byte LCD_STAT_BIT   = 1;
+    GB_CONST Byte TIMER_BIT      = 2;
+    GB_CONST Byte SERIAL_BIT     = 3;
+    GB_CONST Byte JOYPAD_BIT     = 4;
 
     enum class Interrupt : Byte
     {

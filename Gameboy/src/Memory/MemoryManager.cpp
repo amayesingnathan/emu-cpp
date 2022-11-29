@@ -7,31 +7,31 @@
 namespace GB {
 
 	// Memory Partition Sizes
-	GB_CONST USize _BootROMSize = 0x0100;
-	GB_CONST USize _StackSize	= 0x007E;
-	GB_CONST USize _WRAMSize	= 0x2000;
-	GB_CONST USize _VRAMSize	= 0x2000;
-	GB_CONST USize _OAMSize		= 0x00A0;
-	GB_CONST USize _IOSize		= 0x0080 + 1; // Interrupt Enabled (0xFFFF) added here
-	GB_CONST USize _MemorySize = _BootROMSize + _StackSize + _IOSize + _WRAMSize + _VRAMSize + _OAMSize + Cartridge::_Size;
+	GB_CONST USize BOOT_ROM_SIZE   = 0x0100;
+	GB_CONST USize STACK_SIZE	   = 0x007E;
+	GB_CONST USize IO_SIZE		   = 0x0080 + 1; // Interrupt Enabled (0xFFFF) added here
+	GB_CONST USize WRAM_SIZE	   = 0x2000;
+	GB_CONST USize VRAM_SIZE	   = 0x2000;
+	GB_CONST USize OAM_SIZE		   = 0x00A0;
+	GB_CONST USize MEMORY_SIZE     = BOOT_ROM_SIZE + STACK_SIZE + IO_SIZE + WRAM_SIZE + VRAM_SIZE + OAM_SIZE + Cartridge::SIZE;
 
 	// Memory Partition Offsets
-	GB_CONST USize _BootOffset = 0;
-	GB_CONST USize _HRAMOffset = _BootROMSize;
-	GB_CONST USize _IOOffset   = _BootROMSize + _IOSize;
-	GB_CONST USize _WRAMOffset = _BootROMSize + _IOSize + _StackSize;
-	GB_CONST USize _VRAMOffset = _BootROMSize + _IOSize + _StackSize + _WRAMSize;
-	GB_CONST USize _OAMOffset  = _BootROMSize + _IOSize + _StackSize + _WRAMSize + _VRAMSize;
-	GB_CONST USize _ROMOffset  = _BootROMSize + _IOSize + _StackSize + _WRAMSize + _VRAMSize + _OAMSize;
+	GB_CONST USize BOOT_OFFSET = 0;
+	GB_CONST USize HRAM_OFFSET = BOOT_ROM_SIZE;
+	GB_CONST USize IO_OFFSET   = HRAM_OFFSET + STACK_SIZE;
+	GB_CONST USize WRAM_OFFSET = IO_OFFSET + IO_SIZE;
+	GB_CONST USize VRAM_OFFSET = WRAM_OFFSET + WRAM_SIZE;
+	GB_CONST USize OAM_OFFSET  = VRAM_OFFSET + VRAM_SIZE;
+	GB_CONST USize ROM_OFFSET  = OAM_OFFSET + OAM_SIZE;
 
 	void MemoryManager::Init()
 	{
 		GB_ASSERT(!sMemoryBlock, "Memory already initialised!");
-		sMemoryBlock = (Byte*)::operator new(_MemorySize);
-		memset(sMemoryBlock, 0, _MemorySize);
+		sMemoryBlock = (Byte*)::operator new(MEMORY_SIZE);
+		memset(sMemoryBlock, 0, MEMORY_SIZE);
 
 		// Load Boot ROM into first 256 bytes
-		memcpy(sMemoryBlock, Boot::_BootROM, _BootROMSize);
+		memcpy(sMemoryBlock, Boot::ROM, BOOT_ROM_SIZE);
 	}
 
 	void MemoryManager::Shutdown()
@@ -48,25 +48,25 @@ namespace GB {
 		switch (blockType)
 		{
 		case BOOTSTRAP:
-			return sMemoryBlock + _BootOffset;
+			return sMemoryBlock + BOOT_OFFSET;
 
 		case HRAM:
-			return sMemoryBlock + _HRAMOffset;
+			return sMemoryBlock + HRAM_OFFSET;
 
 		case IO:
-			return sMemoryBlock + _IOOffset;
+			return sMemoryBlock + IO_OFFSET;
 
 		case WRAM:
-			return sMemoryBlock + _WRAMOffset;
+			return sMemoryBlock + WRAM_OFFSET;
 
 		case VRAM:
-			return sMemoryBlock + _VRAMOffset;
+			return sMemoryBlock + VRAM_OFFSET;
 
 		case OAM:
-			return sMemoryBlock + _OAMOffset;
+			return sMemoryBlock + OAM_OFFSET;
 
 		case ROM:
-			return sMemoryBlock + _ROMOffset;
+			return sMemoryBlock + ROM_OFFSET;
 
 		default:
 			GB_ASSERT(false, "Invalid mem block type!");

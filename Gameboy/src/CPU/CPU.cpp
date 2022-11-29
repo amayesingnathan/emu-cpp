@@ -391,23 +391,23 @@ namespace GB {
 
 	void CPU::SetClockFreq()
 	{
-		TimerControl freq = (TimerControl)GetClockFreq();
+		Timer freq = (Timer)GetClockFreq();
 		switch (freq)
 		{
-		case TMC0:
-			mTimerClock = _TMC0;
+		case Timer::TMC0:
+			mTimerClock = TMC0;
 			break;
 
-		case TMC1:
-			mTimerClock = _TMC1;
+		case Timer::TMC1:
+			mTimerClock = TMC1;
 			break;
 
-		case TMC2:
-			mTimerClock = _TMC2;
+		case Timer::TMC2:
+			mTimerClock = TMC2;
 			break;
 
-		case TMC3:
-			mTimerClock = _TMC3;
+		case Timer::TMC3:
+			mTimerClock = TMC3;
 			break;
 		}
 	}
@@ -504,10 +504,10 @@ namespace GB {
 		BitField value;
 		READ_REG(op.z(), value);
 
-		BitField flags = mFRegister.getFlags() & GB_BIT(_CarryBit);
-		flags |= GB_BIT(_HCarryBit);
+		BitField flags = mFRegister.getFlags() & GB_BIT(CARRY_BIT);
+		flags |= GB_BIT(H_CARRY_BIT);
 		if (!value.bit(op.y()))
-			flags |= GB_BIT(_ZeroBit);
+			flags |= GB_BIT(ZERO_BIT);
 		mFRegister.setFlags(flags);
 	}
 
@@ -638,7 +638,7 @@ namespace GB {
 
 
 	// Instruction Implementations
-
+		
 	void CPU::ALU_T(Byte value, Byte op)
 	{
 		switch (op)
@@ -663,9 +663,9 @@ namespace GB {
 		regA = (Byte)result;
 
 		BitField flags = 0;
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
-		flags |= ((regACpy & 0xf) + (value & 0xf) > 0xf) ? GB_BIT(_HCarryBit) : 0;
-		flags |= ((result & 0x100) != 0) ? GB_BIT(_CarryBit) : 0;
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= ((regACpy & 0xf) + (value & 0xf) > 0xf) ? GB_BIT(H_CARRY_BIT) : 0;
+		flags |= ((result & 0x100) != 0) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -678,9 +678,9 @@ namespace GB {
 		regA = (Byte)result;
 
 		BitField flags = 0;
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
-		flags |= ((regACpy & 0xf) + (value & 0xf) > 0xf) ? GB_BIT(_HCarryBit) : 0;
-		flags |= ((result & 0x100) != 0) ? GB_BIT(_CarryBit) : 0;
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= ((regACpy & 0xf) + (value & 0xf) > 0xf) ? GB_BIT(H_CARRY_BIT) : 0;
+		flags |= ((result & 0x100) != 0) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -692,10 +692,10 @@ namespace GB {
 		Byte result = regA - value;
 		regA = result;
 
-		BitField flags = GB_BIT(_SubtractBit);
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
-		flags |= ((regACpy & 0xf) + (value & 0xf) > 0xf) ? GB_BIT(_HCarryBit) : 0;
-		flags |= ((result & 0x100) != 0) ? GB_BIT(_CarryBit) : 0;
+		BitField flags = GB_BIT(SUBTRACT_BIT);
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= ((regACpy & 0xf) + (value & 0xf) > 0xf) ? GB_BIT(H_CARRY_BIT) : 0;
+		flags |= ((result & 0x100) != 0) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -708,10 +708,10 @@ namespace GB {
 		SWord result = regA - value - carry;
 		regA = (Byte)result;
 
-		BitField flags = GB_BIT(_SubtractBit);
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
-		flags |= ((regACpy & 0xf) - (value & 0xf) - carry) ? GB_BIT(_HCarryBit) : 0;
-		flags |= (result < 0) ? GB_BIT(_CarryBit) : 0;
+		BitField flags = GB_BIT(SUBTRACT_BIT);
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= ((regACpy & 0xf) - (value & 0xf) - carry) ? GB_BIT(H_CARRY_BIT) : 0;
+		flags |= (result < 0) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -721,8 +721,8 @@ namespace GB {
 
 		regA &= value;
 
-		BitField flags = GB_BIT(_HCarryBit);
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
+		BitField flags = GB_BIT(H_CARRY_BIT);
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -733,7 +733,7 @@ namespace GB {
 		regA ^= value;
 
 		BitField flags = 0;
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -744,7 +744,7 @@ namespace GB {
 		regA |= value;
 
 		BitField flags = 0;
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -754,10 +754,10 @@ namespace GB {
 
 		Byte result = regA - value;
 
-		BitField flags = GB_BIT(_SubtractBit);
-		flags |= (result == 0) ? GB_BIT(_ZeroBit) : 0;
-		flags |= ((regA & 0xf) - (value & 0xf) < 0) ? GB_BIT(_HCarryBit) : 0;
-		flags |= (regA < value) ? GB_BIT(_CarryBit) : 0;
+		BitField flags = GB_BIT(SUBTRACT_BIT);
+		flags |= (result == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= ((regA & 0xf) - (value & 0xf) < 0) ? GB_BIT(H_CARRY_BIT) : 0;
+		flags |= (regA < value) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -769,9 +769,9 @@ namespace GB {
 		Word result = regHL + value;
 		regHL = (Byte)result;
 
-		BitField flags = mFRegister.getFlags() & GB_BIT(_ZeroBit);
-		flags |= ((regHLCpy & 0xfff) + (value & 0xfff) > 0xfff) ? GB_BIT(_HCarryBit) : 0;
-		flags |= ((result & 0x10000) != 0) ? GB_BIT(_CarryBit) : 0;
+		BitField flags = mFRegister.getFlags() & GB_BIT(ZERO_BIT);
+		flags |= ((regHLCpy & 0xfff) + (value & 0xfff) > 0xfff) ? GB_BIT(H_CARRY_BIT) : 0;
+		flags |= ((result & 0x10000) != 0) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -800,9 +800,9 @@ namespace GB {
 		reg++;
 		WRITE_REG(target, reg);
 
-		BitField flags = mFRegister.getFlags() & GB_BIT(_CarryBit);
-		flags |= (reg == 0) ? GB_BIT(_ZeroBit) : 0;
-		flags |= ((reg & 0x0F) == 0x00) ? GB_BIT(_HCarryBit) : 0;
+		BitField flags = mFRegister.getFlags() & GB_BIT(CARRY_BIT);
+		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= ((reg & 0x0F) == 0x00) ? GB_BIT(H_CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -813,10 +813,10 @@ namespace GB {
 		reg--;
 		WRITE_REG(target, reg);
 
-		BitField flags = mFRegister.getFlags() & GB_BIT(_CarryBit);
-		flags |= (reg == 0) ? GB_BIT(_ZeroBit) : 0;
-		flags |= GB_BIT(_SubtractBit);
-		flags |= ((reg & 0x0F) == 0x0F) ? GB_BIT(_HCarryBit) : 0;
+		BitField flags = mFRegister.getFlags() & GB_BIT(CARRY_BIT);
+		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= GB_BIT(SUBTRACT_BIT);
+		flags |= ((reg & 0x0F) == 0x0F) ? GB_BIT(H_CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -839,8 +839,8 @@ namespace GB {
 		regA = (Byte)(regA << 1) | finalBit;
 
 		BitField flags = 0;
-		flags |= regA == 0 ? GB_BIT(_ZeroBit) : 0;
-		flags |= finalBit ? GB_BIT(_CarryBit) : 0;
+		flags |= regA == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= finalBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -851,8 +851,8 @@ namespace GB {
 		regA = (Byte)(regA >> 1) | firstBit;
 
 		BitField flags = 0;
-		flags |= regA == 0 ? GB_BIT(_ZeroBit) : 0;
-		flags |= firstBit ? GB_BIT(_CarryBit) : 0;
+		flags |= regA == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -863,9 +863,9 @@ namespace GB {
 		regA = (Byte)(regA << 1) | firstBit;
 
 		BitField flags = mFRegister.getFlags();
-		flags &= ~GB_BIT(_SubtractBit);
-		flags &= ~ GB_BIT(_HCarryBit);
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
+		flags &= ~GB_BIT(SUBTRACT_BIT);
+		flags &= ~ GB_BIT(H_CARRY_BIT);
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -876,9 +876,9 @@ namespace GB {
 		regA = (Byte)(regA >> 1) | finalBit;
 
 		BitField flags = mFRegister.getFlags();
-		flags &= ~GB_BIT(_SubtractBit);
-		flags &= ~GB_BIT(_HCarryBit);
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
+		flags &= ~GB_BIT(SUBTRACT_BIT);
+		flags &= ~GB_BIT(H_CARRY_BIT);
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -899,12 +899,12 @@ namespace GB {
 		else 
 			regA = (Byte)(regA + correction);
 
-		BitField flags = mFRegister.subtr() ? GB_BIT(_SubtractBit) : 0;
+		BitField flags = mFRegister.subtr() ? GB_BIT(SUBTRACT_BIT) : 0;
 		if (((correction << 2) & 0x100) != 0)
-			flags |= GB_BIT(_CarryBit);
+			flags |= GB_BIT(CARRY_BIT);
 
-		flags &= ~GB_BIT(_HCarryBit);
-		flags |= (regA == 0) ? GB_BIT(_ZeroBit) : 0;
+		flags &= ~GB_BIT(H_CARRY_BIT);
+		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -914,23 +914,23 @@ namespace GB {
 		regA = ~regA;
 
 		BitField flags = mFRegister.getFlags();
-		flags |= GB_BIT(_SubtractBit) | GB_BIT(_HCarryBit);
+		flags |= GB_BIT(SUBTRACT_BIT) | GB_BIT(H_CARRY_BIT);
 		mFRegister.setFlags(flags);
 	}
 
 	void CPU::SCF()
 	{
 		BitField flags = mFRegister.getFlags();
-		flags &= ~GB_BIT(_SubtractBit) & ~GB_BIT(_HCarryBit);
-		flags |= GB_BIT(_CarryBit);
+		flags &= ~GB_BIT(SUBTRACT_BIT) & ~GB_BIT(H_CARRY_BIT);
+		flags |= GB_BIT(CARRY_BIT);
 		mFRegister.setFlags(flags);
 	}
 
 	void CPU::CCF()
 	{
 		BitField flags = mFRegister.getFlags();
-		flags &= ~GB_BIT(_SubtractBit) & ~GB_BIT(_HCarryBit);
-		flags |= !flags.bit(_CarryBit) ? GB_BIT(_CarryBit) : 0;
+		flags &= ~GB_BIT(SUBTRACT_BIT) & ~GB_BIT(H_CARRY_BIT);
+		flags |= !flags.bit(CARRY_BIT) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -945,8 +945,8 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
-		flags |= finalBit ? GB_BIT(_CarryBit) : 0;
+		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= finalBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 
 	}
@@ -960,8 +960,8 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
-		flags |= firstBit ? GB_BIT(_CarryBit) : 0;
+		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -974,9 +974,9 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = mFRegister.getFlags();
-		flags &= ~GB_BIT(_SubtractBit);
-		flags &= ~GB_BIT(_HCarryBit);
-		flags |= (reg == 0) ? GB_BIT(_ZeroBit) : 0;
+		flags &= ~GB_BIT(SUBTRACT_BIT);
+		flags &= ~GB_BIT(H_CARRY_BIT);
+		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -989,9 +989,9 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = mFRegister.getFlags();
-		flags &= ~GB_BIT(_SubtractBit);
-		flags &= ~GB_BIT(_HCarryBit);
-		flags |= (reg == 0) ? GB_BIT(_ZeroBit) : 0;
+		flags &= ~GB_BIT(SUBTRACT_BIT);
+		flags &= ~GB_BIT(H_CARRY_BIT);
+		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -1004,8 +1004,8 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
-		flags |= finalBit ? GB_BIT(_CarryBit) : 0;
+		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= finalBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -1020,8 +1020,8 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
-		flags |= firstBit ? GB_BIT(_CarryBit) : 0;
+		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -1035,7 +1035,7 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
+		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -1048,8 +1048,8 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(_ZeroBit) : 0;
-		flags |= firstBit ? GB_BIT(_CarryBit) : 0;
+		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 

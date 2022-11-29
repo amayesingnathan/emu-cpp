@@ -12,9 +12,8 @@ namespace GB {
     class Gameboy : public Emu::Base
     {
     public:
-        GB_CONST USize _ClockSpeed          = 4194304;
-        GB_CONST USize _CyclesPerFrame      = 70224;
-        GB_CONST Emu::Duration _FrameLength = Emu::Duration((float)(_CyclesPerFrame * 1000) / (float)_ClockSpeed);
+        GB_CONST USize          CYCLES_PER_FRAME    = 70224;
+        GB_CONST Emu::Duration  FRAME_LENGTH        = Emu::Duration((float)(CYCLES_PER_FRAME * 1000) / (float)CPU::CLOCK_SPEED);
 
     public:
         Gameboy(Emu::Window* window, std::string_view path);
@@ -26,7 +25,7 @@ namespace GB {
 
         Emu::ActionCallback getActionCallback() override { return BIND_ACTION_FUNC(Gameboy::HandleEvent); };
         Emu::uint getDisplayTex() override { return mGraphics.getDisplayTex(); }
-        Emu::Duration getFrameTime() override { return _FrameLength; };
+        Emu::Duration getFrameTime() override { return FRAME_LENGTH; };
 
     private:
         void HandleEvent(Emu::Action action, bool pressed);

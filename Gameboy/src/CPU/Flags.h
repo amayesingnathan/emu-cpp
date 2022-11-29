@@ -4,10 +4,10 @@
 
 namespace GB {
 
-    GB_CONST Byte _CarryBit = 4;
-    GB_CONST Byte _HCarryBit = 5;
-    GB_CONST Byte _SubtractBit = 6;
-    GB_CONST Byte _ZeroBit = 7;
+    GB_CONST Byte CARRY_BIT      = 4;
+    GB_CONST Byte H_CARRY_BIT    = 5;
+    GB_CONST Byte SUBTRACT_BIT   = 6;
+    GB_CONST Byte ZERO_BIT       = 7;
 
     class FRegister
     {
@@ -17,10 +17,10 @@ namespace GB {
     public:
         FRegister(Byte& _reg) : reg(_reg) {}
 
-        bool carry() const { BitField flags = reg; return flags.bit(_CarryBit); }
-        bool hcarry() const { BitField flags = reg; return flags.bit(_HCarryBit); }
-        bool subtr() const { BitField flags = reg; return flags.bit(_SubtractBit); }
-        bool zero() const { BitField flags = reg; return flags.bit(_ZeroBit); }
+        bool carry() const { BitField flags = reg; return flags.bit(CARRY_BIT); }
+        bool hcarry() const { BitField flags = reg; return flags.bit(H_CARRY_BIT); }
+        bool subtr() const { BitField flags = reg; return flags.bit(SUBTRACT_BIT); }
+        bool zero() const { BitField flags = reg; return flags.bit(ZERO_BIT); }
 
         BitField getFlags() const { return reg; }
         void setFlags(BitField flag) { flag &= 0xF0; reg = flag; }

@@ -13,7 +13,7 @@ namespace GB {
 
         fileROM.seekg(0, std::ios::end);
         USize cartridgeSize = fileROM.tellg();
-        GB_ASSERT(cartridgeSize <= _Size, "Gameboy cartridge is too large!");
+        GB_ASSERT(cartridgeSize <= SIZE, "Gameboy cartridge is too large!");
 
         fileROM.seekg(0);
         fileROM.read((char*)mROM, cartridgeSize);

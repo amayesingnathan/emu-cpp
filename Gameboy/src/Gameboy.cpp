@@ -33,7 +33,7 @@ namespace GB {
         USize cyclesThisUpdate = mLastCycles;
         mLastCycles = 0;
 
-        while (cyclesThisUpdate < _CyclesPerFrame)
+        while (cyclesThisUpdate < CYCLES_PER_FRAME)
         {
             Byte cycles = 0;
             if (!mUseBreakpoint)
@@ -120,13 +120,13 @@ namespace GB {
             ImGui::Text("AF: %04X", registers[WordReg::AF]);
 
             ImGui::Text("Flag Register");
-            ImGui::Text("Zero : %1i", flagReg.val(_ZeroBit));
+            ImGui::Text("Zero : %1i", flagReg.val(ZERO_BIT));
             ImGui::SameLine();
-            ImGui::Text("Sub : %1i", flagReg.val(_SubtractBit));
+            ImGui::Text("Sub : %1i", flagReg.val(SUBTRACT_BIT));
             ImGui::SameLine();
-            ImGui::Text("HCarry : %1i", flagReg.val(_HCarryBit));
+            ImGui::Text("HCarry : %1i", flagReg.val(H_CARRY_BIT));
             ImGui::SameLine();
-            ImGui::Text("Carry : %1i", flagReg.val(_CarryBit));
+            ImGui::Text("Carry : %1i", flagReg.val(CARRY_BIT));
 
             ImGui::Text("B: %02X", registers[ByteReg::B]);
             ImGui::SameLine();
@@ -161,54 +161,56 @@ namespace GB {
 
             ImGui::Text("JOYP: %02X", ioRegisters[0x0]);
 
-            ImGui::Text("SB: %02X", ioRegisters[0x1]);
+            ImGui::Text("SB: 0x%02X", ioRegisters[0x1]);
             ImGui::SameLine();
-            ImGui::Text("SC: %02X", ioRegisters[0x2]);
+            ImGui::Text("SC: 0x%02X", ioRegisters[0x2]);
 
-            ImGui::Text("DIV: %02X", ioRegisters[0x4]);
+            ImGui::Text("DIV: 0x%02X", ioRegisters[0x4]);
             ImGui::SameLine();
-            ImGui::Text("TIMA: %02X", ioRegisters[0x5]);
+            ImGui::Text("TIMA: 0x%02X", ioRegisters[0x5]);
             ImGui::SameLine();
-            ImGui::Text("TMA: %02X", ioRegisters[0x6]);
+            ImGui::Text("TMA: 0x%02X", ioRegisters[0x6]);
             ImGui::SameLine();
-            ImGui::Text("TMC: %02X", ioRegisters[0x7]);
+            ImGui::Text("TMC: 0x%02X", ioRegisters[0x7]);
 
-            ImGui::Text("LCDC: %02X", ioRegisters[0x40]);
+            ImGui::Text("LCDC: 0x%02X", ioRegisters[0x40]);
             ImGui::SameLine();
-            ImGui::Text("LCDS: %02X", ioRegisters[0x41]);
+            ImGui::Text("LCDS: 0x%02X", ioRegisters[0x41]);
 
-            ImGui::Text("SCY: %02X", ioRegisters[0x42]);
+            ImGui::Text("SCY: 0x%02X", ioRegisters[0x42]);
             ImGui::SameLine();
-            ImGui::Text("SCX: %02X", ioRegisters[0x43]);
+            ImGui::Text("SCX: 0x%02X", ioRegisters[0x43]);
 
             ImGui::Text("LY: %03i", ioRegisters[0x44]);
             ImGui::SameLine();
             ImGui::Text("LYC: %03i", ioRegisters[0x45]);
 
-            ImGui::Text("BGP: %02X", ioRegisters[0x47]);
-            ImGui::SameLine();
-            ImGui::Text("OPB0: %02X", ioRegisters[0x48]);
-            ImGui::SameLine();
-            ImGui::Text("OPB1: %02X", ioRegisters[0x49]);
+            ImGui::Text("DMA: 0x%02X", ioRegisters[0x46]);
 
-            ImGui::Text("WY: %02X", ioRegisters[0x4A]);
+            ImGui::Text("BGP: 0x%02X", ioRegisters[0x47]);
             ImGui::SameLine();
-            ImGui::Text("WX: %02X", ioRegisters[0x4B]);
+            ImGui::Text("OPB0: 0x%02X", ioRegisters[0x48]);
+            ImGui::SameLine();
+            ImGui::Text("OPB1: 0x%02X", ioRegisters[0x49]);
 
-            ImGui::Text("IE: %02X", &IE);
+            ImGui::Text("WY: 0x%02X", ioRegisters[0x4A]);
             ImGui::SameLine();
-            ImGui::Text("IF: %02X", ioRegisters[0x0F]);
+            ImGui::Text("WX: 0x%02X", ioRegisters[0x4B]);
+
+            ImGui::Text("IE: 0x%02X", IE);
+            ImGui::SameLine();
+            ImGui::Text("IF: 0x%02X", ioRegisters[0x0F]);
 
             ImGui::Text("Interupt Enable Register");
-            ImGui::Text("VBlank : %1i", IE.val(_VBlankBit));
+            ImGui::Text("VBlank : %1i", IE.val(VBLANK_BIT));
             ImGui::SameLine();
-            ImGui::Text("LCD Status : %1i", IE.val(_LCDStatBit));
+            ImGui::Text("LCD Status : %1i", IE.val(LCD_STAT_BIT));
 
-            ImGui::Text("Timer : %1i", IE.val(_TimerBit));
+            ImGui::Text("Timer : %1i", IE.val(TIMER_BIT));
             ImGui::SameLine();
-            ImGui::Text("Serial : %1i", IE.val(_SerialBit));
+            ImGui::Text("Serial : %1i", IE.val(SERIAL_BIT));
             ImGui::SameLine();
-            ImGui::Text("Joypad : %1i", IE.val(_JoypadBit));
+            ImGui::Text("Joypad : %1i", IE.val(JOYPAD_BIT));
         }
 
         ImGui::End();
