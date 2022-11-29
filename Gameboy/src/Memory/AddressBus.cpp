@@ -117,8 +117,12 @@ namespace GB {
 			break;
 		}
 
-		case Addr::LYC:
-			MemoryManager::Get(MemoryManager::IO, Addr::LYC - 0xFF00) = 0;
+		case Addr::LY:
+			MemoryManager::Get(MemoryManager::IO, Addr::LY - 0xFF00) = 0;
+			break;
+
+		case Addr::FMA:
+			DoDMATransfer(data);
 			break;
 
 		// Undocumented IO registers
@@ -147,6 +151,14 @@ namespace GB {
 		case 2: *sClockSpeed = CPU::TMC2; break;
 		case 3: *sClockSpeed = CPU::TMC3; break;
 		}
+	}
+
+	void AddressBus::DoDMATransfer(Byte data)
+	{
+		Word address = data << 8;
+		Byte* src = &Read(address);
+		Byte* dest = MemoryManager::GetBlock(MemoryManager::OAM);
+		memcpy(dest, src, 0xA0);
 	}
 
 	void AddressBus::RequestInterrupt(Interrupt interrupt)

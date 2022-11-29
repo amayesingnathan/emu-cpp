@@ -29,6 +29,7 @@ namespace GB {
 		static void WriteIO(Word address, Byte data);
 
 		static void SetClockFreq(Byte freq);
+		static void DoDMATransfer(Byte data);
 
 	private:
 		inline static Cartridge* sCartridge = nullptr;

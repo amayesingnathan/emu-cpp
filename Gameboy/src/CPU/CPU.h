@@ -41,6 +41,8 @@ namespace GB {
         Word& getClockSpeed() { return mCurrentClockSpeed; }
 
     private:
+        void DividerTimer();
+
         bool CheckCondition(Condition condition);
 
         Byte HandleInstruction(OpCode instruction);

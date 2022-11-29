@@ -13,7 +13,7 @@ namespace GB {
 			return 1;
 
 		OpCode nextOp = AddressBus::Read(mRegisters[WordReg::PC]++);
-		return HandleInstruction(nextOp);
+		return HandleInstruction(nextOp) * 4;
 	}
 
 	Byte CPU::execDebug(Word breakpoint, bool& pause, bool& step)
@@ -36,18 +36,19 @@ namespace GB {
 	void CPU::updateTimers(Byte cycles)
 	{
 		mDividerClock += cycles;
-		if (mDividerClock >= 0x100)
-		{
-			mDividerClock -= 0x100;
-			AddressBus::Read(Addr::DIV)++;
-		}
 
 		if (!IsClockEnabled())
+		{
+			DividerTimer();
 			return;
+		}
 
 		mTimerClock += cycles;
 		if (mTimerClock < mCurrentClockSpeed)
+		{
+			DividerTimer();
 			return;
+		}
 
 		mTimerClock -= mCurrentClockSpeed;
 
@@ -55,11 +56,14 @@ namespace GB {
 		if (timerCounter < 0xFF)
 		{
 			timerCounter++;
+			DividerTimer();
 			return;
 		}
 
 		timerCounter = AddressBus::Read(Addr::TMA);
 		AddressBus::RequestInterrupt(Interrupt::TIMER);
+
+		DividerTimer();
 	}
 
 	void CPU::handleInterupts()
@@ -83,6 +87,15 @@ namespace GB {
 
 			ServiceInterupt((Interrupt)i);
 		}
+	}
+
+	void CPU::DividerTimer()
+	{
+		if (mDividerClock < 0x100)
+			return;
+
+		mDividerClock -= 0x100;
+		AddressBus::Read(Addr::DIV)++;
 	}
 
 	bool CPU::CheckCondition(Condition condition)

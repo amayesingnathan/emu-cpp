@@ -19,7 +19,7 @@ namespace GB {
 		GB_CONST Word SCX  = 0xFF43;
 		GB_CONST Word LY   = 0xFF44;
 		GB_CONST Word LYC  = 0xFF45;
-
+		GB_CONST Word FMA  = 0xFF46;
 		GB_CONST Word BGP  = 0xFF47;
 		GB_CONST Word OBP0 = 0xFF48;
 		GB_CONST Word OBP1 = 0xFF49;
