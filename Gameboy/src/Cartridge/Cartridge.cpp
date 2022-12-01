@@ -51,10 +51,7 @@ namespace GB {
     void Cartridge::write(Word address, Byte data)
     {
         if (!mMBC)
-        {
-            mROM[address] = data;
             return;
-        }
 
         mROM[mMBC->map(MBC::WRITE, address)] = data;
     }
