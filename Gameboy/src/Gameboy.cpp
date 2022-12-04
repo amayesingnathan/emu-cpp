@@ -41,6 +41,8 @@ namespace GB {
             else
                 cycles = mProcessor.execDebug(mPCBreakpoint, mPaused, mStep);
 
+            if (cycles == 0)
+                break;
 
             cyclesThisUpdate += cycles;
             mProcessor.updateTimers(cycles);

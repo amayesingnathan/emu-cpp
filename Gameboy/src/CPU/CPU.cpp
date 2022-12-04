@@ -7,6 +7,12 @@
 
 namespace GB {
 
+	CPU::CPU()
+		: mFRegister(mRegisters[ByteReg::F])
+	{
+		InitDispatcher();
+	}
+
 	Byte CPU::exec()
 	{
 		if (mHalted)	
@@ -30,7 +36,7 @@ namespace GB {
 		}
 
 		OpCode nextOp = AddressBus::Read(pc++);
-		return HandleInstruction(nextOp);
+		return HandleInstruction(nextOp) * 4;
 	}
 
 	void CPU::updateTimers(Byte cycles)
@@ -68,7 +74,7 @@ namespace GB {
 
 	void CPU::handleInterupts()
 	{
-		if (!mInteruptsEnabled)
+		if (!mInterruptsEnabled)
 			return;
 
 		BitField req = AddressBus::Read(Addr::IF);
@@ -89,6 +95,74 @@ namespace GB {
 		}
 	}
 
+	void CPU::InitDispatcher()
+	{
+		mDispatcher[0x00] = GB_BIND_DISPATCH(NOP, 0x00);		mDispatcher[0x10] = GB_BIND_DISPATCH(STOP, 0x10);			mDispatcher[0x20] = GB_BIND_DISPATCH(JP_C8, 0x20);			mDispatcher[0x30] = GB_BIND_DISPATCH(JP_C8, 0x30);
+		mDispatcher[0x01] = GB_BIND_DISPATCH(LD_R_I16, 0x01);	mDispatcher[0x11] = GB_BIND_DISPATCH(LD_R_I16, 0x11);		mDispatcher[0x21] = GB_BIND_DISPATCH(LD_R_I16, 0x21);		mDispatcher[0x31] = GB_BIND_DISPATCH(LD_R_I16, 0x31);
+		mDispatcher[0x02] = GB_BIND_DISPATCH(LD_M_R, 0x02);		mDispatcher[0x12] = GB_BIND_DISPATCH(LD_M_R, 0x12);			mDispatcher[0x22] = GB_BIND_DISPATCH(LD_M_R, 0x22);			mDispatcher[0x32] = GB_BIND_DISPATCH(LD_M_R, 0x32);
+		mDispatcher[0x03] = GB_BIND_DISPATCH(UN_R, 0x03);		mDispatcher[0x13] = GB_BIND_DISPATCH(UN_R, 0x13);			mDispatcher[0x23] = GB_BIND_DISPATCH(UN_R, 0x23);			mDispatcher[0x33] = GB_BIND_DISPATCH(UN_R, 0x33);
+		mDispatcher[0x04] = GB_BIND_DISPATCH(UN_R, 0x04);		mDispatcher[0x14] = GB_BIND_DISPATCH(UN_R, 0x14);			mDispatcher[0x24] = GB_BIND_DISPATCH(UN_R, 0x24);			mDispatcher[0x34] = GB_BIND_DISPATCH(UN_R, 0x34);
+		mDispatcher[0x05] = GB_BIND_DISPATCH(UN_R, 0x05);		mDispatcher[0x15] = GB_BIND_DISPATCH(UN_R, 0x15);			mDispatcher[0x25] = GB_BIND_DISPATCH(UN_R, 0x25);			mDispatcher[0x35] = GB_BIND_DISPATCH(UN_R, 0x35);
+		mDispatcher[0x06] = GB_BIND_DISPATCH(LD_R_I8, 0x06);	mDispatcher[0x16] = GB_BIND_DISPATCH(LD_R_I8, 0x16);		mDispatcher[0x26] = GB_BIND_DISPATCH(LD_R_I8, 0x26);		mDispatcher[0x36] = GB_BIND_DISPATCH(LD_R_I8, 0x36);
+		mDispatcher[0x07] = GB_BIND_DISPATCH(REG, 0x07);		mDispatcher[0x17] = GB_BIND_DISPATCH(REG, 0x17);			mDispatcher[0x27] = GB_BIND_DISPATCH(REG, 0x27);			mDispatcher[0x37] = GB_BIND_DISPATCH(REG, 0x37);
+		mDispatcher[0x08] = GB_BIND_DISPATCH(LD_M_SP, 0x08);	mDispatcher[0x18] = GB_BIND_DISPATCH(JP_C8, 0x18);			mDispatcher[0x28] = GB_BIND_DISPATCH(JP_C8, 0x28);			mDispatcher[0x38] = GB_BIND_DISPATCH(JP_C8, 0x38);
+		mDispatcher[0x09] = GB_BIND_DISPATCH(ADD_HL, 0x09);		mDispatcher[0x19] = GB_BIND_DISPATCH(ADD_HL, 0x19);			mDispatcher[0x29] = GB_BIND_DISPATCH(ADD_HL, 0x29);			mDispatcher[0x39] = GB_BIND_DISPATCH(ADD_HL, 0x39);
+		mDispatcher[0x0A] = GB_BIND_DISPATCH(LD_R_M, 0x0A);		mDispatcher[0x1A] = GB_BIND_DISPATCH(LD_R_M, 0x1A);			mDispatcher[0x2A] = GB_BIND_DISPATCH(LD_R_M, 0x2A);			mDispatcher[0x3A] = GB_BIND_DISPATCH(LD_R_M, 0x3A);
+		mDispatcher[0x0B] = GB_BIND_DISPATCH(UN_R, 0x0B);		mDispatcher[0x1B] = GB_BIND_DISPATCH(UN_R, 0x1B);			mDispatcher[0x2B] = GB_BIND_DISPATCH(UN_R, 0x2B);			mDispatcher[0x3B] = GB_BIND_DISPATCH(UN_R, 0x3B);
+		mDispatcher[0x0C] = GB_BIND_DISPATCH(UN_R, 0x0C);		mDispatcher[0x1C] = GB_BIND_DISPATCH(UN_R, 0x1C);			mDispatcher[0x2C] = GB_BIND_DISPATCH(UN_R, 0x2C);			mDispatcher[0x3C] = GB_BIND_DISPATCH(UN_R, 0x3C);
+		mDispatcher[0x0D] = GB_BIND_DISPATCH(UN_R, 0x0D);		mDispatcher[0x1D] = GB_BIND_DISPATCH(UN_R, 0x1D);			mDispatcher[0x2D] = GB_BIND_DISPATCH(UN_R, 0x2D);			mDispatcher[0x3D] = GB_BIND_DISPATCH(UN_R, 0x3D);
+		mDispatcher[0x0E] = GB_BIND_DISPATCH(LD_R_I8, 0x0E);	mDispatcher[0x1E] = GB_BIND_DISPATCH(LD_R_I8, 0x1E);		mDispatcher[0x2E] = GB_BIND_DISPATCH(LD_R_I8, 0x2E);		mDispatcher[0x3E] = GB_BIND_DISPATCH(LD_R_I8, 0x3E);
+		mDispatcher[0x0F] = GB_BIND_DISPATCH(REG, 0x0F);		mDispatcher[0x1F] = GB_BIND_DISPATCH(REG, 0x1F);			mDispatcher[0x2F] = GB_BIND_DISPATCH(REG, 0x2F);			mDispatcher[0x3F] = GB_BIND_DISPATCH(REG, 0x3F);
+		mDispatcher[0x40] = GB_BIND_DISPATCH(NOP, 0x40);		mDispatcher[0x50] = GB_BIND_DISPATCH(LD_R_R, 0x50);			mDispatcher[0x60] = GB_BIND_DISPATCH(LD_R_R, 0x60);			mDispatcher[0x70] = GB_BIND_DISPATCH(LD_R_R, 0x70);
+		mDispatcher[0x41] = GB_BIND_DISPATCH(LD_R_R, 0x41);		mDispatcher[0x51] = GB_BIND_DISPATCH(LD_R_R, 0x51);			mDispatcher[0x61] = GB_BIND_DISPATCH(LD_R_R, 0x61);			mDispatcher[0x71] = GB_BIND_DISPATCH(LD_R_R, 0x71);
+		mDispatcher[0x42] = GB_BIND_DISPATCH(LD_R_R, 0x42);		mDispatcher[0x52] = GB_BIND_DISPATCH(NOP, 0x52);			mDispatcher[0x62] = GB_BIND_DISPATCH(LD_R_R, 0x62);			mDispatcher[0x72] = GB_BIND_DISPATCH(LD_R_R, 0x72);
+		mDispatcher[0x43] = GB_BIND_DISPATCH(LD_R_R, 0x43);		mDispatcher[0x53] = GB_BIND_DISPATCH(LD_R_R, 0x53);			mDispatcher[0x63] = GB_BIND_DISPATCH(LD_R_R, 0x63);			mDispatcher[0x73] = GB_BIND_DISPATCH(LD_R_R, 0x73);
+		mDispatcher[0x44] = GB_BIND_DISPATCH(LD_R_R, 0x44);		mDispatcher[0x54] = GB_BIND_DISPATCH(LD_R_R, 0x54);			mDispatcher[0x64] = GB_BIND_DISPATCH(NOP, 0x64);			mDispatcher[0x74] = GB_BIND_DISPATCH(LD_R_R, 0x74);
+		mDispatcher[0x45] = GB_BIND_DISPATCH(LD_R_R, 0x45);		mDispatcher[0x55] = GB_BIND_DISPATCH(LD_R_R, 0x55);			mDispatcher[0x65] = GB_BIND_DISPATCH(LD_R_R, 0x65);			mDispatcher[0x75] = GB_BIND_DISPATCH(LD_R_R, 0x75);
+		mDispatcher[0x46] = GB_BIND_DISPATCH(LD_R_R, 0x46);		mDispatcher[0x56] = GB_BIND_DISPATCH(LD_R_R, 0x56);			mDispatcher[0x66] = GB_BIND_DISPATCH(LD_R_R, 0x66);			mDispatcher[0x76] = GB_BIND_DISPATCH(HALT, 0x76);
+		mDispatcher[0x47] = GB_BIND_DISPATCH(LD_R_R, 0x47);		mDispatcher[0x57] = GB_BIND_DISPATCH(LD_R_R, 0x57);			mDispatcher[0x67] = GB_BIND_DISPATCH(LD_R_R, 0x67);			mDispatcher[0x77] = GB_BIND_DISPATCH(LD_R_R, 0x77);
+		mDispatcher[0x48] = GB_BIND_DISPATCH(LD_R_R, 0x48);		mDispatcher[0x58] = GB_BIND_DISPATCH(LD_R_R, 0x58);			mDispatcher[0x68] = GB_BIND_DISPATCH(LD_R_R, 0x68);			mDispatcher[0x78] = GB_BIND_DISPATCH(LD_R_R, 0x78);
+		mDispatcher[0x49] = GB_BIND_DISPATCH(NOP, 0x49);		mDispatcher[0x59] = GB_BIND_DISPATCH(LD_R_R, 0x59);			mDispatcher[0x69] = GB_BIND_DISPATCH(LD_R_R, 0x69);			mDispatcher[0x79] = GB_BIND_DISPATCH(LD_R_R, 0x79);
+		mDispatcher[0x4A] = GB_BIND_DISPATCH(LD_R_R, 0x4A);		mDispatcher[0x5A] = GB_BIND_DISPATCH(LD_R_R, 0x5A);			mDispatcher[0x6A] = GB_BIND_DISPATCH(LD_R_R, 0x6A);			mDispatcher[0x7A] = GB_BIND_DISPATCH(LD_R_R, 0x7A);
+		mDispatcher[0x4B] = GB_BIND_DISPATCH(LD_R_R, 0x4B);		mDispatcher[0x5B] = GB_BIND_DISPATCH(NOP, 0x5B);			mDispatcher[0x6B] = GB_BIND_DISPATCH(LD_R_R, 0x6B);			mDispatcher[0x7B] = GB_BIND_DISPATCH(LD_R_R, 0x7B);
+		mDispatcher[0x4C] = GB_BIND_DISPATCH(LD_R_R, 0x4C);		mDispatcher[0x5C] = GB_BIND_DISPATCH(LD_R_R, 0x5C);			mDispatcher[0x6C] = GB_BIND_DISPATCH(LD_R_R, 0x6C);			mDispatcher[0x7C] = GB_BIND_DISPATCH(LD_R_R, 0x7C);
+		mDispatcher[0x4D] = GB_BIND_DISPATCH(LD_R_R, 0x4D);		mDispatcher[0x5D] = GB_BIND_DISPATCH(LD_R_R, 0x5D);			mDispatcher[0x6D] = GB_BIND_DISPATCH(NOP, 0x6D);			mDispatcher[0x7D] = GB_BIND_DISPATCH(LD_R_R, 0x7D);
+		mDispatcher[0x4E] = GB_BIND_DISPATCH(LD_R_R, 0x4E);		mDispatcher[0x5E] = GB_BIND_DISPATCH(LD_R_R, 0x5E);			mDispatcher[0x6E] = GB_BIND_DISPATCH(LD_R_R, 0x6E);			mDispatcher[0x7E] = GB_BIND_DISPATCH(LD_R_R, 0x7E);
+		mDispatcher[0x4F] = GB_BIND_DISPATCH(LD_R_R, 0x4F);		mDispatcher[0x5F] = GB_BIND_DISPATCH(LD_R_R, 0x5F);			mDispatcher[0x6F] = GB_BIND_DISPATCH(LD_R_R, 0x6F);			mDispatcher[0x7F] = GB_BIND_DISPATCH(NOP, 0x7F);
+		mDispatcher[0x80] = GB_BIND_DISPATCH(ALU_T, 0x80);		mDispatcher[0x90] = GB_BIND_DISPATCH(ALU_T, 0x90);			mDispatcher[0xA0] = GB_BIND_DISPATCH(ALU_T, 0xA0);			mDispatcher[0xB0] = GB_BIND_DISPATCH(ALU_T, 0xB0);
+		mDispatcher[0x81] = GB_BIND_DISPATCH(ALU_T, 0x81);		mDispatcher[0x91] = GB_BIND_DISPATCH(ALU_T, 0x91);			mDispatcher[0xA1] = GB_BIND_DISPATCH(ALU_T, 0xA1);			mDispatcher[0xB1] = GB_BIND_DISPATCH(ALU_T, 0xB1);
+		mDispatcher[0x82] = GB_BIND_DISPATCH(ALU_T, 0x82);		mDispatcher[0x92] = GB_BIND_DISPATCH(ALU_T, 0x92);			mDispatcher[0xA2] = GB_BIND_DISPATCH(ALU_T, 0xA2);			mDispatcher[0xB2] = GB_BIND_DISPATCH(ALU_T, 0xB2);
+		mDispatcher[0x83] = GB_BIND_DISPATCH(ALU_T, 0x83);		mDispatcher[0x93] = GB_BIND_DISPATCH(ALU_T, 0x93);			mDispatcher[0xA3] = GB_BIND_DISPATCH(ALU_T, 0xA3);			mDispatcher[0xB3] = GB_BIND_DISPATCH(ALU_T, 0xB3);
+		mDispatcher[0x84] = GB_BIND_DISPATCH(ALU_T, 0x84);		mDispatcher[0x94] = GB_BIND_DISPATCH(ALU_T, 0x94);			mDispatcher[0xA4] = GB_BIND_DISPATCH(ALU_T, 0xA4);			mDispatcher[0xB4] = GB_BIND_DISPATCH(ALU_T, 0xB4);
+		mDispatcher[0x85] = GB_BIND_DISPATCH(ALU_T, 0x85);		mDispatcher[0x95] = GB_BIND_DISPATCH(ALU_T, 0x95);			mDispatcher[0xA5] = GB_BIND_DISPATCH(ALU_T, 0xA5);			mDispatcher[0xB5] = GB_BIND_DISPATCH(ALU_T, 0xB5);
+		mDispatcher[0x86] = GB_BIND_DISPATCH(ALU_T, 0x86);		mDispatcher[0x96] = GB_BIND_DISPATCH(ALU_T, 0x96);			mDispatcher[0xA6] = GB_BIND_DISPATCH(ALU_T, 0xA6);			mDispatcher[0xB6] = GB_BIND_DISPATCH(ALU_T, 0xB6);
+		mDispatcher[0x87] = GB_BIND_DISPATCH(ALU_T, 0x87);		mDispatcher[0x97] = GB_BIND_DISPATCH(ALU_T, 0x97);			mDispatcher[0xA7] = GB_BIND_DISPATCH(ALU_T, 0xA7);			mDispatcher[0xB7] = GB_BIND_DISPATCH(ALU_T, 0xB7);
+		mDispatcher[0x88] = GB_BIND_DISPATCH(ALU_T, 0x88);		mDispatcher[0x98] = GB_BIND_DISPATCH(ALU_T, 0x98);			mDispatcher[0xA8] = GB_BIND_DISPATCH(ALU_T, 0xA8);			mDispatcher[0xB8] = GB_BIND_DISPATCH(ALU_T, 0xB8);
+		mDispatcher[0x89] = GB_BIND_DISPATCH(ALU_T, 0x89);		mDispatcher[0x99] = GB_BIND_DISPATCH(ALU_T, 0x99);			mDispatcher[0xA9] = GB_BIND_DISPATCH(ALU_T, 0xA9);			mDispatcher[0xB9] = GB_BIND_DISPATCH(ALU_T, 0xB9);
+		mDispatcher[0x8A] = GB_BIND_DISPATCH(ALU_T, 0x8A);		mDispatcher[0x9A] = GB_BIND_DISPATCH(ALU_T, 0x9A);			mDispatcher[0xAA] = GB_BIND_DISPATCH(ALU_T, 0xAA);			mDispatcher[0xBA] = GB_BIND_DISPATCH(ALU_T, 0xBA);
+		mDispatcher[0x8B] = GB_BIND_DISPATCH(ALU_T, 0x8B);		mDispatcher[0x9B] = GB_BIND_DISPATCH(ALU_T, 0x9B);			mDispatcher[0xAB] = GB_BIND_DISPATCH(ALU_T, 0xAB);			mDispatcher[0xBB] = GB_BIND_DISPATCH(ALU_T, 0xBB);
+		mDispatcher[0x8C] = GB_BIND_DISPATCH(ALU_T, 0x8C);		mDispatcher[0x9C] = GB_BIND_DISPATCH(ALU_T, 0x9C);			mDispatcher[0xAC] = GB_BIND_DISPATCH(ALU_T, 0xAC);			mDispatcher[0xBC] = GB_BIND_DISPATCH(ALU_T, 0xBC);
+		mDispatcher[0x8D] = GB_BIND_DISPATCH(ALU_T, 0x8D);		mDispatcher[0x9D] = GB_BIND_DISPATCH(ALU_T, 0x9D);			mDispatcher[0xAD] = GB_BIND_DISPATCH(ALU_T, 0xAD);			mDispatcher[0xBD] = GB_BIND_DISPATCH(ALU_T, 0xBD);
+		mDispatcher[0x8E] = GB_BIND_DISPATCH(ALU_T, 0x8E);		mDispatcher[0x9E] = GB_BIND_DISPATCH(ALU_T, 0x9E);			mDispatcher[0xAE] = GB_BIND_DISPATCH(ALU_T, 0xAE);			mDispatcher[0xBE] = GB_BIND_DISPATCH(ALU_T, 0xBE);
+		mDispatcher[0x8F] = GB_BIND_DISPATCH(ALU_T, 0x8F);		mDispatcher[0x9F] = GB_BIND_DISPATCH(ALU_T, 0x9F);			mDispatcher[0xAF] = GB_BIND_DISPATCH(ALU_T, 0xAF);			mDispatcher[0xBF] = GB_BIND_DISPATCH(ALU_T, 0xBF);
+		mDispatcher[0xC0] = GB_BIND_DISPATCH(RET, 0xC0);		mDispatcher[0xD0] = GB_BIND_DISPATCH(RET, 0xD0);			mDispatcher[0xE0] = GB_BIND_DISPATCH(LD_R_STK, 0xE0);		mDispatcher[0xF0] = GB_BIND_DISPATCH(LD_R_STK, 0xF0);
+		mDispatcher[0xC1] = GB_BIND_DISPATCH(POP, 0xC1);		mDispatcher[0xD1] = GB_BIND_DISPATCH(POP, 0xD1);			mDispatcher[0xE1] = GB_BIND_DISPATCH(POP, 0xE1);			mDispatcher[0xF1] = GB_BIND_DISPATCH(POP, 0xF1);
+		mDispatcher[0xC2] = GB_BIND_DISPATCH(JP_C16, 0xC2);		mDispatcher[0xD2] = GB_BIND_DISPATCH(JP_C16, 0xD2);			mDispatcher[0xE2] = GB_BIND_DISPATCH(LD_R_STK, 0xE2);		mDispatcher[0xF2] = GB_BIND_DISPATCH(LD_R_STK, 0xF2);
+		mDispatcher[0xC3] = GB_BIND_DISPATCH(JP_I16, 0xC3);		mDispatcher[0xD3] = GB_BIND_DISPATCH(ASSERT, 0xD3);			mDispatcher[0xE3] = GB_BIND_DISPATCH(ASSERT, 0xE3);			mDispatcher[0xF3] = GB_BIND_DISPATCH(DI, 0xF3);
+		mDispatcher[0xC4] = GB_BIND_DISPATCH(CALL, 0xC4);		mDispatcher[0xD4] = GB_BIND_DISPATCH(CALL, 0xD4);			mDispatcher[0xE4] = GB_BIND_DISPATCH(ASSERT, 0xE4);			mDispatcher[0xF4] = GB_BIND_DISPATCH(ASSERT, 0xF4);
+		mDispatcher[0xC5] = GB_BIND_DISPATCH(PUSH, 0xC5);		mDispatcher[0xD5] = GB_BIND_DISPATCH(PUSH, 0xD5);			mDispatcher[0xE5] = GB_BIND_DISPATCH(PUSH, 0xE5);			mDispatcher[0xF5] = GB_BIND_DISPATCH(PUSH, 0xF5);
+		mDispatcher[0xC6] = GB_BIND_DISPATCH(ALU_T, 0xC6);		mDispatcher[0xD6] = GB_BIND_DISPATCH(ALU_T, 0xD6);			mDispatcher[0xE6] = GB_BIND_DISPATCH(ALU_T, 0xE6);			mDispatcher[0xF6] = GB_BIND_DISPATCH(ALU_T, 0xF6);
+		mDispatcher[0xC7] = GB_BIND_DISPATCH(ASSERT, 0xC7);		mDispatcher[0xD7] = GB_BIND_DISPATCH(ASSERT, 0xD7);			mDispatcher[0xE7] = GB_BIND_DISPATCH(ASSERT, 0xE7);			mDispatcher[0xF7] = GB_BIND_DISPATCH(ASSERT, 0xF7);
+		mDispatcher[0xC8] = GB_BIND_DISPATCH(RET, 0xC8);		mDispatcher[0xD8] = GB_BIND_DISPATCH(RET, 0xD8);			mDispatcher[0xE8] = GB_BIND_DISPATCH(ASSERT, 0xE8);			mDispatcher[0xF8] = GB_BIND_DISPATCH(ASSERT, 0xF8);
+		mDispatcher[0xC9] = GB_BIND_DISPATCH(RET, 0xC9);		mDispatcher[0xD9] = GB_BIND_DISPATCH(RETI, 0xD9);			mDispatcher[0xE9] = GB_BIND_DISPATCH(LD_HL_PC, 0xE9);		mDispatcher[0xF9] = GB_BIND_DISPATCH(ASSERT, 0xF9);
+		mDispatcher[0xCA] = GB_BIND_DISPATCH(JP_C16, 0xCA);		mDispatcher[0xDA] = GB_BIND_DISPATCH(JP_C16, 0xDA);			mDispatcher[0xEA] = GB_BIND_DISPATCH(LD_R_STK16, 0xEA);		mDispatcher[0xFA] = GB_BIND_DISPATCH(LD_R_STK16, 0xFA);
+		mDispatcher[0xCB] = GB_BIND_DISPATCH(CB, 0xCB);			mDispatcher[0xDB] = GB_BIND_DISPATCH(ASSERT, 0xDB);			mDispatcher[0xEB] = GB_BIND_DISPATCH(ASSERT, 0xEB);			mDispatcher[0xFB] = GB_BIND_DISPATCH(EI, 0xFB);
+		mDispatcher[0xCC] = GB_BIND_DISPATCH(CALL, 0xCC);		mDispatcher[0xDC] = GB_BIND_DISPATCH(CALL, 0xDC);			mDispatcher[0xEC] = GB_BIND_DISPATCH(ASSERT, 0xEC);			mDispatcher[0xFC] = GB_BIND_DISPATCH(ASSERT, 0xFC);
+		mDispatcher[0xCD] = GB_BIND_DISPATCH(CALL, 0xCD);		mDispatcher[0xDD] = GB_BIND_DISPATCH(ASSERT, 0xDD);			mDispatcher[0xED] = GB_BIND_DISPATCH(ASSERT, 0xED);			mDispatcher[0xFD] = GB_BIND_DISPATCH(ASSERT, 0xFD);
+		mDispatcher[0xCE] = GB_BIND_DISPATCH(ALU_T, 0xCE);		mDispatcher[0xDE] = GB_BIND_DISPATCH(ALU_T, 0xDE);			mDispatcher[0xEE] = GB_BIND_DISPATCH(ALU_T, 0xEE);			mDispatcher[0xFE] = GB_BIND_DISPATCH(ALU_T, 0xFE);
+		mDispatcher[0xCF] = GB_BIND_DISPATCH(RST, 0xCF);		mDispatcher[0xDF] = GB_BIND_DISPATCH(RST, 0xDF);			mDispatcher[0xEF] = GB_BIND_DISPATCH(RST, 0xEF);			mDispatcher[0xFF] = GB_BIND_DISPATCH(RST, 0xFF);
+	}
+
 	void CPU::DividerTimer()
 	{
 		if (mDividerClock < 0x100)
@@ -100,249 +174,33 @@ namespace GB {
 
 	bool CPU::CheckCondition(Condition condition)
 	{
-		bool shouldBranch = false;
-
 		switch (condition) {
 		case Condition::C:
-			shouldBranch = mFRegister.carry();
+			mBranchTaken = mFRegister.carry();
 			break;
 		case Condition::NC:
-			shouldBranch = !mFRegister.carry();
+			mBranchTaken = !mFRegister.carry();
 			break;
 		case Condition::Z:
-			shouldBranch = mFRegister.zero();
+			mBranchTaken = mFRegister.zero();
 			break;
 		case Condition::NZ:
-			shouldBranch = !mFRegister.zero();
+			mBranchTaken = !mFRegister.zero();
 			break;
 		}
 
-		/* If the branch is taken, remember so that the correct processor cycles
-		 * can be used */
-		mBranchTaken = shouldBranch;
-		return shouldBranch;
+		return mBranchTaken;
 	}
 
 	Byte CPU::HandleInstruction(OpCode instruction)
 	{
 		mBranchTaken = false;
+		mCBInstruction = false;
 
-		switch (instruction)
-		{
-		// NOP or effective NOPs
-		case 0x00: case 0x40: case 0x49: case 0x52: case 0x5B: case 0x64: case 0x6D: case 0x7F:
-			break;
+		mDispatcher[instruction]();
 
-		// Register-16bit immediate load
-		case 0x01: case 0x11: case 0x21: case 0x31:
-		{
-			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
-			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-			mRegisters[sRegisterPairs[instruction.p()]] = lo | hi << 8;
-			break;
-		}
-
-		// Register-Memory load
-		case 0x02: case 0x12: case 0x22: case 0x32:
-		{
-			LD_M_R(instruction);
-			break;
-		}
-
-		// Unary Inc/Dec
-		case 0x03: case 0x13: case 0x23: case 0x33: case 0x0B: case 0x1B: case 0x2B: case 0x3B:
-		case 0x04: case 0x14: case 0x24: case 0x34: case 0x0C: case 0x1C: case 0x2C: case 0x3C:
-		case 0x05: case 0x15: case 0x25: case 0x35: case 0x0D: case 0x1D: case 0x2D: case 0x3D:
-		{
-			UN_R(instruction);
-			break;
-		}
-
-		// Register-8bit immediate load
-		case 0x06: case 0x16: case 0x26: case 0x36:
-		case 0x0E: case 0x1E: case 0x2E: case 0x3E:
-		{
-			LD_R_I8(instruction);
-			break;
-		}
-
-		// Accumulator/BitField Ops
-		case 0x07: case 0x0F: case 0x17: case 0x1F: case 0x27: case 0x2F: case 0x37: case 0x3F:
-		{
-			REG(instruction);
-			break;
-		}
-
-		case 0x08:
-		{
-			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
-			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-			Word address = lo | hi << 8;
-
-			Word spLo = AddressBus::Read(address++);
-			Word spHi = AddressBus::Read(address);
-			mRegisters[WordReg::SP] = spLo | spHi << 8;
-			break;
-		}
-
-		case 0x09: case 0x19: case 0x29: case 0x39:
-		{
-			ADD_HL(mRegisters[sRegisterPairs[instruction.p()]]);
-			break;
-		}
-
-		// Memory-Register load
-		case 0x0A: case 0x1A: case 0x2A: case 0x3A:
-		{
-			LD_R_M(instruction);
-			break;
-		}
-
-		case 0x10:
-		{
-			mRegisters[WordReg::PC]++;
-			break;
-		}
-
-		// 8bit immediate Jump/Conditional Jumps
-		case 0x18: case 0x20: case 0x28: case 0x30: case 0x38:
-			JR_C8(instruction);
-			break;
-
-		// 8 bit Register-Register load
-		case 0x41: case 0x42: case 0x43: case 0x44: case 0x45: case 0x46: case 0x47:
-		case 0x48: case 0x4A: case 0x4B: case 0x4C: case 0x4D: case 0x4E: case 0x4F:
-		case 0x50: case 0x51: case 0x53: case 0x54: case 0x55: case 0x56: case 0x57:
-		case 0x58: case 0x59: case 0x5A: case 0x5C: case 0x5D: case 0x5E: case 0x5F:
-		case 0x60: case 0x61: case 0x62: case 0x63: case 0x65: case 0x66: case 0x67:
-		case 0x68: case 0x69: case 0x6A: case 0x6B: case 0x6C: case 0x6E: case 0x6F:
-		case 0x70: case 0x71: case 0x72: case 0x73: case 0x74: case 0x75: case 0x77:
-		case 0x78: case 0x79: case 0x7A: case 0x7B: case 0x7C: case 0x7D: case 0x7E:
-		{
-			LD_R_R(instruction);
-			break;
-		}
-		case 0x76:
-			mHalted = true;
-			break;
-
-		// Register-Register Arithmetic/Logic
-		case 0x80: case 0x81: case 0x82: case 0x83: case 0x84: case 0x85: case 0x86: case 0x87:
-		case 0x88: case 0x89: case 0x8A: case 0x8B: case 0x8C: case 0x8D: case 0x8E: case 0x8F:
-		case 0x90: case 0x91: case 0x92: case 0x93: case 0x94: case 0x95: case 0x96: case 0x97:
-		case 0x98: case 0x99: case 0x9A: case 0x9B: case 0x9C: case 0x9D: case 0x9E: case 0x9F:
-		case 0xA0: case 0xA1: case 0xA2: case 0xA3: case 0xA4: case 0xA5: case 0xA6: case 0xA7:
-		case 0xA8: case 0xA9: case 0xAA: case 0xAB: case 0xAC: case 0xAD: case 0xAE: case 0xAF:
-		case 0xB0: case 0xB1: case 0xB2: case 0xB3: case 0xB4: case 0xB5: case 0xB6: case 0xB7:
-		case 0xB8: case 0xB9: case 0xBA: case 0xBB: case 0xBC: case 0xBD: case 0xBE: case 0xBF:
-		{
-			Byte value;
-			READ_REG(instruction.z(), value);
-			ALU_T(value, instruction.y());
-			break;
-		}
-
-		// 8 bit immediate Arithmetic/Logic
-		case 0xC6: case 0xCE: case 0xD6: case 0xDE: case 0xE6: case 0xEE: case 0xF6: case 0xFE:
-		{
-			Byte imm = AddressBus::Read(mRegisters[WordReg::PC]++);
-			ALU_T(imm, instruction.y());
-			break;
-		}
-
-		// Returns
-		case 0xC0: case 0xD0: case 0xC8: case 0xD8: case 0xC9:
-		{
-			RET(instruction);
-			break;
-		}
-
-		// Stack Pop
-		case 0xC1: case 0xD1: case 0xE1:case 0xF1:
-		{
-			POP(instruction.p());
-			break;
-		}
-
-		// 16 bit Conditional Jumps
-		case 0xC2: case 0xD2: case 0xCA :case 0xDA:
-		{
-			JR_C16(instruction);
-			break;
-		}
-
-		// 16 bit immediate jump
-		case 0xC3:
-		{
-			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
-			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-			Word imm = lo | hi << 8;
-			mRegisters[WordReg::PC] = imm;
-			break;
-		}
-
-		// Calls
-		case 0xC4: case 0xD4: case 0xCC: case 0xDC: case 0xCD:
-		{
-			CALL(instruction);
-			break;
-		}
-
-		// Stack Push
-		case 0xC5: case 0xD5: case 0xE5:case 0xF5:
-		{
-			PUSH(instruction.p());
-			break;
-		}
-
-		// CB Instruction Prefix
-		case 0xCB:
-			return HandleCBInstruction();
-
-		case 0xD9:
-		{
-			RET(instruction);
-			mInteruptsEnabled = true;
-		}
-
-		// Load to/from WRAM/IO
-		case 0xE0: case 0xE2: case 0xF0: case 0xF2:
-		{
-			LD_R_STK(instruction);
-			break;
-		}
-
-		case 0xE9:
-		{
-			mRegisters[WordReg::PC] = mRegisters[WordReg::HL];
-			break;
-		}
-
-		// Load to/from 16bit immediate address
-		case 0xEA: case 0xFA:
-		{
-			LD_R_STK16(instruction);
-			break;
-		}
-
-		// Disable Master Interrupt
-		case 0xF3:
-			mInteruptsEnabled = false;
-			break;
-
-		// Enable Master Interrupt
-		case 0xFB:
-			mInteruptsEnabled = true;
-			break;
-
-		case 0xCF: case 0xDF: case 0xEF: case 0xFF:
-		{
-			RST(instruction);
-			break;
-		}
-
-		default: GB_ASSERT(false, "Instruction not yet implemented!");
-		}
+		if (mCBInstruction)
+			return sCycles[0xCB] + sCBCycles[instruction];
 
 		if (mBranchTaken)
 			return sCyclesBranched[instruction];
@@ -350,8 +208,10 @@ namespace GB {
 		return sCycles[instruction];
 	}
 
-	Byte CPU::HandleCBInstruction()
+	void CPU::CB(OpCode op)
 	{
+		mCBInstruction = true;
+
 		OpCode instruction = AddressBus::Read(mRegisters[WordReg::PC]++);
 		switch (instruction.x())
 		{
@@ -361,8 +221,6 @@ namespace GB {
 		case 3: SET_R(instruction); break;
 		default: break;
 		}
-
-		return sCycles[0xCB] + sCBCycles[instruction];
 	}
 
 	void CPU::ServiceInterupt(Interrupt interrupt)
@@ -486,6 +344,13 @@ namespace GB {
 		WRITE_REG(op.y(), imm);
 	}
 
+	void CPU::LD_R_I16(OpCode op)
+	{
+		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+		mRegisters[sRegisterPairs[op.p()]] = lo | hi << 8;
+	}
+
 	void CPU::LD_R_STK(OpCode op)
 	{
 		Byte addr = (op.z() & GB_BIT(1)) ? mRegisters[ByteReg::C] : AddressBus::Read(mRegisters[WordReg::PC]++);
@@ -506,6 +371,18 @@ namespace GB {
 			mRegisters[ByteReg::A] = AddressBus::Read(imm);
 		else
 			AddressBus::Write(imm, mRegisters[ByteReg::A]);
+
+	}
+
+	void CPU::LD_M_SP(OpCode op)
+	{
+		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word address = lo | hi << 8;
+
+		Word sp = mRegisters[WordReg::SP];
+		AddressBus::Write(address++, sp & 0x0F);
+		AddressBus::Write(address, (sp & 0xF0) >> 4);
 
 	}
 
@@ -557,7 +434,7 @@ namespace GB {
 		WRITE_REG(targetReg, value);
 	}
 
-	void CPU::JR_C8(OpCode op)
+	void CPU::JP_C8(OpCode op)
 	{
 		SByte imm = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Byte condTarget = op.y();
@@ -573,7 +450,7 @@ namespace GB {
 		mRegisters[WordReg::PC] += imm;
 	}
 
-	void CPU::JR_C16(OpCode op)
+	void CPU::JP_C16(OpCode op)
 	{
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
@@ -582,6 +459,14 @@ namespace GB {
 		Byte condTarget = op.y();
 		if (CheckCondition((Condition)(condTarget)))
 			mRegisters[WordReg::PC] = imm;
+	}
+
+	void CPU::JP_I16(OpCode op)
+	{
+		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
+		Word imm = lo | hi << 8;
+		mRegisters[WordReg::PC] = imm;
 	}
 
 	void CPU::UN_R(OpCode op)
@@ -665,9 +550,15 @@ namespace GB {
 
 	// Instruction Implementations
 		
-	void CPU::ALU_T(Byte value, Byte op)
+	void CPU::ALU_T(OpCode op)
 	{
-		switch (op)
+		Byte value;
+		if (op.x() == 3)
+			value = AddressBus::Read(mRegisters[WordReg::PC]++);
+		else
+			READ_REG(op.z(), value);
+
+		switch (op.y())
 		{
 		case 0: ADD_R(value); break;
 		case 1: ADC_R(value); break;
@@ -787,8 +678,10 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::ADD_HL(Word value)
+	void CPU::ADD_HL(OpCode op)
 	{
+		Word value = mRegisters[sRegisterPairs[op.p()]];
+
 		Word& regHL = mRegisters[WordReg::HL];
 		Word regHLCpy = regHL;
 
@@ -801,19 +694,19 @@ namespace GB {
 		mFRegister.setFlags(flags);
 	}
 
-	void CPU::PUSH(Byte target)
+	void CPU::PUSH(OpCode op)
 	{
 		Word& sp = mRegisters[WordReg::SP];
-		Word regPair = mRegisters[sRegisterPairs2[target]];
+		Word regPair = mRegisters[sRegisterPairs2[op.p()]];
 
 		AddressBus::Write(--sp, (Byte)(regPair >> 8));
 		AddressBus::Write(--sp, (Byte)(regPair & 0x00FF));
 	}
 
-	void CPU::POP(Byte target)
+	void CPU::POP(OpCode op)
 	{
 		Word& sp = mRegisters[WordReg::SP];
-		Word& regPair = mRegisters[sRegisterPairs2[target]];
+		Word& regPair = mRegisters[sRegisterPairs2[op.p()]];
 
 		regPair = (Word)AddressBus::Read(sp++);
 		regPair |= (Word)AddressBus::Read(sp++) << 8;

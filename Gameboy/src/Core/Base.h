@@ -14,3 +14,5 @@
 #define GB_LITTLE_ENDIAN std::endian::native == std::endian::little
 
 #define GB_BIT(x) (1 << x)
+
+#define GB_BIND_DISPATCH(func, instr) std::bind(&CPU::func, this, instr)
