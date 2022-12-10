@@ -9,13 +9,21 @@ namespace GB {
 
 	Gameboy::Gameboy(Emu::Window* window, std::string_view path)
     {
+        mSession = new GBSession;
+        mProcessor = new CPU(mSession);
+        mGraphics = new PPU;
+
         MemoryManager::Init();
         mCartridge = new Cartridge(path);
-        AddressBus::Init(mCartridge, mProcessor.getClockSpeed());
+        AddressBus::Init(mCartridge, mProcessor->getClockSpeed());
     }
 
     Gameboy::~Gameboy()
     {   
+        delete mProcessor;
+        delete mGraphics;
+        delete mSession;
+
         delete mCartridge;
         mCartridge = nullptr;
 
@@ -24,43 +32,39 @@ namespace GB {
 
     void Gameboy::update()
     {
-        if (mPaused && !mStep)
+        if (mSession->paused && !mSession->step)
             return;
 
-        if (mLastCycles == 0)
-            mGraphics.startFrame();
+        if (mSession->lastCycles == 0)
+            mGraphics->startFrame();
 
-        USize cyclesThisUpdate = mLastCycles;
-        mLastCycles = 0;
+        USize cyclesThisUpdate = mSession->lastCycles;
+        mSession->lastCycles = 0;
 
         while (cyclesThisUpdate < CYCLES_PER_FRAME)
         {
-            Byte cycles = 0;
-            if (!mUseBreakpoint)
-                cycles = mProcessor.exec();
-            else
-                cycles = mProcessor.execDebug(mPCBreakpoint, mPaused, mStep);
+            Byte cycles = mProcessor->exec();
 
             if (cycles == 0)
                 break;
 
             cyclesThisUpdate += cycles;
-            mProcessor.updateTimers(cycles);
-            mGraphics.update(cycles);
-            mProcessor.handleInterupts();
+            mProcessor->updateTimers(cycles);
+            mGraphics->update(cycles);
+            mProcessor->handleInterupts();
 
-            if (mStep)
+            if (mSession->step)
                 break;
         }
 
-        if (mStep)
+        if (mSession->step)
         {
-            mLastCycles = cyclesThisUpdate;
-            mStep = false;
+            mSession->lastCycles = cyclesThisUpdate;
+            mSession->step = false;
         }
 
-        if (mLastCycles == 0)
-            mGraphics.endFrame();
+        if (mSession->lastCycles == 0)
+            mGraphics->endFrame();
     }
 
     void Gameboy::imguiRender()
@@ -89,29 +93,29 @@ namespace GB {
         ImGui::Begin("CPU");
 
         {   // Control
-            const char* label = mPaused ? "Run" : "Pause";
+            const char* label = mSession->paused ? "Run" : "Pause";
             if (ImGui::Button(label))
-                mPaused = !mPaused;
+                mSession->paused = !mSession->paused;
 
-            if (mPaused)
+            if (mSession->paused)
             {
                 ImGui::SameLine();
                 if (ImGui::Button("Step"))
-                    mStep = true;
+                    mSession->step = true;
             }
 
             ImGui::SameLine();
-            ImGui::Checkbox("Breakpoint", &mUseBreakpoint);
+            ImGui::Checkbox("Breakpoint", &mSession->useBreakpoint);
 
             static Word sStepSize = 1;
-            ImGui::InputScalar("PC", ImGuiDataType_U16, &mPCBreakpoint, &sStepSize, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
+            ImGui::InputScalar("PC", ImGuiDataType_U16, &mSession->breakpoint, &sStepSize, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
         }
 
         ImGui::Separator();
 
         {   // Registers
-            Registers& registers = mProcessor.mRegisters;
-            BitField flagReg = mProcessor.mFRegister.getFlags();
+            Registers& registers = mProcessor->mRegisters;
+            BitField flagReg = mProcessor->mFRegister.getFlags();
 
             ImGui::Text("CPU Registers");
 

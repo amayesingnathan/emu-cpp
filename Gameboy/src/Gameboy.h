@@ -9,6 +9,18 @@ namespace GB {
 
     struct APU {};
 
+    struct GBSession
+    {
+        USize lastCycles = 0;
+
+        bool paused = true;
+        bool step = false;
+
+        Word lastPC = 0x0000;
+        Word breakpoint = 0x0100;
+        bool useBreakpoint = false;
+    };
+
     class Gameboy : public Emu::Base
     {
     public:
@@ -24,7 +36,7 @@ namespace GB {
         void imguiRender() override;
 
         Emu::ActionCallback getActionCallback() override { return BIND_ACTION_FUNC(Gameboy::HandleEvent); };
-        Emu::uint getDisplayTex() override { return mGraphics.getDisplayTex(); }
+        Emu::uint getDisplayTex() override { return mGraphics->getDisplayTex(); }
         Emu::Duration getFrameTime() override { return FRAME_LENGTH; };
 
     private:
@@ -35,19 +47,11 @@ namespace GB {
     private:
         Cartridge* mCartridge = nullptr;
 
-        CPU mProcessor;
-        PPU mGraphics;
-        APU mAudio;
+        CPU* mProcessor = nullptr;
+        PPU* mGraphics = nullptr;
+        APU* mAudio = nullptr;
 
         Emu::ImGuiHandler* mImGuiHandler = nullptr;
-
-        USize mLastCycles = 0;
-
-        // Debug
-        bool mPaused = false;
-        bool mStep = false;
-
-        Word mPCBreakpoint = 0x0100;
-        bool mUseBreakpoint = false;
+        GBSession* mSession = nullptr;
     };
 }

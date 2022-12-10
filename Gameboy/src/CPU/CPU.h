@@ -9,6 +9,7 @@
 namespace GB {
 
     struct OpCode;
+    struct GBSession;
 
     enum class Condition : Byte
     {
@@ -24,23 +25,24 @@ namespace GB {
         GB_CONST Word TMC2          = CLOCK_SPEED / 65536;
         GB_CONST Word TMC3          = CLOCK_SPEED / 16382;
 
-        enum class Timer : Word
+        enum class Timer : Byte
         {
             TMC0, TMC1, TMC2, TMC3
         };
 
 	public:
-        CPU();
+        CPU(GBSession* session);
 
     public:
         Byte exec();
-        Byte execDebug(Word breakpoint, bool& pause, bool& step);
         void updateTimers(Byte cycles);
         void handleInterupts();
 
         Word& getClockSpeed() { return mCurrentClockSpeed; }
 
     private:
+        Byte ExecDebug();
+
         void InitDispatcher();
 
         void DividerTimer();
@@ -74,6 +76,8 @@ namespace GB {
 
         using OpcodeFunction = std::function<void()>;
         OpcodeFunction mDispatcher[0x100];
+
+        GBSession* mSession = nullptr;
 
         friend class Gameboy;
 
