@@ -109,6 +109,8 @@ namespace GB {
 
             static Word sStepSize = 1;
             ImGui::InputScalar("PC", ImGuiDataType_U16, &mSession->breakpoint, &sStepSize, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
+
+            ImGui::Checkbox("Log", &mSession->print);
         }
 
         ImGui::Separator();

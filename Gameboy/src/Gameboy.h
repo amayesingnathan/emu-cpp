@@ -19,6 +19,8 @@ namespace GB {
         Word lastPC = 0x0000;
         Word breakpoint = 0x0100;
         bool useBreakpoint = false;
+
+        bool print = true;
     };
 
     class Gameboy : public Emu::Base

@@ -22,7 +22,7 @@ namespace Emu {
             if (ts < emu.mEmuSettings.frameLength)
                 Time::Sleep(emu.mEmuSettings.frameLength - ts);
             else
-                EMU_CORE_WARN("Frame running behind by {:03.2f}ms!", (ts - emu.mEmuSettings.frameLength).count());
+                ;//EMU_CORE_WARN("Frame running behind by {:03.2f}ms!", (ts - emu.mEmuSettings.frameLength).count());
         }
     }
 
