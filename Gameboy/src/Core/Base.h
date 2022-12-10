@@ -4,7 +4,7 @@
 #include "EmuBase.h"
 
 #define GB_ASSERT(x, ...) assert(x)
-#define GB_SASSERT(x, ...) static_assert(x)
+#define GB_SASSERT(...) static_assert(__VA_ARGS__)
 
 #define GB_CONST static constexpr
 

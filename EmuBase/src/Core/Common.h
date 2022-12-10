@@ -3,6 +3,7 @@
 #include "glpch.h"
 
 #define GL_ASSERT(x, ...) assert(x)
+#define GL_SASSERT(...) static_assert(__VA_ARGS__)
 
 namespace Emu {
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Core/EnumUtils.h"
 #include "Core/FileDialog.h"
 #include "Core/Log.h"
 #include "Core/Timing.h"

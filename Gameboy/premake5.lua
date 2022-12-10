@@ -26,6 +26,7 @@ project "Gameboy"
         "%{IncludeDir.Gameboy}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.imgui}",
+        "%{IncludeDir.magic_enum}",
         "%{IncludeDir.spdlog}",
     }
 

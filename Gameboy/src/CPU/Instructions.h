@@ -5,12 +5,24 @@
 namespace GB {
 
 	using RegTarget = std::variant<ByteReg, WordReg>;
-	using RegTargets = std::array<RegTarget, 8>;
-	using RegPairTargets = std::array<WordReg, 4>;
 
-	GB_CONST RegTargets sRegisters = { ByteReg::B, ByteReg::C, ByteReg::D, ByteReg::E, ByteReg::H, ByteReg::L, WordReg::HL, ByteReg::A };
-	GB_CONST RegPairTargets sRegisterPairs = { WordReg::BC, WordReg::DE, WordReg::HL, WordReg::SP };
-	GB_CONST RegPairTargets sRegisterPairs2 = { WordReg::BC, WordReg::DE, WordReg::HL, WordReg::AF };
+	GB_CONST std::array<RegTarget, 8> sRegisters = { ByteReg::B, ByteReg::C, ByteReg::D, ByteReg::E, ByteReg::H, ByteReg::L, WordReg::HL, ByteReg::A };
+	GB_CONST std::array<WordReg, 4> sRegisterPairs = { WordReg::BC, WordReg::DE, WordReg::HL, WordReg::SP };
+	GB_CONST std::array<WordReg, 4> sRegisterPairs2 = { WordReg::BC, WordReg::DE, WordReg::HL, WordReg::AF };
+
+	inline static std::string_view RegToString(Byte index)
+	{
+		std::string_view result;
+		std::visit([&](auto&& arg)
+		{
+			using T = std::decay_t<decltype(arg)>;
+			GB_SASSERT(std::is_same_v<T, ByteReg> || std::is_same_v<T, WordReg>, "Non-exhaustive visitor!");
+			
+			result = Emu::Enum::ToString(arg);
+		}, sRegisters[index]);
+
+		return result;
+	}
 
 #define READ_REG(target, val)	std::visit([&](auto&& arg)\
 								{\

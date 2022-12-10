@@ -27,6 +27,7 @@ project "EmuBase"
         "%{IncludeDir.glad}",
         "%{IncludeDir.glfw}",
         "%{IncludeDir.imgui}",
+        "%{IncludeDir.magic_enum}",
         "%{IncludeDir.pfd}",
         "%{IncludeDir.spdlog}",
     }

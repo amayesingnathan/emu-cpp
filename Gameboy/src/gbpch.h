@@ -8,6 +8,7 @@
 #include <variant>
 
 #include <new>
+#include <type_traits>
 
 #include <cstddef>
 #include <cstdint>
