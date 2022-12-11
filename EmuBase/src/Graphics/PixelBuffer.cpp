@@ -61,4 +61,20 @@ namespace Emu {
         GL_ASSERT(mLocked, "Buffer must be locked!");
         return mPixels[_Map(x, y)];
     }
+
+    void PixelBuffer::set(const Pixel& colour)
+    {
+        GL_ASSERT(mLocked, "Buffer must be locked!");
+        Pixel* buffer = new Pixel[mWidth * mHeight](colour);
+        memcpy(mPixels, buffer, mSize);
+        delete[] buffer;
+    }
+
+    void PixelBuffer::set(const Pixel& colour, usize size, usize offset)
+    {
+        GL_ASSERT(mLocked, "Buffer must be locked!");
+        Pixel* buffer = new Pixel[size](colour);
+        memcpy(mPixels + offset, buffer, size * sizeof(Pixel));
+        delete[] buffer;
+    }
 }

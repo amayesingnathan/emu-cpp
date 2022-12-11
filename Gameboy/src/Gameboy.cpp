@@ -15,18 +15,17 @@ namespace GB {
 
         MemoryManager::Init();
         mCartridge = new Cartridge(path);
-        AddressBus::Init(mCartridge, mProcessor->getClockSpeed());
+        AddressBus::Init(mProcessor, mGraphics, mCartridge);
     }
 
     Gameboy::~Gameboy()
-    {   
-        delete mProcessor;
+    {
+        delete mCartridge;
         delete mGraphics;
+        delete mProcessor;
         delete mSession;
 
-        delete mCartridge;
-        mCartridge = nullptr;
-
+        AddressBus::Shutdown();
         MemoryManager::Shutdown();
     }
 

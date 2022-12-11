@@ -1,7 +1,6 @@
 #include "gbpch.h"
 #include "PPU.h"
 
-#include "Graphics/Flags.h"
 #include "Memory/Address.h"
 #include "Memory/AddressBus.h"
 
@@ -43,6 +42,8 @@ namespace GB {
 			LCDTransferMode();
 			break;
 		}
+
+		CompareScanline();
 	}
 
 	bool PPU::IsLCDEnabled()
@@ -60,7 +61,8 @@ namespace GB {
 
 	void PPU::SetLCDStatus(Mode newMode)
 	{
-		BitField lcdStatus = AddressBus::Read(Addr::LCDS);
+		Byte& lcds = AddressBus::Read(Addr::LCDS);
+		BitField lcdStatus = lcds;
 		lcdStatus &= 0xFC;
 
 		switch (newMode)
@@ -89,11 +91,12 @@ namespace GB {
 		}
 
 		mCurrentMode = newMode;
-		AddressBus::Write(Addr::LCDS, lcdStatus);
+		lcds = lcdStatus;
 	}
 
-	void PPU::CompareScanline(Byte scanline)
+	void PPU::CompareScanline()
 	{
+		Byte scanline = AddressBus::Read(Addr::LY);
 		Byte scanlineComparison = AddressBus::Read(Addr::LYC);
 		Byte& lcds = AddressBus::Read(Addr::LCDS);
 		BitField lcdStatus = lcds;
@@ -116,7 +119,6 @@ namespace GB {
 
 		mClockCounter -= HBLANK_CYCLES;
 		Byte& scanline = ++AddressBus::Read(Addr::LY);
-		CompareScanline(scanline);
 
 		Mode nextMode = Mode::OAM;
 		if (scanline == SCANLINE_COUNT)
@@ -126,7 +128,6 @@ namespace GB {
 		}
 
 		SetLCDStatus(nextMode);
-
 	}
 
 	void PPU::VBlankMode()
@@ -136,17 +137,14 @@ namespace GB {
 
 		mClockCounter -= CYCLES_PER_SCANLINE;
 		Byte& scanline = ++AddressBus::Read(Addr::LY);
-		CompareScanline(scanline);
 
 		if (scanline < SCANLINE_COUNT_MAX)
 			return;
 
  		mClockCounter = 0;
 		scanline = 0;
-		CompareScanline(scanline);
 
 		SetLCDStatus(Mode::OAM);
-
 	}
 
 	void PPU::OAMMode()

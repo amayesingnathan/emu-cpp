@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Core/Types.h"
+#include "Flags.h"
 
 namespace GB {
 
@@ -51,7 +51,7 @@ namespace GB {
 		bool IsLCDEnabled();
 		void DisableLCD();
 		void SetLCDStatus(Mode newMode);
-		void CompareScanline(Byte scanline);
+		void CompareScanline();
 
 		void HBlankMode();
 		void VBlankMode();
@@ -71,5 +71,6 @@ namespace GB {
 		Mode mCurrentMode = Mode::OAM;
 
 		friend class Gameboy;
+		friend class AddressBus;
 	};
 }

@@ -27,6 +27,11 @@ namespace Emu {
 		Pixel& at(usize x, usize y);
 		const Pixel& at(usize x, usize y) const;
 
+		Pixel* get(usize offset = 0) { return mPixels + offset; }
+		const Pixel* get(usize offset = 0) const { return mPixels + offset; }
+		void set(const Pixel& colour);
+		void set(const Pixel& colour, usize size, usize offset);
+
 		static Ref<PixelBuffer> Create(uint width, uint height) { return std::make_shared<PixelBuffer>(width, height); }
 
 	private:

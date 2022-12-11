@@ -6,22 +6,43 @@
 
 #include "Cartridge/Cartridge.h"
 #include "CPU/CPU.h"
+#include "Graphics/PPU.h"
 
 namespace GB {
 
+	void AddressBus::Init(CPU* cpu, PPU* ppu, Cartridge* cartridge)
+	{
+		GB_ASSERT(!sInitialised, "Address Bus already intialised!");
+		Get().init(cpu, ppu, cartridge);
+		sInitialised = true;
+	}
+
+	void AddressBus::Shutdown()
+	{
+		GB_ASSERT(sInitialised, "Address Bus not intialised!");
+		Get().shutdown();
+		sInitialised = false;
+	}
+
 	Byte& AddressBus::Read(Word address)
 	{
-		if (address >= 0xFEA0 && address < 0xFF00)
-			return sErrorByte; // Warn: restricted memory!
+		GB_ASSERT(sInitialised, "Address Bus not intialised!");
+		AddressBus& bus = Get();
 
-		if (sBusState.bootstrap && address < 0x0100)	// Boot ROM
+		if (address >= 0xFEA0 && address < 0xFF00)
+		{
+			EMU_WARN("Reading from restricted memory!");
+			return bus.mErrorByte;
+		}
+
+		if (bus.mBusState.bootstrap && address < 0x0100)	// Boot ROM
 			return MemoryManager::Get(MemoryManager::BOOTSTRAP, address);
 		else if (address < 0x8000)						// ROM - may have memory bank controller to handle reading
-			return sCartridge->read(address);
+			return bus.mCartridge->read(address);
 		else if (address >= 0x8000 && address < 0xA000) // VRAM
 			return MemoryManager::Get(MemoryManager::VRAM, address - 0x8000);
 		else if (address >= 0xA000 && address < 0xC000) // Switchable RAM banks in cartridge
-			return sCartridge->read(address);
+			return bus.mCartridge->read(address);
 		else if (address >= 0xC000 && address < 0xE000) // WRAM
 			return MemoryManager::Get(MemoryManager::WRAM, address - 0xC000);
 		else if (address >= 0xE000 && address < 0xFE00) // Echo of 0xC000 - 0xDFFF
@@ -36,24 +57,30 @@ namespace GB {
 			return MemoryManager::Get(MemoryManager::IO, 0x80);
 
 		GB_ASSERT(false, "Cannot map to this memory!");
-		return sErrorByte;
+		return bus.mErrorByte;
 	}
 
 	void AddressBus::Write(Word address, Byte data)
 	{
+		GB_ASSERT(sInitialised, "Address Bus not intialised!");
+		AddressBus& bus = Get();
+
 		if (address >= 0xFEA0 && address < 0xFF00)
-			return; // Warn: restricted memory!
+		{
+			EMU_ERROR("Writing to restricted memory!");
+			return;
+		}
 
-        GB_ASSERT(!sBusState.bootstrap || address >= 0x0100, "Cannot write to boot ROM except to disable it!");
+        GB_ASSERT(!bus.mBusState.bootstrap || address >= 0x0100, "Cannot write to boot ROM except to disable it!");
 
-		if (sBusState.bootstrap && address == 0xFF50)
-			sBusState.bootstrap = false;
+		if (bus.mBusState.bootstrap && address == 0xFF50)
+			bus.mBusState.bootstrap = false;
 		else if (address < 0x8000)						// ROM
-			sCartridge->write(address, data);
+			bus.mCartridge->write(address, data);
 		else if (address >= 0x8000 && address < 0xA000) // VRAM
 			MemoryManager::Get(MemoryManager::VRAM, address - 0x8000) = data;
 		else if (address >= 0xA000 && address < 0xC000) // Switchable RAM banks in cartridge
-			sCartridge->write(address, data);
+			bus.mCartridge->write(address, data);
 		else if (address >= 0xC000 && address < 0xE000) // WRAM
 			MemoryManager::Get(MemoryManager::WRAM, address - 0xC000) = data;
 		else if (address >= 0xE000 && address < 0xFE00) // Echo of 0xC000 - 0xDFFF
@@ -79,6 +106,8 @@ namespace GB {
 
 	Byte& AddressBus::ReadIO(Word address)
 	{
+		AddressBus& bus = Get();
+
 		switch (address)
 		{
 		// Undocumented IO registers
@@ -90,7 +119,7 @@ namespace GB {
 		case 0xFF67: case 0xFF71: case 0xFF72: case 0xFF73: case 0xFF74:
 		case 0xFF75: case 0xFF78: case 0xFF79:
 			EMU_WARN("Reading from undocumented IO Register: {:X}", address);
-			return sErrorByte;
+			return bus.mErrorByte;
 
 		default:
 			return MemoryManager::Get(MemoryManager::IO, address - 0xFF00);
@@ -99,6 +128,8 @@ namespace GB {
 
 	void AddressBus::WriteIO(Word address, Byte data)
 	{
+		AddressBus& bus = Get();
+
 		switch (address)
 		{
 		case Addr::DIV:
@@ -114,6 +145,31 @@ namespace GB {
 
 			if (currentFreq != newFreq)
 				SetClockFreq(newFreq);
+			break;
+		}
+
+		case Addr::LCDC:
+		{
+			Byte& lcdc = MemoryManager::Get(MemoryManager::IO, Addr::LCDC - 0xFF00);
+
+			BitField lcdControl = lcdc;
+			bool lcdPrevEnabled = lcdControl.bit(LCD_ENABLE_BIT);
+
+			lcdc = data;
+			bool lcdEnabled = BitField(lcdc).bit(LCD_ENABLE_BIT);
+
+			if (!lcdPrevEnabled || lcdEnabled)
+				break;
+
+			bus.mPPU->DisableLCD();
+			bus.mPPU->mDisplayPB->set({ 0, 0, 0, 255 });
+			break;
+		}
+
+		case Addr::LCDS:
+		{
+			Byte& lcdStatus = MemoryManager::Get(MemoryManager::IO, Addr::LCDS - 0xFF00);
+			lcdStatus = (data & 0xF8) | (lcdStatus & 0x07);
 			break;
 		}
 
@@ -144,12 +200,15 @@ namespace GB {
 
 	void AddressBus::SetClockFreq(Byte freq)
 	{
+		GB_ASSERT(sInitialised, "Address Bus not intialised!");
+		AddressBus& bus = Get();
+
 		switch (freq)
 		{
-		case 0: *sClockSpeed = CPU::TMC0; break;
-		case 1: *sClockSpeed = CPU::TMC1; break;
-		case 2: *sClockSpeed = CPU::TMC2; break;
-		case 3: *sClockSpeed = CPU::TMC3; break;
+		case 0: bus.mCPU->mCurrentClockSpeed = CPU::TMC0; break;
+		case 1: bus.mCPU->mCurrentClockSpeed = CPU::TMC1; break;
+		case 2: bus.mCPU->mCurrentClockSpeed = CPU::TMC2; break;
+		case 3: bus.mCPU->mCurrentClockSpeed = CPU::TMC3; break;
 		}
 	}
 

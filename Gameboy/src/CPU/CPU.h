@@ -80,6 +80,7 @@ namespace GB {
         GBSession* mSession = nullptr;
 
         friend class Gameboy;
+        friend class AddressBus;
 
 #pragma region OpCodeFunctions
     private:

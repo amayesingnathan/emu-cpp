@@ -621,7 +621,7 @@ namespace GB {
 
 	void CPU::REG(OpCode op)
 	{
-		switch (op)
+		switch (op.y())
 		{
 		case 0: RLCA(); break;
 		case 1: RRCA(); break;
