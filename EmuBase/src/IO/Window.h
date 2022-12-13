@@ -1,16 +1,19 @@
 #pragma once
 
 #include "Core/Common.h"
-#include "IO/Input.h"
-#include "ImGui/ImGuiHandler.h"
+#include "IO/Event.h"
 
 struct GLFWwindow;
 
 namespace Emu {
 
 	class GraphicsContext;
+	class ImGuiHandler;
 
-	struct WindowProps {
+	using EventCallback = std::function<void(Event&)>;
+
+	struct WindowProps 
+	{
 		std::string title;
 		uint width;
 		uint height;
@@ -31,8 +34,13 @@ namespace Emu {
 		~Window();
 
 		void update();
+		void beginImGui();
+		void endImGui();
 
-		void setActionCallback(const ActionCallback& callback) { mData.eventCallback = callback; }
+		void onEvent(Event& event);
+		void blockEvents(bool block);
+
+		void setEventCallback(const EventCallback& callback) { mData.eventCallback = callback; }
 
 		inline uint getWidth() const { return mData.width; }
 		inline uint getHeight() const { return mData.height; }
@@ -43,6 +51,8 @@ namespace Emu {
 		void setVSync(bool enabled);
 		bool isVSync() const;
 
+		bool isKeyPressed(KeyCode key);
+
 		GLFWwindow* getNativeWindow() const { return mWindow; }
 		GraphicsContext* getNativeContext() const { return mContext; }
 
@@ -50,9 +60,12 @@ namespace Emu {
 		void Init(const WindowProps& props);
 		void Shutdown();
 
+		void RegisterCallbacks();
+
 	private:
 		GLFWwindow* mWindow;
 		GraphicsContext* mContext;
+		ImGuiHandler* mImGuiHandler;
 
 		struct WindowData
 		{
@@ -60,7 +73,7 @@ namespace Emu {
 			uint width, height;
 			bool vSync;
 
-			ActionCallback eventCallback;
+			EventCallback eventCallback;
 		};
 
 		WindowData mData;

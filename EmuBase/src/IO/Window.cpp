@@ -26,6 +26,45 @@ namespace Emu {
 		Shutdown();
 	}
 
+	void Window::update()
+	{
+		glfwPollEvents();
+		mContext->swapBuffers();
+	}
+
+	void Window::beginImGui() { mImGuiHandler->begin(); }
+	void Window::endImGui()   { mImGuiHandler->end(); }
+	void Window::onEvent(Event& event)   { mImGuiHandler->onEvent(event); }
+	void Window::blockEvents(bool block) { mImGuiHandler->blockEvents(block); }
+
+	void Window::setTitle(const std::string& title)
+	{
+		mData.title = title;
+		glfwSetWindowTitle(mWindow, title.c_str());
+	}
+
+	void Window::setVSync(bool enabled)
+	{
+		if (enabled)
+			glfwSwapInterval(1);
+		else
+			glfwSwapInterval(0);
+
+		mData.vSync = enabled;
+	}
+
+	bool Window::isVSync() const
+	{
+		return mData.vSync;
+	}
+
+	bool Window::isKeyPressed(KeyCode key)
+	{
+		return (glfwGetKey(mWindow, static_cast<int32_t>(key)) == GLFW_PRESS);
+	}
+
+
+
 	void Window::Init(const WindowProps& props)
 	{
 		mData.title = props.title;
@@ -62,28 +101,14 @@ namespace Emu {
 		glfwSetWindowUserPointer(mWindow, &mData);
 		setVSync(true);
 
-		glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
-		{
-			if (!ImGuiHandler::EventHandled(EventType::Keyboard) && Input::IsValid(key))
-			{
-				WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+		RegisterCallbacks();
 
-				switch (action)
-				{
-				case GLFW_PRESS:
-					data.eventCallback(Input::GetEmuButton(key), true);
-					break;
-
-				case GLFW_RELEASE:
-					data.eventCallback(Input::GetEmuButton(key), false);
-					break;
-				};
-			}
-		});
+		mImGuiHandler = new ImGuiHandler(this);
 	}
 
 	void Window::Shutdown()
 	{
+		delete mImGuiHandler;
 		delete mContext;
 
 		glfwDestroyWindow(mWindow);
@@ -94,31 +119,35 @@ namespace Emu {
 		// TODO LOG ("Shutdown complete");
 	}
 
-
-	void Window::update()
+	void Window::RegisterCallbacks()
 	{
-		glfwPollEvents();
-		mContext->swapBuffers();
-	}
+		glfwSetKeyCallback(mWindow, [](GLFWwindow* window, int key, int scancode, int action, int mods)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
 
-	void Window::setTitle(const std::string& title)
-	{
-		mData.title = title;
-		glfwSetWindowTitle(mWindow, title.c_str());
-	}
+			switch (action)
+			{
+			case GLFW_PRESS:
+			{
+				KeyPressedEvent event(key);
+				data.eventCallback(event);
+				break;
+			}
 
-	void Window::setVSync(bool enabled)
-	{
-		if (enabled)
-			glfwSwapInterval(1);
-		else
-			glfwSwapInterval(0);
+			case GLFW_RELEASE:
+			{
+				KeyReleasedEvent event(key);
+				data.eventCallback(event);
+				break;
+			}
+			};
+		});
 
-		mData.vSync = enabled;
-	}
-
-	bool Window::isVSync() const
-	{
-		return mData.vSync;
+		glfwSetWindowCloseCallback(mWindow, [](GLFWwindow* window)
+		{
+			WindowData& data = *(WindowData*)glfwGetWindowUserPointer(window);
+			WindowCloseEvent event;
+			data.eventCallback(event);
+		});
 	}
 }

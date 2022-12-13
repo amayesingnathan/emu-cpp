@@ -36,15 +36,15 @@ namespace GB {
     public:
         void update() override;
         void imguiRender() override;
+        void onEvent(Emu::Event& event) override;
 
-        Emu::ActionCallback getActionCallback() override { return BIND_ACTION_FUNC(Gameboy::HandleEvent); };
         Emu::uint getDisplayTex() override { return mGraphics->getDisplayTex(); }
         Emu::Duration getFrameTime() override { return FRAME_LENGTH; };
 
     private:
-        void HandleEvent(Emu::Action action, bool pressed);
-
         void UI_CPU();
+
+        bool KeyPressedEvent(Emu::KeyPressedEvent& event);
 
     private:
         Cartridge* mCartridge = nullptr;

@@ -71,20 +71,10 @@ namespace GB {
         UI_CPU();
     }
 
-    void Gameboy::HandleEvent(Emu::Action action, bool pressed)
+    void Gameboy::onEvent(Emu::Event& event)
     {
-        switch (action)
-        {
-        case Buttons::Up: break;
-        case Buttons::Down: break;
-        case Buttons::Left: break;
-        case Buttons::Right: break;
-        case Buttons::A: break;
-        case Buttons::B: break;
-        case Buttons::Start: break;
-        case Buttons::Select: break;
-        default: GB_ASSERT(false);
-        }
+        Emu::EventDispatcher dispatcher(event);
+        dispatcher.dispatch<Emu::KeyPressedEvent>(BIND_EVENT_FUNC(Gameboy::KeyPressedEvent));
     }
 
     void Gameboy::UI_CPU()
@@ -221,5 +211,28 @@ namespace GB {
         }
 
         ImGui::End();
+    }
+
+    bool Gameboy::KeyPressedEvent(Emu::KeyPressedEvent& event)
+    {
+        Emu::KeyCode key = event.getKeyCode();
+        if (!Emu::Input::IsValid(key))
+            return false;
+
+        Emu::Action action = Emu::Input::GetEmuButton(key);
+
+        switch (action)
+        {
+        case Buttons::Up: return true;
+        case Buttons::Down: return true;
+        case Buttons::Left: return true;
+        case Buttons::Right: return true;
+        case Buttons::A: return true;
+        case Buttons::B: return true;
+        case Buttons::Start: return true;
+        case Buttons::Select: return true;
+        }
+
+        return false;
     }
 }

@@ -5,11 +5,7 @@
 namespace Emu {
     
     class Window;
-
-    enum class EventType
-    {
-        Mouse, Keyboard
-    };
+    class Event;
 
     class ImGuiHandler
     {
@@ -20,12 +16,15 @@ namespace Emu {
         void begin();
         void end();
 
-        static bool EventHandled(EventType type);
+        void onEvent(Event& event);
+        void blockEvents(bool block) { mBlockEvents = block; }
 
     private:
         void SetDarkThemeColours();
 
     private:
         Window* mWindow;
+
+        inline static bool mBlockEvents = false;
     };
 }

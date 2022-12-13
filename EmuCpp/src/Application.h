@@ -38,11 +38,17 @@ namespace Emu {
 
         void GetROMData(const fs::path& file);
 
+        void CloseApp() { mRunning = false; }
+
+        void OnEvent(Event& event);
+
+        bool OnWindowClose(WindowCloseEvent& e);
+        bool OnKeyPressed(KeyPressedEvent& e);
+
     private:
         bool mRunning = true;
 
         Window* mWindow = nullptr;
-        ImGuiHandler* mImGuiHandler = nullptr;
 
         Base* mGameInstance = nullptr;
         Settings mEmuSettings;

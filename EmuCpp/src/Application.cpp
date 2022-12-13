@@ -35,15 +35,14 @@ namespace Emu {
     Application::Application()
     {
         mWindow = new Window();
-        mImGuiHandler = new ImGuiHandler(mWindow);
 
         Emu::Log::Init(mLogWidget);
+        mWindow->setEventCallback(BIND_EVENT_FUNC(Application::OnEvent));
     }
 
     Application::~Application()
     {
         delete mGameInstance;
-        delete mImGuiHandler;
         delete mWindow;
     }
 
@@ -51,7 +50,7 @@ namespace Emu {
     {
         static bool dockspaceOpen = true;
 
-        mImGuiHandler->begin();
+        mWindow->beginImGui();
 
         ImGuiWindowFlags windowFlags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking | ImGuiWindowFlags_NoTitleBar |
             ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
@@ -91,7 +90,7 @@ namespace Emu {
 
         ImGui::End();
 
-        mImGuiHandler->end();
+        mWindow->endImGui();
     }
 
     void Application::UI_MenuBar()
@@ -117,6 +116,10 @@ namespace Emu {
     {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
         ImGui::Begin("Viewport");
+
+        bool focused = ImGui::IsWindowFocused();
+        bool hovered = ImGui::IsWindowHovered();
+        mWindow->blockEvents(!focused && !hovered);
 
         ImVec2 viewportSize = ImGui::GetContentRegionAvail();
         uint tex = mGameInstance ? mGameInstance->getDisplayTex() : 0;
@@ -150,7 +153,6 @@ namespace Emu {
 
         mEmuSettings.frameLength = mGameInstance->getFrameTime();
         Input::Init(mEmuSettings.ioSettings.at(mEmuSettings.type));
-        mWindow->setActionCallback(mGameInstance->getActionCallback());
     }
 
     void Application::CloseEmulator()
@@ -170,5 +172,53 @@ namespace Emu {
 
         if (file.extension() == ".gb")
             mEmuSettings.type = EmulatorType::GB;
+    }
+
+    void Application::OnEvent(Event& event)
+    {
+        EventDispatcher dispatcher(event);
+        dispatcher.dispatch<WindowCloseEvent>(BIND_EVENT_FUNC(Application::OnWindowClose));
+        if (event.handled)
+            return;
+
+        mWindow->onEvent(event);
+        if (event.handled)
+            return;
+
+        if (mGameInstance)
+            mGameInstance->onEvent(event);
+
+        if (event.handled)
+            return;
+
+        dispatcher.dispatch<KeyPressedEvent>(BIND_EVENT_FUNC(Application::OnKeyPressed));
+    }
+
+    bool Application::OnWindowClose(WindowCloseEvent& e)
+    {
+        mRunning = false;
+        return true;
+    }
+
+    bool Application::OnKeyPressed(KeyPressedEvent& e)
+    {
+        switch (e.getKeyCode())
+        {
+        case Key::Escape:
+            CloseApp();
+            break;
+
+        case Key::O:
+        {
+            bool ctrl = mWindow->isKeyPressed(Key::LeftControl) || mWindow->isKeyPressed(Key::RightControl);
+            if (ctrl)
+                LaunchEmulator();
+            break;
+        }
+
+        default:
+            break;
+        }
+        return false;
     }
 }

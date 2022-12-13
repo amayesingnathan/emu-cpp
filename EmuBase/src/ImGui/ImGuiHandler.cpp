@@ -1,13 +1,14 @@
 #include "glpch.h"
 #include "ImGuiHandler.h"
 
-#include "IO/Window.h"
-
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
 #include "backends/imgui_impl_opengl3.h"
 
 #include "GLFW/glfw3.h"
+
+#include "IO/Event.h"
+#include "IO/Window.h"
 
 namespace Emu {
 
@@ -44,19 +45,14 @@ namespace Emu {
         ImGui::DestroyContext();
     }
 
-    bool ImGuiHandler::EventHandled(EventType type)
+    void ImGuiHandler::onEvent(Event& event)
     {
+        if (!mBlockEvents)
+            return;
+
         ImGuiIO& io = ImGui::GetIO();
-
-        switch (type)
-        {
-        case EventType::Mouse:
-            return io.WantCaptureMouse;
-        case EventType::Keyboard:
-            return io.WantCaptureKeyboard;
-        }
-
-        return false;
+        event.handled |= event.isInCategory(EventCategoryMouse) & io.WantCaptureMouse;
+        event.handled |= event.isInCategory(EventCategoryKeyboard) & io.WantCaptureKeyboard;
     };
 
     void ImGuiHandler::begin()
