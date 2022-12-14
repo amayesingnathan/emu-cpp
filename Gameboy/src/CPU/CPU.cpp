@@ -139,6 +139,8 @@ namespace GB {
 
 		mDispatcher[instruction]();
 
+		EMU_TRACE("IF: 0x{0:02X}", AddressBus::Read(Addr::IF));
+
 		if (mCBInstruction)
 			return sCycles[0xCB] + sCBCycles[instruction];
 
@@ -397,12 +399,14 @@ namespace GB {
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word imm16 = lo | (hi << 8);
-		mRegisters[sRegisterPairs[op.p()]] = imm16;
+
+		WordReg target = sRegisterPairs[op.p()];
+		mRegisters[target] = imm16;
 
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: LD {1}, 0x{2:04X}", mSession->lastPC, RegToString(op.y()), imm16);
+		EMU_TRACE("0x{0:04X}: LD {1}, 0x{2:04X}", mSession->lastPC, Emu::Enum::ToString(target), imm16);
 	}
 
 	void CPU::LD_R_STK(OpCode op)
@@ -423,6 +427,7 @@ namespace GB {
 		else
 			EMU_TRACE("0x{0:04X}: LD 0xFF{1:02X}, A", mSession->lastPC, addr);
 	}
+
 	void CPU::LD_R_STK16(OpCode op)
 	{
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
@@ -487,10 +492,9 @@ namespace GB {
 		{
 			if (CheckCondition((Condition)(condTarget - 0x04)))
 				mRegisters[WordReg::PC] += imm;
-			return;
 		}
-
-		mRegisters[WordReg::PC] += imm;
+		else
+			mRegisters[WordReg::PC] += imm;
 
 		if (!mSession->print)
 			return;
@@ -602,6 +606,16 @@ namespace GB {
 		EMU_TRACE("0x{0:04X}: RET {1}", mSession->lastPC, condition);
 	}
 
+	void CPU::RETI(OpCode op)
+	{
+		RET(op); 
+		mInterruptsEnabled = true;
+
+		if (!mSession->print)
+			return;
+		EMU_TRACE("0x{0:04X}: RETI", mSession->lastPC);
+	}
+
 	void CPU::RST(OpCode op)
 	{
 		Word& pc = mRegisters[WordReg::PC];
@@ -631,33 +645,76 @@ namespace GB {
 		}
 	}
 
+	void CPU::EI(OpCode op)
+	{
+		mInterruptsEnabled = true;
+
+		if (!mSession->print)
+			return;
+		EMU_TRACE("0x{0:04X}: EI", mSession->lastPC);
+	}
+
+	void CPU::DI(OpCode op)
+	{
+		mInterruptsEnabled = false;
+
+		if (!mSession->print)
+			return;
+		EMU_TRACE("0x{0:04X}: DI", mSession->lastPC);
+	}
+
+	void CPU::HALT(OpCode op)
+	{
+		mHalted = true;
+
+		if (!mSession->print)
+			return;
+		EMU_TRACE("0x{0:04X}: HALT", mSession->lastPC);
+	}
+
+	void CPU::STOP(OpCode op)
+	{
+		mRegisters[WordReg::PC]++;
+
+		if (!mSession->print)
+			return;
+		EMU_TRACE("0x{0:04X}: STOP", mSession->lastPC);
+	}
+
 
 
 	// Instruction Implementations
 		
+	void CPU::NOP(OpCode opcode)
+	{ 
+		if (mSession->print) 
+			EMU_TRACE("0x{0:04X}: NOP", mSession->lastPC);
+	}
+
 	void CPU::ALU_T(OpCode op)
 	{
+		switch (op.y())
+		{
+		case 0: ADD_R(op); break;
+		case 1: ADC_R(op); break;
+		case 2: SUB_R(op); break;
+		case 3: SBC_R(op); break;
+		case 4: AND_R(op); break;
+		case 5: XOR_R(op); break;
+		case 6: OR_R(op); break;
+		case 7: CP_R(op); break;
+		}
+	}
+
+	void CPU::ADD_R(OpCode op)
+	{
 		Byte value;
-		if (op.x() == 3)
+		bool imm = op.x() == 3;
+		if (imm)
 			value = AddressBus::Read(mRegisters[WordReg::PC]++);
 		else
 			READ_REG(op.z(), value);
 
-		switch (op.y())
-		{
-		case 0: ADD_R(value); break;
-		case 1: ADC_R(value); break;
-		case 2: SUB_R(value); break;
-		case 3: SBC_R(value); break;
-		case 4: AND_R(value); break;
-		case 5: XOR_R(value); break;
-		case 6: OR_R(value); break;
-		case 7: CP_R(value); break;
-		}
-	}
-
-	void CPU::ADD_R(Byte value)
-	{
 		Byte& regA = mRegisters[ByteReg::A];
 		Byte regACpy = regA;
 
@@ -673,11 +730,21 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: ADD A, 0x{1:02X}", mSession->lastPC, value);
+		if (imm)
+			EMU_TRACE("0x{0:04X}: ADD A, 0x{1:02X}", mSession->lastPC, value);
+		else
+			EMU_TRACE("0x{0:04X}: ADD A, {1}", mSession->lastPC, RegToString(op.z()));
 	}
 
-	void CPU::ADC_R(Byte value)
+	void CPU::ADC_R(OpCode op)
 	{
+		Byte value;
+		bool imm = op.x() == 3;
+		if (imm)
+			value = AddressBus::Read(mRegisters[WordReg::PC]++);
+		else
+			READ_REG(op.z(), value);
+
 		Byte& regA = mRegisters[ByteReg::A];
 		Byte regACpy = regA;
 
@@ -693,11 +760,21 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: ADC A, 0x{1:02X}", mSession->lastPC, value);
+		if (imm)
+			EMU_TRACE("0x{0:04X}: ADC A, 0x{1:02X}", mSession->lastPC, value);
+		else
+			EMU_TRACE("0x{0:04X}: ADC A, {1}", mSession->lastPC, RegToString(op.z()));
 	}
 
-	void CPU::SUB_R(Byte value)
+	void CPU::SUB_R(OpCode op)
 	{
+		Byte value;
+		bool imm = op.x() == 3;
+		if (imm)
+			value = AddressBus::Read(mRegisters[WordReg::PC]++);
+		else
+			READ_REG(op.z(), value);
+
 		Byte& regA = mRegisters[ByteReg::A];
 		Byte regACpy = regA;
 
@@ -713,11 +790,21 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: SUB A, 0x{1:02X}", mSession->lastPC, value);
+		if (imm)
+			EMU_TRACE("0x{0:04X}: SUB A, 0x{1:02X}", mSession->lastPC, value);
+		else
+			EMU_TRACE("0x{0:04X}: SUB A, {1}", mSession->lastPC, RegToString(op.z()));
 	}
 
-	void CPU::SBC_R(Byte value)
+	void CPU::SBC_R(OpCode op)
 	{
+		Byte value;
+		bool imm = op.x() == 3;
+		if (imm)
+			value = AddressBus::Read(mRegisters[WordReg::PC]++);
+		else
+			READ_REG(op.z(), value);
+
 		Byte& regA = mRegisters[ByteReg::A];
 		Byte regACpy = regA;
 
@@ -734,11 +821,21 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: SBC A, 0x{1:02X}", mSession->lastPC, value);
+		if (imm)
+			EMU_TRACE("0x{0:04X}: SBC A, 0x{1:02X}", mSession->lastPC, value);
+		else
+			EMU_TRACE("0x{0:04X}: SBC A, {1}", mSession->lastPC, RegToString(op.z()));
 	}
 
-	void CPU::AND_R(Byte value)
+	void CPU::AND_R(OpCode op)
 	{
+		Byte value;
+		bool imm = op.x() == 3;
+		if (imm)
+			value = AddressBus::Read(mRegisters[WordReg::PC]++);
+		else
+			READ_REG(op.z(), value);
+
 		Byte& regA = mRegisters[ByteReg::A];
 
 		regA &= value;
@@ -749,12 +846,22 @@ namespace GB {
 
 		if (!mSession->print)
 			return;
-
-		EMU_TRACE("0x{0:04X}: AND 0x{1:02X}", mSession->lastPC, value);
+		
+		if (imm)
+			EMU_TRACE("0x{0:04X}: AND A, 0x{1:02X}", mSession->lastPC, value);
+		else
+			EMU_TRACE("0x{0:04X}: AND A, {1}", mSession->lastPC, RegToString(op.z()));
 	}
 
-	void CPU::XOR_R(Byte value)
+	void CPU::XOR_R(OpCode op)
 	{
+		Byte value;
+		bool imm = (op.x() == 3);
+		if (imm)
+			value = AddressBus::Read(mRegisters[WordReg::PC]++);
+		else
+			READ_REG(op.z(), value);
+
 		Byte& regA = mRegisters[ByteReg::A];
 
 		regA ^= value;
@@ -766,11 +873,21 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: XOR 0x{1:02X}", mSession->lastPC, value);
+		if (imm)
+			EMU_TRACE("0x{0:04X}: XOR A, 0x{1:02X}", mSession->lastPC, value);
+		else
+			EMU_TRACE("0x{0:04X}: XOR A, {1}", mSession->lastPC, RegToString(op.z()));
 	}
 
-	void CPU::OR_R(Byte value)
+	void CPU::OR_R(OpCode op)
 	{
+		Byte value;
+		bool imm = op.x() == 3;
+		if (imm)
+			value = AddressBus::Read(mRegisters[WordReg::PC]++);
+		else
+			READ_REG(op.z(), value);
+
 		Byte& regA = mRegisters[ByteReg::A];
 
 		regA |= value;
@@ -782,11 +899,21 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: OR 0x{1:02X}", mSession->lastPC, value);
+		if (imm)
+			EMU_TRACE("0x{0:04X}: OR A, 0x{1:02X}", mSession->lastPC, value);
+		else
+			EMU_TRACE("0x{0:04X}: OR A, {1}", mSession->lastPC, RegToString(op.z()));
 	}
 
-	void CPU::CP_R(Byte value)
+	void CPU::CP_R(OpCode op)
 	{
+		Byte value;
+		bool imm = op.x() == 3;
+		if (imm)
+			value = AddressBus::Read(mRegisters[WordReg::PC]++);
+		else
+			READ_REG(op.z(), value);
+
 		Byte regA = mRegisters[ByteReg::A];
 
 		Byte result = regA - value;
@@ -800,7 +927,10 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: CP 0x{1:02X}", mSession->lastPC, value);
+		if (imm)
+			EMU_TRACE("0x{0:04X}: CP A, 0x{1:02X}", mSession->lastPC, value);
+		else
+			EMU_TRACE("0x{0:04X}: CP A, {1}", mSession->lastPC, RegToString(op.z()));
 	}
 
 	void CPU::ADD_HL(OpCode op)
@@ -897,7 +1027,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: DEC {1}", mSession->lastPC, Emu::Enum::ToString(sRegisterPairs[target]));
+		EMU_TRACE("0x{0:04X}: INC16 {1}", mSession->lastPC, Emu::Enum::ToString(sRegisterPairs[target]));
 	}
 
 	void CPU::DEC16(Byte target)
@@ -908,7 +1038,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: DEC {1}", mSession->lastPC, Emu::Enum::ToString(sRegisterPairs[target]));
+		EMU_TRACE("0x{0:04X}: DEC16 {1}", mSession->lastPC, Emu::Enum::ToString(sRegisterPairs[target]));
 	}
 
 	void CPU::RLCA()
@@ -1067,7 +1197,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: RLC {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: RLC {1}", mSession->lastPC, RegToString(target));
 	}
 
 	void CPU::RRC_R(Byte target)
@@ -1086,7 +1216,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: RRC {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: RRC {1}", mSession->lastPC, RegToString(target));
 	}
 
 	void CPU::RL_R(Byte target)
@@ -1105,7 +1235,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: RL {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: RL {1}", mSession->lastPC, RegToString(target));
 	}
 
 	void CPU::RR_R(Byte target)
@@ -1124,7 +1254,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: RR {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: RR {1}", mSession->lastPC, RegToString(target));
 	}
 
 	void CPU::SLA_R(Byte target)
@@ -1143,7 +1273,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: SLA {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: SLA {1}", mSession->lastPC, RegToString(target));
 	}
 
 	void CPU::SRA_R(Byte target)
@@ -1163,7 +1293,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: SRA {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: SRA {1}", mSession->lastPC, RegToString(target));
 	}
 
 	void CPU::SWAP_R(Byte target)
@@ -1182,7 +1312,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: SWAP {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: SWAP {1}", mSession->lastPC, RegToString(target));
 	}
 
 	void CPU::SRL_R(Byte target)
@@ -1201,7 +1331,7 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: SRL {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: SRL {1}", mSession->lastPC, RegToString(target));
 	}
 
 	void CPU::BIT_R(OpCode op)
@@ -1220,37 +1350,37 @@ namespace GB {
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: SET {1}, {2}", mSession->lastPC, bit, Emu::Enum::ToString(sRegisters[target]));
+		EMU_TRACE("0x{0:04X}: BIT {1}, {2}", mSession->lastPC, bit, RegToString(target));
 	}
 
 	void CPU::RES_R(OpCode op)
 	{
-		Byte targetReg = op.z();
+		Byte target = op.z();
 		Byte bit = GB_BIT(op.y());
 		Byte value;
-		READ_REG(targetReg, value);
+		READ_REG(target, value);
 		value &= ~bit;
-		WRITE_REG(targetReg, value);
+		WRITE_REG(target, value);
 
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: RES {1}, {2}", mSession->lastPC, bit, Emu::Enum::ToString(sRegisters[targetReg]));
+		EMU_TRACE("0x{0:04X}: RES {1}, {2}", mSession->lastPC, bit, RegToString(target));
 	}
 
 	void CPU::SET_R(OpCode op)
 	{
-		Byte targetReg = op.z();
+		Byte target = op.z();
 		Byte bit = GB_BIT(op.y());
 		Byte value;
-		READ_REG(targetReg, value);
+		READ_REG(target, value);
 		value |= bit;
-		WRITE_REG(targetReg, value);
+		WRITE_REG(target, value);
 
 		if (!mSession->print)
 			return;
 
-		EMU_TRACE("0x{0:04X}: SET {1}, {2}", mSession->lastPC, bit, Emu::Enum::ToString(sRegisters[targetReg]));
+		EMU_TRACE("0x{0:04X}: SET {1}, {2}", mSession->lastPC, bit, RegToString(target));
 	}
 
 #pragma endregion

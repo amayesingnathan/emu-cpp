@@ -110,7 +110,7 @@ namespace GB {
 
         void CALL(OpCode op);
         void RET(OpCode op);
-        void RETI(OpCode op) { RET(op); mInterruptsEnabled = true; }
+        void RETI(OpCode op);
 
         void PUSH(OpCode op);
         void POP(OpCode op);
@@ -119,11 +119,11 @@ namespace GB {
 
         void REG(OpCode op);
 
-        void EI(OpCode op) { mInterruptsEnabled = true; }
-        void DI(OpCode op) { mInterruptsEnabled = false; }
+        void EI(OpCode op);
+        void DI(OpCode op);
 
-        void HALT(OpCode op) { mHalted = true; }
-        void STOP(OpCode op) { mRegisters[WordReg::PC]++; }
+        void HALT(OpCode op);
+        void STOP(OpCode op);
 
         void CB(OpCode op);
 
@@ -131,17 +131,17 @@ namespace GB {
 
     private:
         // Instruction Implementations
-        void NOP(OpCode opcode) {}
+        void NOP(OpCode opcode);
 
         void ALU_T(OpCode opcode);
-        void ADD_R(Byte value);
-        void ADC_R(Byte value);
-        void SUB_R(Byte value);
-        void SBC_R(Byte value);
-        void AND_R(Byte value);
-        void XOR_R(Byte value);
-        void OR_R(Byte value);
-        void CP_R(Byte value);
+        void ADD_R(OpCode opcode);
+        void ADC_R(OpCode opcode);
+        void SUB_R(OpCode opcode);
+        void SBC_R(OpCode opcode);
+        void AND_R(OpCode opcode);
+        void XOR_R(OpCode opcode);
+        void OR_R(OpCode opcode);
+        void CP_R(OpCode opcode);
 
         void INC(Byte target);
         void DEC(Byte target);

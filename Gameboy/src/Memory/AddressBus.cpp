@@ -166,9 +166,9 @@ namespace GB {
 			break;
 		}
 
-		case Addr::LCDS:
+		case Addr::STAT:
 		{
-			Byte& lcdStatus = MemoryManager::Get(MemoryManager::IO, Addr::LCDS - 0xFF00);
+			Byte& lcdStatus = MemoryManager::Get(MemoryManager::IO, Addr::STAT - 0xFF00);
 			lcdStatus = (data & 0xF8) | (lcdStatus & 0x07);
 			break;
 		}

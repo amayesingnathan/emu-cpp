@@ -61,8 +61,8 @@ namespace GB {
 
 	void PPU::SetLCDStatus(Mode newMode)
 	{
-		Byte& lcds = AddressBus::Read(Addr::LCDS);
-		BitField lcdStatus = lcds;
+		Byte& stat = AddressBus::Read(Addr::STAT);
+		BitField lcdStatus = stat;
 		lcdStatus &= 0xFC;
 
 		switch (newMode)
@@ -91,15 +91,15 @@ namespace GB {
 		}
 
 		mCurrentMode = newMode;
-		lcds = lcdStatus;
+		stat = lcdStatus;
 	}
 
 	void PPU::CompareScanline()
 	{
 		Byte scanline = AddressBus::Read(Addr::LY);
 		Byte scanlineComparison = AddressBus::Read(Addr::LYC);
-		Byte& lcds = AddressBus::Read(Addr::LCDS);
-		BitField lcdStatus = lcds;
+		Byte& stat = AddressBus::Read(Addr::STAT);
+		BitField lcdStatus = stat;
 
 		lcdStatus.reset(LY_COMPARISON_BIT);
 		if (scanline == scanlineComparison)
@@ -109,7 +109,7 @@ namespace GB {
 				AddressBus::RequestInterrupt(Interrupt::LCD_STAT);
 		}
 
-		lcds = lcdStatus;
+		stat = lcdStatus;
 	}
 
 	void PPU::HBlankMode()

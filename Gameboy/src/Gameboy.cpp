@@ -172,7 +172,7 @@ namespace GB {
 
             ImGui::Text("LCDC: 0x%02X", ioRegisters[0x40]);
             ImGui::SameLine();
-            ImGui::Text("LCDS: 0x%02X", ioRegisters[0x41]);
+            ImGui::Text("STAT: 0x%02X", ioRegisters[0x41]);
 
             ImGui::Text("SCY: 0x%02X", ioRegisters[0x42]);
             ImGui::SameLine();

@@ -14,7 +14,7 @@ namespace GB {
 		GB_CONST Word TMC  = 0xFF07;
 
 		GB_CONST Word LCDC = 0xFF40;
-		GB_CONST Word LCDS = 0xFF41;
+		GB_CONST Word STAT = 0xFF41;
 		GB_CONST Word SCY  = 0xFF42;
 		GB_CONST Word SCX  = 0xFF43;
 		GB_CONST Word LY   = 0xFF44;
