@@ -6,14 +6,15 @@
 namespace GB {
 
 	Cartridge::Cartridge(std::string_view filename)
-        : mROM(MemoryManager::GetBlock(MemoryManager::ROM))
+        : mROM(MemoryManager::GetBlock(MemoryManager::ROM)),
+          mRAM(MemoryManager::GetBlock(MemoryManager::CART_RAM))
     {
         std::ifstream fileROM(filename.data(), std::ios::binary);
         GB_ASSERT(fileROM.is_open(), "Could not locate game file!");
 
         fileROM.seekg(0, std::ios::end);
         USize cartridgeSize = fileROM.tellg();
-        GB_ASSERT(cartridgeSize <= SIZE, "Gameboy cartridge is too large!");
+        GB_ASSERT(cartridgeSize <= ROM_MAX_SIZE, "Gameboy cartridge is too large!");
 
         fileROM.seekg(0);
         fileROM.read((char*)mROM, cartridgeSize);
@@ -45,7 +46,11 @@ namespace GB {
         if (!mMBC)
             return mROM[address];
 
-        return mROM[mMBC->map(MBC::READ, address)];
+        Word mappedAddress = mMBC->mapRead(address);
+        if ((address >= 0xA000 && address < 0xC000))
+            return mRAM[mappedAddress];
+
+        return mROM[mappedAddress];
     }
 
     void Cartridge::write(Word address, Byte data)
@@ -53,6 +58,10 @@ namespace GB {
         if (!mMBC)
             return;
 
-        mROM[mMBC->map(MBC::WRITE, address)] = data;
+        Word mappedAddress = mMBC->mapWrite(address, data);
+        if (mappedAddress == 0)
+            return;
+
+        mRAM[mappedAddress] = data;
     }
 }

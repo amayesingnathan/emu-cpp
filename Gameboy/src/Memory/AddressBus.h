@@ -42,7 +42,7 @@ namespace GB {
 
 	private:
 		void init(CPU* cpu, PPU* ppu, Cartridge* cartridge) { mCPU = cpu; mPPU = ppu; mCartridge = cartridge; }
-		void shutdown() { mCPU = nullptr; mPPU = nullptr; mCartridge = nullptr; }
+		void shutdown() { mCPU = nullptr; mPPU = nullptr; mCartridge = nullptr; mBusState = BusState(); }
 
 	private:
 		CPU* mCPU = nullptr;

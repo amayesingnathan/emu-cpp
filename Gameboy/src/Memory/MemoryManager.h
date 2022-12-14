@@ -9,7 +9,7 @@ namespace GB {
 	public:
 		enum Type
 		{
-			BOOTSTRAP, HRAM, WRAM, VRAM, OAM, ROM, IO
+			BOOTSTRAP, HRAM, WRAM, VRAM, OAM, ROM, CART_RAM, IO
 		};
 
 	private:

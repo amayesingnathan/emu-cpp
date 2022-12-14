@@ -35,6 +35,9 @@ namespace GB {
 			return bus.mErrorByte;
 		}
 
+		if (address >= 0x0104 && address < 0x0134)
+			int a = 0;
+
 		if (bus.mBusState.bootstrap && address < 0x0100)	// Boot ROM
 			return MemoryManager::Get(MemoryManager::BOOTSTRAP, address);
 		else if (address < 0x8000)						// ROM - may have memory bank controller to handle reading
@@ -48,7 +51,7 @@ namespace GB {
 		else if (address >= 0xE000 && address < 0xFE00) // Echo of 0xC000 - 0xDFFF
 			return MemoryManager::Get(MemoryManager::WRAM, address - 0xE000);
 		else if (address >= 0xFE00 && address < 0xFEA0) // Sprite Attribute Table (OAM)
-			return MemoryManager::Get(MemoryManager::OAM, address - 0xFE00);
+			return ReadIO(address);
 		else if (address >= 0xFF00 && address < 0xFF80) // IO Registers
 			return MemoryManager::Get(MemoryManager::IO, address - 0xFF00);
 		else if (address >= 0xFF80 && address < 0xFFFF) // High RAM (Stack)
@@ -66,10 +69,7 @@ namespace GB {
 		AddressBus& bus = Get();
 
 		if (address >= 0xFEA0 && address < 0xFF00)
-		{
-			EMU_ERROR("Writing to restricted memory!");
-			return;
-		}
+			return; //Restricted memory
 
         GB_ASSERT(!bus.mBusState.bootstrap || address >= 0x0100, "Cannot write to boot ROM except to disable it!");
 
