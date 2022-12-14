@@ -103,6 +103,23 @@ namespace GB {
 		}
 	}
 
+	void CPU::postBoot()
+	{
+		AddressBus::Write(Addr::JOYP, 0xCF);
+		AddressBus::Read(Addr::DIV) = 0xAB;
+		AddressBus::Write(Addr::TIMA, 0x00);
+		AddressBus::Write(Addr::TMA, 0x00);
+		AddressBus::Write(Addr::TMC, 0xF8);
+		AddressBus::Write(Addr::STAT, 0x86);
+		AddressBus::Write(Addr::SCX, 0x00);
+		AddressBus::Write(Addr::LY, 0x00);
+		AddressBus::Write(Addr::LYC, 0x00);
+		AddressBus::Write(Addr::WY, 0x00);
+		AddressBus::Write(Addr::WX, 0x00);
+		AddressBus::Write(Addr::IF, 0x00);
+		AddressBus::Write(Addr::IE, 0xE1);
+	}
+
 	void CPU::DividerTimer()
 	{
 		if (mDividerClock < 0x100)
@@ -138,8 +155,6 @@ namespace GB {
 		mCBInstruction = false;
 
 		mDispatcher[instruction]();
-
-		EMU_TRACE("IF: 0x{0:02X}", AddressBus::Read(Addr::IF));
 
 		if (mCBInstruction)
 			return sCycles[0xCB] + sCBCycles[instruction];

@@ -35,9 +35,6 @@ namespace GB {
 			return bus.mErrorByte;
 		}
 
-		if (address >= 0x0104 && address < 0x0134)
-			int a = 0;
-
 		if (bus.mBusState.bootstrap && address < 0x0100)	// Boot ROM
 			return MemoryManager::Get(MemoryManager::BOOTSTRAP, address);
 		else if (address < 0x8000)						// ROM - may have memory bank controller to handle reading
@@ -74,7 +71,10 @@ namespace GB {
         GB_ASSERT(!bus.mBusState.bootstrap || address >= 0x0100, "Cannot write to boot ROM except to disable it!");
 
 		if (bus.mBusState.bootstrap && address == 0xFF50)
+		{	// Disable boot ROM and run post boot register initialisation
 			bus.mBusState.bootstrap = false;
+			bus.mCPU->postBoot();
+		}
 		else if (address < 0x8000)						// ROM
 			bus.mCartridge->write(address, data);
 		else if (address >= 0x8000 && address < 0xA000) // VRAM
@@ -177,7 +177,7 @@ namespace GB {
 			MemoryManager::Get(MemoryManager::IO, Addr::LY - 0xFF00) = 0;
 			break;
 
-		case Addr::FMA:
+		case Addr::DMA:
 			DoDMATransfer(data);
 			break;
 
@@ -205,10 +205,10 @@ namespace GB {
 
 		switch (freq)
 		{
-		case 0: bus.mCPU->mCurrentClockSpeed = CPU::TMC0; break;
-		case 1: bus.mCPU->mCurrentClockSpeed = CPU::TMC1; break;
-		case 2: bus.mCPU->mCurrentClockSpeed = CPU::TMC2; break;
-		case 3: bus.mCPU->mCurrentClockSpeed = CPU::TMC3; break;
+		case 0: bus.mCPU->getClockSpeed() = CPU::TMC0; break;
+		case 1: bus.mCPU->getClockSpeed() = CPU::TMC1; break;
+		case 2: bus.mCPU->getClockSpeed() = CPU::TMC2; break;
+		case 3: bus.mCPU->getClockSpeed() = CPU::TMC3; break;
 		}
 	}
 

@@ -29,7 +29,7 @@ namespace GB {
 	{
 		GB_ASSERT(!sMemoryBlock, "Memory already initialised!");
 		sMemoryBlock = (Byte*)::operator new(MEMORY_SIZE);
-		memset(sMemoryBlock, 0, MEMORY_SIZE);
+		memset(sMemoryBlock, 0xFF, MEMORY_SIZE);
 
 		// Load Boot ROM into first 256 bytes
 		memcpy(sMemoryBlock, Boot::ROM, BOOT_ROM_SIZE);

@@ -38,20 +38,18 @@ namespace GB {
         void updateTimers(Byte cycles);
         void handleInterupts();
 
+        void postBoot();
         Word& getClockSpeed() { return mCurrentClockSpeed; }
 
     private:
-        Byte ExecDebug();
-
         void InitDispatcher();
 
+        Byte ExecDebug();
         void DividerTimer();
-
-        bool CheckCondition(Condition condition);
+        void ServiceInterupt(Interrupt interrupt);
 
         Byte HandleInstruction(OpCode instruction);
-
-        void ServiceInterupt(Interrupt interrupt);
+        bool CheckCondition(Condition condition);
 
         bool IsClockEnabled();
         Byte GetClockFreq();
@@ -80,7 +78,6 @@ namespace GB {
         GBSession* mSession = nullptr;
 
         friend class Gameboy;
-        friend class AddressBus;
 
 #pragma region OpCodeFunctions
     private:
