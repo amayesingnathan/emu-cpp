@@ -150,41 +150,43 @@ namespace GB {
 
 	void CPU::ServiceInterupt(Interrupt interrupt)
 	{
-		Word interuptRoutineLoc;
-
-		switch (interrupt)
-		{
-		case Interrupt::VBLANK:
-			interuptRoutineLoc = 0x40;
-			break;
-
-		case Interrupt::LCD_STAT:
-			interuptRoutineLoc = 0x48;
-			break;
-
-		case Interrupt::TIMER:
-			interuptRoutineLoc = 0x50;
-			break;
-
-		case Interrupt::SERIAL:
-			interuptRoutineLoc = 0x58;
-			break;
-
-		case Interrupt::JOYPAD:
-			interuptRoutineLoc = 0x60;
-			break;
-
-		default:
-			GB_ASSERT(false);
-			break;
-		}
+		mInterruptsEnabled = false;
+		Byte& interruptFlag = AddressBus::Read(Addr::IF);
+		BitField ifBitField = interruptFlag;
+		ifBitField.reset((Byte)interrupt);
+		interruptFlag = ifBitField;
 
 		Word& pc = mRegisters[WordReg::PC];
 		Word& sp = mRegisters[WordReg::SP];
 		AddressBus::Write(--sp, (Byte)(pc >> 8));
 		AddressBus::Write(--sp, (Byte)(pc & 0x00FF));
 
-		pc = interuptRoutineLoc;
+		switch (interrupt)
+		{
+		case Interrupt::VBLANK:
+			pc = 0x40;
+			break;
+
+		case Interrupt::LCD_STAT:
+			pc = 0x48;
+			break;
+
+		case Interrupt::TIMER:
+			pc = 0x50;
+			break;
+
+		case Interrupt::SERIAL:
+			pc = 0x58;
+			break;
+
+		case Interrupt::JOYPAD:
+			pc = 0x60;
+			break;
+
+		default:
+			GB_ASSERT(false);
+			break;
+		}
 	}
 
 	bool CPU::IsClockEnabled()
@@ -1069,13 +1071,13 @@ namespace GB {
 	{
 		BitField reg;
 		READ_REG(target, reg);
-		bool finalBit = reg.bit(7);
-		reg  = (Byte)(reg << 1);
+		bool carryBit = reg.bit(7);
+		reg = reg << 1;
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
-		flags |= finalBit ? GB_BIT(CARRY_BIT) : 0;
+		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= carryBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -1083,14 +1085,14 @@ namespace GB {
 	{
 		BitField reg;
 		READ_REG(target, reg);
-		bool firstBit = reg.bit(0);
+		bool carryBit = reg.bit(0);
 		Byte finalBit = reg & GB_BIT(7);
 		reg = (reg >> 1) | finalBit;
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
-		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
+		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
+		flags |= carryBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
@@ -1104,20 +1106,20 @@ namespace GB {
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
 
 	void CPU::SRL_R(Byte target)
 	{
-		Byte reg;
+		BitField reg;
 		READ_REG(target, reg);
-		Byte firstBit = reg & GB_BIT(0);
-		reg >>= 1;
+		bool firstBit = reg.bit(0);
+		reg = reg >> 1;
 		WRITE_REG(target, reg);
 
 		BitField flags = 0;
-		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
+		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
 	}
