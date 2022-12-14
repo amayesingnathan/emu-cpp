@@ -396,7 +396,7 @@ namespace GB {
 	{
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-		Word imm16 = lo | hi << 8;
+		Word imm16 = lo | (hi << 8);
 		mRegisters[sRegisterPairs[op.p()]] = imm16;
 
 		if (!mSession->print)
@@ -408,22 +408,40 @@ namespace GB {
 	void CPU::LD_R_STK(OpCode op)
 	{
 		Byte addr = (op.z() & GB_BIT(1)) ? mRegisters[ByteReg::C] : AddressBus::Read(mRegisters[WordReg::PC]++);
+		bool immToReg = op & GB_BIT(4);
 
-		if (op & GB_BIT(4))
+		if (immToReg)
 			mRegisters[ByteReg::A] = AddressBus::Read(0xFF00 + (Word)addr);
 		else
 			AddressBus::Write(0xFF00 + (Word)addr, mRegisters[ByteReg::A]);
+
+		if (!mSession->print)
+			return;
+
+		if (immToReg)
+			EMU_TRACE("0x{0:04X}: LD A, 0xFF{1:02X}", mSession->lastPC, addr);
+		else
+			EMU_TRACE("0x{0:04X}: LD 0xFF{1:02X}, A", mSession->lastPC, addr);
 	}
 	void CPU::LD_R_STK16(OpCode op)
 	{
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-		Word imm = lo | hi << 8;
+		Word imm = lo | (hi << 8);
+		bool immToReg = op & GB_BIT(4);
 
-		if (op & GB_BIT(4))
+		if (immToReg)
 			mRegisters[ByteReg::A] = AddressBus::Read(imm);
 		else
 			AddressBus::Write(imm, mRegisters[ByteReg::A]);
+
+		if (!mSession->print)
+			return;
+
+		if (immToReg)
+			EMU_TRACE("0x{0:04X}: LD A, 0x{1:04X}", mSession->lastPC, imm);
+		else
+			EMU_TRACE("0x{0:04X}: LD 0x{1:04X}, A", mSession->lastPC, imm);
 
 	}
 
@@ -431,12 +449,16 @@ namespace GB {
 	{
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-		Word address = lo | hi << 8;
+		Word address = lo | (hi << 8);
 
 		Word sp = mRegisters[WordReg::SP];
 		AddressBus::Write(address++, sp & 0x0F);
 		AddressBus::Write(address, (sp & 0xF0) >> 4);
 
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: LD 0x{1:04X}, SP", mSession->lastPC, address);
 	}
 
 	void CPU::ROT_R(OpCode op)
@@ -453,38 +475,6 @@ namespace GB {
 		case 6: SWAP_R(target); break;
 		case 7: SRL_R(target); break;
 		}
-	}
-
-	void CPU::BIT_R(OpCode op)
-	{
-		BitField value;
-		READ_REG(op.z(), value);
-
-		BitField flags = mFRegister.getFlags() & GB_BIT(CARRY_BIT);
-		flags |= GB_BIT(H_CARRY_BIT);
-		if (!value.bit(op.y()))
-			flags |= GB_BIT(ZERO_BIT);
-		mFRegister.setFlags(flags);
-	}
-
-	void CPU::RES_R(OpCode op)
-	{
-		Byte targetReg = op.z();
-		Byte bit = GB_BIT(op.y());
-		Byte value;
-		READ_REG(targetReg, value);
-		value &= ~bit;
-		WRITE_REG(targetReg, value);
-	}
-
-	void CPU::SET_R(OpCode op)
-	{
-		Byte targetReg = op.z();
-		Byte bit = GB_BIT(op.y());
-		Byte value;
-		READ_REG(targetReg, value);
-		value |= bit;
-		WRITE_REG(targetReg, value);
 	}
 
 	void CPU::JP_C8(OpCode op)
@@ -514,7 +504,7 @@ namespace GB {
 	{
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-		Word imm = lo | hi << 8;
+		Word imm = lo | (hi << 8);
 
 		Byte condTarget = op.y();
 		if (CheckCondition((Condition)(condTarget)))
@@ -532,7 +522,7 @@ namespace GB {
 	{
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-		Word imm = lo | hi << 8;
+		Word imm = lo | (hi << 8);
 		mRegisters[WordReg::PC] = imm;
 
 		if (!mSession->print)
@@ -568,7 +558,7 @@ namespace GB {
 	{
 		Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 		Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
-		Word imm = lo | hi << 8;
+		Word imm = lo | (hi << 8);
 
 		// Condition not met
 		if (!(op & 0x01) && !CheckCondition((Condition)op.y()))
@@ -619,6 +609,11 @@ namespace GB {
 		AddressBus::Write(--sp, (Byte)(pc >> 8));
 		AddressBus::Write(--sp, (Byte)(pc & 0x00FF));
 		pc = op.y() * 0x08;
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RST {1}", mSession->lastPC, op.y());
 	}
 
 	void CPU::REG(OpCode op)
@@ -822,6 +817,11 @@ namespace GB {
 		flags |= ((regHLCpy & 0xfff) + (value & 0xfff) > 0xfff) ? GB_BIT(H_CARRY_BIT) : 0;
 		flags |= ((result & 0x10000) != 0) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: ADD HL {1}", mSession->lastPC, Emu::Enum::ToString(sRegisterPairs[op.p()]));
 	}
 
 	void CPU::PUSH(OpCode op)
@@ -920,6 +920,11 @@ namespace GB {
 		BitField flags = 0;
 		flags |= finalBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RLCA", mSession->lastPC);
 	}
 
 	void CPU::RRCA()
@@ -931,6 +936,11 @@ namespace GB {
 		BitField flags = 0;
 		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RRCA", mSession->lastPC);
 	}
 
 	void CPU::RLA()
@@ -944,6 +954,11 @@ namespace GB {
 		BitField flags = 0;
 		flags |= regAField.bit(7) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RLA", mSession->lastPC);
 	}
 
 	void CPU::RRA()
@@ -957,6 +972,11 @@ namespace GB {
 		BitField flags = 0;
 		flags |= regAField.bit(0) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RRA", mSession->lastPC);
 	}
 
 	void CPU::DAA()
@@ -982,6 +1002,11 @@ namespace GB {
 
 		flags |= (regA == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: DAA", mSession->lastPC);
 	}
 
 	void CPU::CPL()
@@ -993,6 +1018,11 @@ namespace GB {
 		flags |= GB_BIT(SUBTRACT_BIT);
 		flags |= GB_BIT(H_CARRY_BIT);
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: CPL", mSession->lastPC);
 	}
 
 	void CPU::SCF()
@@ -1000,6 +1030,11 @@ namespace GB {
 		BitField flags = mFRegister.getFlags() & GB_BIT(ZERO_BIT);
 		flags |= GB_BIT(CARRY_BIT);
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: SCF", mSession->lastPC);
 	}
 
 	void CPU::CCF()
@@ -1007,6 +1042,11 @@ namespace GB {
 		BitField flags = mFRegister.getFlags() & GB_BIT(ZERO_BIT);
 		flags |= !mFRegister.carry() ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: CCF", mSession->lastPC);
 	}
 
 	// CB Instructions Implementations
@@ -1023,6 +1063,11 @@ namespace GB {
 		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
 		flags |= finalBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RLC {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
 	}
 
 	void CPU::RRC_R(Byte target)
@@ -1037,6 +1082,11 @@ namespace GB {
 		flags |= reg == 0 ? GB_BIT(ZERO_BIT) : 0;
 		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RRC {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
 	}
 
 	void CPU::RL_R(Byte target)
@@ -1051,6 +1101,11 @@ namespace GB {
 		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		flags |= reg.bit(7) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RL {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
 	}
 
 	void CPU::RR_R(Byte target)
@@ -1065,6 +1120,11 @@ namespace GB {
 		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		flags |= reg.bit(0) ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RR {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
 	}
 
 	void CPU::SLA_R(Byte target)
@@ -1079,6 +1139,11 @@ namespace GB {
 		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		flags |= carryBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: SLA {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
 	}
 
 	void CPU::SRA_R(Byte target)
@@ -1094,6 +1159,11 @@ namespace GB {
 		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		flags |= carryBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: SRA {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
 	}
 
 	void CPU::SWAP_R(Byte target)
@@ -1108,6 +1178,11 @@ namespace GB {
 		BitField flags = 0;
 		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: SWAP {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
 	}
 
 	void CPU::SRL_R(Byte target)
@@ -1122,6 +1197,60 @@ namespace GB {
 		flags |= (reg == 0) ? GB_BIT(ZERO_BIT) : 0;
 		flags |= firstBit ? GB_BIT(CARRY_BIT) : 0;
 		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: SRL {1}", mSession->lastPC, Emu::Enum::ToString(sRegisters[target]));
+	}
+
+	void CPU::BIT_R(OpCode op)
+	{
+		BitField value;
+		Byte target = op.z();
+		Byte bit = op.y();
+
+		READ_REG(target, value);
+		BitField flags = mFRegister.getFlags() & GB_BIT(CARRY_BIT);
+		flags |= GB_BIT(H_CARRY_BIT);
+		if (!value.bit(op.y()))
+			flags |= GB_BIT(ZERO_BIT);
+		mFRegister.setFlags(flags);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: SET {1}, {2}", mSession->lastPC, bit, Emu::Enum::ToString(sRegisters[target]));
+	}
+
+	void CPU::RES_R(OpCode op)
+	{
+		Byte targetReg = op.z();
+		Byte bit = GB_BIT(op.y());
+		Byte value;
+		READ_REG(targetReg, value);
+		value &= ~bit;
+		WRITE_REG(targetReg, value);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: RES {1}, {2}", mSession->lastPC, bit, Emu::Enum::ToString(sRegisters[targetReg]));
+	}
+
+	void CPU::SET_R(OpCode op)
+	{
+		Byte targetReg = op.z();
+		Byte bit = GB_BIT(op.y());
+		Byte value;
+		READ_REG(targetReg, value);
+		value |= bit;
+		WRITE_REG(targetReg, value);
+
+		if (!mSession->print)
+			return;
+
+		EMU_TRACE("0x{0:04X}: SET {1}, {2}", mSession->lastPC, bit, Emu::Enum::ToString(sRegisters[targetReg]));
 	}
 
 #pragma endregion
