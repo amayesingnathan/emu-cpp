@@ -101,6 +101,8 @@ namespace Emu {
             {
                 if (ImGui::MenuItem("Open"))
                     LaunchEmulator();
+                if (ImGui::MenuItem("Reset"))
+                    ResetEmulator();
                 if (ImGui::MenuItem("Close"))
                     CloseEmulator();
                 if (ImGui::MenuItem("Exit"))
@@ -163,6 +165,26 @@ namespace Emu {
         mEmuSettings.frameLength = std::chrono::milliseconds(16);
         mEmuSettings.gamePath = "";
         mEmuSettings.type = EmulatorType::None;
+    }
+
+    void Application::ResetEmulator()
+    {
+        if (!mGameInstance)
+            return;
+
+        delete mGameInstance;
+        mGameInstance = nullptr;
+
+        switch (mEmuSettings.type)
+        {
+        case EmulatorType::GB:
+            std::filesystem::current_path("../Gameboy");
+            mGameInstance = new GB::Gameboy(mWindow, mEmuSettings.gamePath);
+            break;
+
+        default:
+            assert(false);
+        }
     }
 
     void Application::GetROMData(const fs::path& file)

@@ -35,6 +35,7 @@ namespace Emu {
 
         void LaunchEmulator();
         void CloseEmulator();
+        void ResetEmulator();
 
         void GetROMData(const fs::path& file);
 
