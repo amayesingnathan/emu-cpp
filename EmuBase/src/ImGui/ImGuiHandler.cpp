@@ -1,5 +1,4 @@
-#include "glpch.h"
-#include "ImGuiHandler.h"
+module;
 
 #include "imgui.h"
 #include "backends/imgui_impl_glfw.h"
@@ -7,8 +6,9 @@
 
 #include "GLFW/glfw3.h"
 
-#include "IO/Event.h"
-#include "IO/Window.h"
+module EmuBase.ImGui.Handler;
+
+import EmuBase.IO.Window;
 
 namespace Emu {
 

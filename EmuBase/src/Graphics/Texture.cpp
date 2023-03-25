@@ -1,7 +1,8 @@
-#include "glpch.h"
-#include "Texture.h"
+module;
 
 #include "glad/glad.h"
+
+module EmuBase.Graphics.Texture;
 
 namespace Emu {
 

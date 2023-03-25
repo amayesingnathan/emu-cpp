@@ -1,34 +1,15 @@
-#include "gbpch.h"
-#include "MBC.h"
+module Gameboy.Cartridge.MBC;
+
+import Gameboy.Memory.MemoryMapper;
 
 namespace GB {
 
-	Word MBC1::mapRead(Word address)
+	void MBC1::mapWrite(Word address, Byte data)
 	{
-		if (address < 0x4000)
-			return address;
-		else if (address < 0x8000)
-			return (address - 0x4000) + (mROMBank * 0x4000);
-		else if (address >= 0xA000 && address < 0xC000)
-			return (address - 0xA000) * (mRAMBank * 0x2000);
+		if (address >= 0x8000)
+			return;
 
-		return address;
-	}
-
-	Word MBC1::mapWrite(Word address, Byte data)
-	{
-		if (address < 0x8000)
-		{
-			HandleBanking(address, data);
-			return 0;
-		}
-		else if (address >= 0xA000 && address < 0xC000)
-		{
-			if (!mEnabledRAM)
-				return 0;
-			return (address - 0xA000) * (mRAMBank * 0x2000);
-		}
-		return 0;
+		HandleBanking(address, data);
 	}
 
 	void MBC1::HandleBanking(Word address, Byte data)
@@ -62,6 +43,8 @@ namespace GB {
 		mROMBank = (data & 0x1F) | 0xE0;
 		if (mROMBank == 0)
 			mROMBank = 1;
+
+		MemoryMapper::UpdateROMMap(mROMBank * 0x4000);
 	}
 
 	void MBC1::ChangeROMBankHi(Byte data)
@@ -69,29 +52,30 @@ namespace GB {
 		mROMBank = (data & 0xE0) | 0x1F;
 		if (mROMBank == 0)
 			mROMBank = 1;
+
+		MemoryMapper::UpdateROMMap(mROMBank * 0x4000);
 	}
 
 	void MBC1::ChangeRAMBank(Byte data)
 	{
 		mRAMBank = data & 0x03;
+		MemoryMapper::UpdateRAMMap(mRAMBank * 0x2000);
 	}
 
 	void MBC1::ChangeROMRAMMode(Byte data)
 	{
-		BitField dataBits= data;
-		mUseROMBanking = (dataBits.bit(0));
-		if (mUseROMBanking)
-			mRAMBank = 0;
+		ByteBits dataBits = data;
+		mUseROMBanking = (dataBits.test(0));
+
+		if (!mUseROMBanking)
+			return;
+
+		mRAMBank = 0;
+		MemoryMapper::UpdateRAMMap(mRAMBank * 0x2000);
 	}
 
 
-	Word MBC2::mapRead(Word address)
+	void MBC2::mapWrite(Word address, Byte data)
 	{
-		return Word();
-	}
-
-	Word MBC2::mapWrite(Word address, Byte data)
-	{
-		return Word();
 	}
 }

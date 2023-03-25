@@ -1,162 +1,151 @@
-#include "gbpch.h"
-#include "Gameboy.h"
+module;
 
-#include "imgui.h"
+#include <imgui.h>
 
-#include "Memory/MemoryManager.h"
+module Gameboy;
+
+import Gameboy.CPU;
+import Gameboy.Graphics;
+import Gameboy.Cartridge;
+import Gameboy.Memory.AddressBus;
+import Gameboy.Memory.MemoryMapper;
 
 namespace GB {
 
-	Gameboy::Gameboy(Emu::Window* window, std::string_view path)
+    Gameboy::Gameboy(std::string_view path)
     {
-        mSession = new GBSession;
-        mProcessor = new CPU(mSession);
-        mGraphics = new PPU;
+        AddressBus::Init(this);
 
-        MemoryManager::Init();
-        mCartridge = new Cartridge(path);
-        AddressBus::Init(mProcessor, mGraphics, mCartridge);
+        mProcessor = Emu::MakeInstance<CPU>();
+        mGraphics = Emu::MakeInstance<PPU>();
+
+        mCartridge = Emu::MakeInstance<Cartridge>(path);
     }
 
     Gameboy::~Gameboy()
     {
-        delete mCartridge;
-        delete mGraphics;
-        delete mProcessor;
-        delete mSession;
-
         AddressBus::Shutdown();
-        MemoryManager::Shutdown();
     }
 
     void Gameboy::update()
     {
-        if (mSession->paused && !mSession->step)
-            return;
+        mGraphics->startFrame();
 
-        if (mSession->lastCycles == 0)
-            mGraphics->startFrame();
-
-        USize cyclesThisUpdate = mSession->lastCycles;
-        mSession->lastCycles = 0;
-
+        USize cyclesThisUpdate = 0;
         while (cyclesThisUpdate < CYCLES_PER_FRAME)
         {
-            Byte cycles = mProcessor->exec();
-
-            if (cycles == 0)
-                break;
-
+            Byte cycles = mProcessor->tick();
             cyclesThisUpdate += cycles;
-            mProcessor->updateTimers(cycles);
-            mGraphics->update(cycles);
-            mProcessor->handleInterupts();
-
-            if (mSession->step)
-                break;
+            mGraphics->tick(cycles);
+            mProcessor->handleInterrupts();
         }
 
-        if (mSession->step)
-        {
-            mSession->lastCycles = cyclesThisUpdate;
-            mSession->step = false;
-        }
-
-        if (mSession->lastCycles == 0)
-            mGraphics->endFrame();
+        mGraphics->endFrame();
     }
 
-    void Gameboy::imguiRender()
+    void Gameboy::uiRender()
     {
         UI_CPU();
     }
 
     void Gameboy::onEvent(Emu::Event& event)
     {
-        Emu::EventDispatcher dispatcher(event);
-        dispatcher.dispatch<Emu::KeyPressedEvent>(BIND_EVENT_FUNC(Gameboy::KeyPressedEvent));
     }
 
-    void Gameboy::UI_CPU()
+    Emu::uint Gameboy::getDisplayTex()
     {
-        ImGui::Begin("CPU");
+        return mGraphics->getDisplayTex();
+    }
 
-        {   // Control
-            const char* label = mSession->paused ? "Run" : "Pause";
-            if (ImGui::Button(label))
-                mSession->paused = !mSession->paused;
+    Emu::Duration Gameboy::getFrameTime()
+    {
+        constexpr Emu::Duration FRAME_LENGTH = Emu::Duration((float)(CYCLES_PER_FRAME * 1000) / (float)CLOCK_SPEED);
 
-            if (mSession->paused)
-            {
-                ImGui::SameLine();
-                if (ImGui::Button("Step"))
-                    mSession->step = true;
-            }
+        return FRAME_LENGTH;
+    }
 
-            ImGui::SameLine();
-            ImGui::Checkbox("Breakpoint", &mSession->useBreakpoint);
+    void Gameboy::setTimerFreq(Byte freq)
+    {
+        mProcessor->setTimerFreq(freq);
+    }
 
-            static Word sStepSize = 1;
-            ImGui::InputScalar("PC", ImGuiDataType_U16, &mSession->breakpoint, &sStepSize, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
+    void Gameboy::startTimer()
+    {
+        mProcessor->startTimer();
+    }
 
-            ImGui::Checkbox("Log", &mSession->print);
-        }
+    void Gameboy::stopTimer()
+    {
+        mProcessor->stopTimer();
+    }
 
-        ImGui::Separator();
+    void Gameboy::writeROM(Word addr, Byte val)
+    {
+        mCartridge->write(addr, val);
+    }
+
+    void Gameboy::disableLCD()
+    {
+        mGraphics->disableLCD();
+    }
+
+	void Gameboy::UI_CPU()
+	{
+		ImGui::Begin("CPU");
 
         {   // Registers
             Registers& registers = mProcessor->mRegisters;
-            BitField flagReg = mProcessor->mFRegister.getFlags();
+            FlagRegister flagReg = mProcessor->mFRegister;
 
             ImGui::Text("CPU Registers");
 
-            ImGui::Text("A: %02X", registers[ByteReg::A]);
+            ImGui::Text("A: %02X", registers[ByteReg::A].value());
             ImGui::SameLine();
-            ImGui::Text("F: %02X", registers[ByteReg::F]);
+            ImGui::Text("F: %02X", registers[ByteReg::F].value());
             ImGui::SameLine();
-            ImGui::Text("AF: %04X", registers[WordReg::AF]);
+            ImGui::Text("AF: %04X", registers[WordReg::AF].value());
 
             ImGui::Text("Flag Register");
-            ImGui::Text("Zero : %1i", flagReg.val(ZERO_BIT));
+            ImGui::Text("Zero : %1i", flagReg.zero());
             ImGui::SameLine();
-            ImGui::Text("Sub : %1i", flagReg.val(SUBTRACT_BIT));
+            ImGui::Text("Sub : %1i", flagReg.subtr());
             ImGui::SameLine();
-            ImGui::Text("HCarry : %1i", flagReg.val(H_CARRY_BIT));
+            ImGui::Text("HCarry : %1i", flagReg.hcarry());
             ImGui::SameLine();
-            ImGui::Text("Carry : %1i", flagReg.val(CARRY_BIT));
+            ImGui::Text("Carry : %1i", flagReg.carry());
 
-            ImGui::Text("B: %02X", registers[ByteReg::B]);
+            ImGui::Text("B: %02X", registers[ByteReg::B].value());
             ImGui::SameLine();
-            ImGui::Text("C: %02X", registers[ByteReg::C]);
+            ImGui::Text("C: %02X", registers[ByteReg::C].value());
             ImGui::SameLine();
-            ImGui::Text("BC: %04X", registers[WordReg::BC]);
+            ImGui::Text("BC: %04X", registers[WordReg::BC].value());
 
-            ImGui::Text("D: %02X", registers[ByteReg::D]);
+            ImGui::Text("D: %02X", registers[ByteReg::D].value());
             ImGui::SameLine();
-            ImGui::Text("E: %02X", registers[ByteReg::E]);
+            ImGui::Text("E: %02X", registers[ByteReg::E].value());
             ImGui::SameLine();
-            ImGui::Text("DE: %04X", registers[WordReg::DE]);
+            ImGui::Text("DE: %04X", registers[WordReg::DE].value());
 
-            ImGui::Text("H: %02X", registers[ByteReg::H]);
+            ImGui::Text("H: %02X", registers[ByteReg::H].value());
             ImGui::SameLine();
-            ImGui::Text("L: %02X", registers[ByteReg::L]);
+            ImGui::Text("L: %02X", registers[ByteReg::L].value());
             ImGui::SameLine();
-            ImGui::Text("HL: %04X", registers[WordReg::HL]);
+            ImGui::Text("HL: %04X", registers[WordReg::HL].value());
 
-            ImGui::Text("SP: %04X", registers[WordReg::SP]);
+            ImGui::Text("SP: %04X", registers[WordReg::SP].value());
 
-            ImGui::Text("PC: %04X", registers[WordReg::PC]);
+            ImGui::Text("PC: %04X", registers[WordReg::PC].value());
         }
 
         ImGui::Separator();
 
         {   // Registers
-            Byte* ioRegisters = MemoryManager::GetBlock(MemoryManager::IO);
-            BitField IE = ioRegisters[0x80];
+            Byte* ioRegisters = MemoryMapper::GetBlock(MemoryMapper::IO);
+            ByteBits IE = ioRegisters[0x80];
 
             ImGui::Text("IO Registers");
 
-            ImGui::Text("JOYP: %02X", ioRegisters[0x0]);
+            ImGui::Text("JOYP: 0x%02X", ioRegisters[0x0]);
 
             ImGui::Text("SB: 0x%02X", ioRegisters[0x1]);
             ImGui::SameLine();
@@ -199,40 +188,26 @@ namespace GB {
             ImGui::Text("IF: 0x%02X", ioRegisters[0x0F]);
 
             ImGui::Text("Interupt Enable Register");
-            ImGui::Text("VBlank : %1i", IE.val(VBLANK_BIT));
+            ImGui::Text("VBlank : %1i", IE.test(VBLANK_BIT));
             ImGui::SameLine();
-            ImGui::Text("LCD Status : %1i", IE.val(LCD_STAT_BIT));
+            ImGui::Text("LCD Status : %1i", IE.test(LCD_STAT_BIT));
 
-            ImGui::Text("Timer : %1i", IE.val(TIMER_BIT));
+            ImGui::Text("Timer : %1i", IE.test(TIMER_BIT));
             ImGui::SameLine();
-            ImGui::Text("Serial : %1i", IE.val(SERIAL_BIT));
+            ImGui::Text("Serial : %1i", IE.test(SERIAL_BIT));
             ImGui::SameLine();
-            ImGui::Text("Joypad : %1i", IE.val(JOYPAD_BIT));
+            ImGui::Text("Joypad : %1i", IE.test(JOYPAD_BIT));
         }
+
+		ImGui::End();
+	}
+
+    void Gameboy::UI_Memory()
+    {
+        ImGui::Begin("Memory");
+
+
 
         ImGui::End();
-    }
-
-    bool Gameboy::KeyPressedEvent(Emu::KeyPressedEvent& event)
-    {
-        Emu::KeyCode key = event.getKeyCode();
-        if (!Emu::Input::IsValid(key))
-            return false;
-
-        Emu::Action action = Emu::Input::GetEmuButton(key);
-
-        switch (action)
-        {
-        case Buttons::Up: return true;
-        case Buttons::Down: return true;
-        case Buttons::Left: return true;
-        case Buttons::Right: return true;
-        case Buttons::A: return true;
-        case Buttons::B: return true;
-        case Buttons::Start: return true;
-        case Buttons::Select: return true;
-        }
-
-        return false;
     }
 }

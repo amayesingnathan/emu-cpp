@@ -5,14 +5,12 @@ project "Gameboy"
 		
     targetdir 	("%{wks.location}/bin/%{prj.name}/" .. outputDir)
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)
-	
-	pchheader "gbpch.h"
-	pchsource "src/gbpch.cpp"
 
     files 
     { 
         "src/**.h", 
         "src/**.cpp",
+        "src/**.ixx",
     }
 	
 	defines
@@ -22,8 +20,6 @@ project "Gameboy"
 
     includedirs
     {
-        "%{IncludeDir.EmuBase}",
-        "%{IncludeDir.Gameboy}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.imgui}",
         "%{IncludeDir.magic_enum}",
@@ -34,6 +30,15 @@ project "Gameboy"
 	{
         "EmuBase",
 	}
+    
+    filter { "files:**.ixx" }
+        compileas "Module"
+        
+    filter { "files:**.ixxp" }
+        compileas "ModulePartition"
+
+	filter { "files:**.h" }
+        compileas "HeaderUnit"
 	
     filter "system:windows"
         kind "StaticLib"

@@ -1,8 +1,12 @@
-#include "Application.h"
+module;
 
-#include "imgui.h"
+#include <imgui.h>
 
-#include "Gameboy.h"
+module Application;
+
+import Gameboy;
+
+#define BIND_EVENT_FUNC(func) [this](auto&&... args) -> decltype(auto) { return this->func(std::forward<decltype(args)>(args)...); }
 
 namespace Emu {
 
@@ -86,7 +90,7 @@ namespace Emu {
         mLogWidget.draw();
 
         if (mGameInstance)
-            mGameInstance->imguiRender();
+            mGameInstance->uiRender();
 
         ImGui::End();
 
@@ -146,7 +150,7 @@ namespace Emu {
         {
         case EmulatorType::GB:
             std::filesystem::current_path("../Gameboy");
-            mGameInstance = new GB::Gameboy(mWindow, mEmuSettings.gamePath);
+            mGameInstance = new GB::Gameboy(mEmuSettings.gamePath);
             break;
 
         default:
@@ -179,7 +183,7 @@ namespace Emu {
         {
         case EmulatorType::GB:
             std::filesystem::current_path("../Gameboy");
-            mGameInstance = new GB::Gameboy(mWindow, mEmuSettings.gamePath);
+            mGameInstance = new GB::Gameboy(mEmuSettings.gamePath);
             break;
 
         default:
@@ -207,13 +211,12 @@ namespace Emu {
         if (event.handled)
             return;
 
-        if (mGameInstance)
-            mGameInstance->onEvent(event);
-
+        dispatcher.dispatch<KeyPressedEvent>(BIND_EVENT_FUNC(Application::OnKeyPressed));
         if (event.handled)
             return;
 
-        dispatcher.dispatch<KeyPressedEvent>(BIND_EVENT_FUNC(Application::OnKeyPressed));
+        if (mGameInstance)
+            mGameInstance->onEvent(event);
     }
 
     bool Application::OnWindowClose(WindowCloseEvent& e)
@@ -234,7 +237,10 @@ namespace Emu {
         {
             bool ctrl = mWindow->isKeyPressed(Key::LeftControl) || mWindow->isKeyPressed(Key::RightControl);
             if (ctrl)
+            {
                 LaunchEmulator();
+                return true;
+            }
             break;
         }
 

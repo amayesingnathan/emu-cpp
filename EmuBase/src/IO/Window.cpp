@@ -1,10 +1,10 @@
-#include "glpch.h"
-#include "Window.h"
+module;
 
 #include "GLFW/glfw3.h"
 
-#include "Graphics/Context.h"
-#include "ImGui/ImGuiHandler.h"
+module EmuBase.IO.Window;
+
+import EmuBase.ImGui.Handler;
 
 namespace Emu {
 
@@ -74,7 +74,7 @@ namespace Emu {
 		if (sGLFWWindowCount == 0)
 		{
 			int success = glfwInit();
-			GL_ASSERT(success, "Could not initialize GLFW!");
+			Assert(success, "Could not initialize GLFW!");
 			glfwSetErrorCallback(GLFWErrorCallback);
 		}
 
@@ -93,7 +93,7 @@ namespace Emu {
 		glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
 #endif
 		mWindow = glfwCreateWindow((int)mData.width, (int)mData.height, mData.title.c_str(), nullptr, nullptr);
-		GL_ASSERT(mWindow, "Could not create GLFW window!");
+		Assert(mWindow, "Could not create GLFW window!");
 
 		++sGLFWWindowCount;
 		mContext = new GraphicsContext(mWindow);

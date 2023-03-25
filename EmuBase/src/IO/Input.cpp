@@ -1,5 +1,6 @@
-#include "glpch.h"
-#include "Input.h"
+module EmuBase.IO.Input;
+
+import EmuBase.Core.Common;
 
 namespace Emu {
 
@@ -12,7 +13,7 @@ namespace Emu {
 
     Action Input::GetEmuButton(KeyCode key)
     {
-        GL_ASSERT(IsValid(key));
+        Assert(IsValid(key));
         return sActionMap[key];
     }
 }

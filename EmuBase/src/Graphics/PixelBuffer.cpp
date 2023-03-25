@@ -1,11 +1,12 @@
-#include "glpch.h"
-#include "PixelBuffer.h"
-
-#include "Texture.h"
+module;
 
 #include "glad/glad.h"
 
+module EmuBase.Graphics.PixelBuffer;
+
 namespace Emu {
+
+#define MAP(x, y) ((y * mWidth) + x)
 
 	PixelBuffer::PixelBuffer(uint width, uint height)
         : mWidth(width), mHeight(height), mSize(width * height * sizeof(Pixel)), mTexture(Texture::Create(width, height))
@@ -22,7 +23,7 @@ namespace Emu {
 
     void PixelBuffer::lock()
     {
-        GL_ASSERT(!mLocked, "Buffer memory already mapped!");
+        Assert(!mLocked, "Buffer memory already mapped!");
 
         mLocked = true;
 
@@ -30,21 +31,21 @@ namespace Emu {
         glBufferData(GL_PIXEL_UNPACK_BUFFER, mSize, nullptr, GL_STREAM_DRAW);
         void* data = glMapBuffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY);
 
-        GL_ASSERT(data, "Could not read data from pixel buffer!");
+        Assert(data, "Could not read data from pixel buffer!");
         mPixels = (Pixel*)data;
     }
 
     void PixelBuffer::unlock()
     {
-        GL_ASSERT(mLocked, "Buffer memory not mapped!");
+        Assert(mLocked, "Buffer memory not mapped!");
 
         mLocked = false;
 
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mRendererID);
         int success = glUnmapBuffer(GL_PIXEL_UNPACK_BUFFER);
-        GL_ASSERT(success, "Could not unmap buffer");
+        Assert(success, "Could not unmap buffer");
 
-        glTextureSubImage2D(mTexture->getTexID(), 0, 0, 0, mWidth, mHeight, GL_BGRA, GL_UNSIGNED_BYTE, 0);
+        glTextureSubImage2D(mTexture->getTexID(), 0, 0, 0, mWidth, mHeight, GL_RGBA, GL_UNSIGNED_BYTE, 0);
         glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
     }
 
@@ -52,19 +53,19 @@ namespace Emu {
 
     Pixel& PixelBuffer::at(usize x, usize y)
     {
-        GL_ASSERT(mLocked, "Buffer must be locked!");
-        return mPixels[_Map(x, y)];
+        Assert(mLocked, "Buffer must be locked!");
+        return mPixels[MAP(x, y)];
     }
 
     const Pixel& PixelBuffer::at(usize x, usize y) const
     {
-        GL_ASSERT(mLocked, "Buffer must be locked!");
-        return mPixels[_Map(x, y)];
+        Assert(mLocked, "Buffer must be locked!");
+        return mPixels[MAP(x, y)];
     }
 
     void PixelBuffer::set(const Pixel& colour)
     {
-        GL_ASSERT(mLocked, "Buffer must be locked!");
+        Assert(mLocked, "Buffer must be locked!");
         Pixel* buffer = new Pixel[mWidth * mHeight](colour);
         memcpy(mPixels, buffer, mSize);
         delete[] buffer;
@@ -72,7 +73,7 @@ namespace Emu {
 
     void PixelBuffer::set(const Pixel& colour, usize size, usize offset)
     {
-        GL_ASSERT(mLocked, "Buffer must be locked!");
+        Assert(mLocked, "Buffer must be locked!");
         Pixel* buffer = new Pixel[size](colour);
         memcpy(mPixels + offset, buffer, size * sizeof(Pixel));
         delete[] buffer;

@@ -1,10 +1,11 @@
-#include "glpch.h"
-#include "Context.h"
+module;
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 
-#include "Core/Common.h"
+module EmuBase.Graphics.Context;
+
+import EmuBase.Core.Common;
 
 namespace Emu {
 
@@ -13,9 +14,9 @@ namespace Emu {
     {
         glfwMakeContextCurrent(mWindowHandle);
         int status = gladLoadGLLoader((GLADloadproc)glfwGetProcAddress);
-        GL_ASSERT(status, "Failed to initialise Glad");
+        Assert(status, "Failed to initialise Glad");
 
-        GL_ASSERT(GLVersion.major >= 4, "Require OpenGL version 4 or greater");
+        Assert(GLVersion.major >= 4, "Require OpenGL version 4 or greater");
     }
 
     void GraphicsContext::swapBuffers()

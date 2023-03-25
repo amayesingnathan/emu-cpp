@@ -5,16 +5,14 @@ project "EmuBase"
 		
     targetdir 	("%{wks.location}/bin/%{prj.name}/" .. outputDir)
     objdir 		("%{wks.location}/obj/%{prj.name}/" .. outputDir)
-	
-	pchheader "glpch.h"
-	pchsource "src/glpch.cpp"
 
     files 
     { 
         "src/**.h", 
         "src/**.cpp",
+        "src/**.ixx",
     }
-	
+
 	defines
 	{
 		"_CRT_SECURE_NO_WARNINGS"
@@ -22,7 +20,6 @@ project "EmuBase"
 
     includedirs
     {
-        "%{IncludeDir.EmuBase}",
         "%{IncludeDir.glm}",
         "%{IncludeDir.glad}",
         "%{IncludeDir.glfw}",
@@ -39,6 +36,15 @@ project "EmuBase"
 		"imgui",
 		"spdlog",
 	}
+    
+    filter { "files:**.ixx" }
+        compileas "Module"
+        
+    filter { "files:**.ixxp" }
+        compileas "ModulePartition"
+
+	filter { "files:**.h" }
+        compileas "HeaderUnit"
 	
     filter "system:windows"
         kind "StaticLib"

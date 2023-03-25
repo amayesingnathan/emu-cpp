@@ -11,6 +11,7 @@ project "EmuCpp"
     { 
         "src/**.h", 
         "src/**.cpp",
+        "src/**.ixx",
     }
 	
 	defines
@@ -35,6 +36,15 @@ project "EmuCpp"
         "EmuBase",
         "Gameboy",
 	}
+    
+    filter { "files:**.ixx" }
+        compileas "Module"
+        
+    filter { "files:**.ixxp" }
+        compileas "ModulePartition"
+
+	filter { "files:**.h" }
+        compileas "HeaderUnit"
 
     filter "configurations:Debug"
 		runtime "Debug"

@@ -1,4 +1,4 @@
-#include "Application.h"
+import Application;
 
 int main()
 {
