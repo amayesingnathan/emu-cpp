@@ -23,6 +23,7 @@ namespace GB {
 		static Byte* ReadROM();
 
 		static void RequestInterrupt(Interrupt interrupt);
+		static void DoDMATransfer(Byte data);
 
 	private:
 		static Byte& ReadIO(Word address);

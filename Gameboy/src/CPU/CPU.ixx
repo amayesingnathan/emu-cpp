@@ -7,6 +7,7 @@ export import Gameboy.Memory.AddressBus;
 export import Gameboy.Timers;
 import Gameboy.CPU.OpCode;
 import Gameboy.CPU.Register;
+import Gameboy.CPU.Cycles;
 import Gameboy.CPU.Interrupts;
 
 export namespace GB {
@@ -144,12 +145,14 @@ export namespace GB {
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_R_R()
+		Byte LD_R_R()
 		{
 			WriteByte<Op::Y>(ReadByte<Op::Z>());
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_M_R()
+		Byte LD_M_R()
 		{
 			SByte incDec = 0;
 			if constexpr (Op::P > 1)
@@ -165,9 +168,11 @@ export namespace GB {
 			WordRef address = ReadWord<Target>();
 			AddressBus::Write(address, ReadByte<7>()); // 7 targets A register
 			address += incDec;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_R_M()
+		Byte LD_R_M()
 		{
 			SByte incDec = 0;
 			if constexpr (Op::P > 1)
@@ -183,23 +188,29 @@ export namespace GB {
 			WordRef address = ReadWord<Op::P>();
 			mRegisters[ByteReg::A] = AddressBus::Read(address);
 			address += incDec;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_R_I8()
+		Byte LD_R_I8()
 		{
 			Byte imm = AddressBus::Read(mRegisters[WordReg::PC]++);
 			WriteByte<Op::Y>(imm);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_R_I16()
+		Byte LD_R_I16()
 		{
 			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word imm16 = lo | (hi << 8);
 			WriteWord<Op::P>(imm16);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_R_STK()
+		Byte LD_R_STK()
 		{
 			Byte addr = [this]() -> Byte
 			{
@@ -212,9 +223,11 @@ export namespace GB {
 				mRegisters[ByteReg::A] = AddressBus::Read(0xFF00 + (Word)addr);
 			else
 				AddressBus::Write(0xFF00 + (Word)addr, mRegisters[ByteReg::A]);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_R_STK16()
+		Byte LD_R_STK16()
 		{
 			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
@@ -224,14 +237,18 @@ export namespace GB {
 				mRegisters[ByteReg::A] = AddressBus::Read(imm);
 			else
 				AddressBus::Write(imm, mRegisters[ByteReg::A]);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_HL_PC()
+		Byte LD_HL_PC()
 		{
 			mRegisters[WordReg::PC] = mRegisters[WordReg::HL];
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_HL_SP()
+		Byte LD_HL_SP()
 		{
 			SByte imm = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word sp = mRegisters[WordReg::SP];
@@ -243,15 +260,19 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(((sp & 0xF) + (imm & 0xF)) & 0x10);
 			mFRegister.setCarry(result & 0x100);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_HL_SP16()
+		Byte LD_HL_SP16()
 		{
 			mRegisters[WordReg::PC] = mRegisters[WordReg::SP];
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void LD_M_SP()
+		Byte LD_M_SP()
 		{
 			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
@@ -260,54 +281,62 @@ export namespace GB {
 			Word sp = mRegisters[WordReg::SP];
 			AddressBus::Write(address++, sp & 0x0F);
 			AddressBus::Write(address, (sp & 0xF0) >> 4);
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void ROT_R()
+		Byte ROT_R()
 		{
 			if constexpr (Op::Y == 0)
-				RLC_R<Op, T>();
+				return RLC_R<Op, T>();
 			else if constexpr (Op::Y == 1)
-				RRC_R<Op, T>();
+				return RRC_R<Op, T>();
 			else if constexpr (Op::Y == 2)
-				RL_R<Op, T>();
+				return RL_R<Op, T>();
 			else if constexpr (Op::Y == 3)
-				RR_R<Op, T>();
+				return RR_R<Op, T>();
 			else if constexpr (Op::Y == 4)
-				SLA_R<Op, T>();
+				return SLA_R<Op, T>();
 			else if constexpr (Op::Y == 5)
-				SRA_R<Op, T>();
+				return SRA_R<Op, T>();
 			else if constexpr (Op::Y == 6)
-				SWAP_R<Op, T>();
+				return SWAP_R<Op, T>();
 			else if constexpr (Op::Y == 7)
-				SRL_R<Op, T>();
+				return SRL_R<Op, T>();
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void BIT_R()
+		Byte BIT_R()
 		{
 			ByteBits regBits(ReadByte<Op::Z>());
 
 			mFRegister.setZero(!regBits.test(Op::Y));
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(true);
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void RES_R()
+		Byte RES_R()
 		{
 			ByteBits regBits(ReadByte<Op::Z>());
 			regBits.reset(Op::Y);
 			WriteByte<Op::Z>((Byte)regBits.to_ulong());
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void SET_R()
+		Byte SET_R()
 		{
 			ByteBits regBits(ReadByte<Op::Z>());
 			regBits.set(Op::Y);
 			WriteByte<Op::Z>((Byte)regBits.to_ulong());
+
+			return CB_CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void ADD_HL()
+		Byte ADD_HL()
 		{
 			Word value = ReadWord<Op::P>();
 			WordRef regHL = mRegisters[WordReg::HL];
@@ -319,10 +348,12 @@ export namespace GB {
 			mFRegister.setCarry(result & 0x10000);
 
 			regHL = (Word)result;
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void JP_C8()
+		Byte JP_C8()
 		{
 			SByte imm = AddressBus::Read(mRegisters[WordReg::PC]++);
 			if constexpr (Op::Test(5))
@@ -330,14 +361,16 @@ export namespace GB {
 				constexpr Condition Cond = Op::AsCondition(Op::Y - 4);
 				mBranchTaken = CheckCondition<Cond>();
 				if (!mBranchTaken)
-					return;
+					return CYCLES[Op::Val];
 			}
 
 			mRegisters[WordReg::PC] += imm;
 
+			return BRANCHED_CYCLES[Op::Val];
+
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void JP_C16()
+		Byte JP_C16()
 		{
 			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
@@ -346,34 +379,38 @@ export namespace GB {
 			constexpr Condition Cond = Op::AsCondition(Op::Y);
 			if (mBranchTaken = CheckCondition<Cond>())
 				mRegisters[WordReg::PC] = imm;
+
+			return mBranchTaken ? BRANCHED_CYCLES[Op::Val] : CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void JP_I16()
+		Byte JP_I16()
 		{
 			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word imm = lo | (hi << 8);
 			mRegisters[WordReg::PC] = imm;
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void UN_R()
+		Byte UN_R()
 		{
 			if constexpr (Op::Z == 3)
 			{
 				if constexpr (Op::Q == 0)
-					INC16<Op, T>();
+					return INC16<Op, T>();
 				else if constexpr (Op::Q == 1)
-					DEC16<Op, T>();
+					return DEC16<Op, T>();
 			}
 			else if constexpr (Op::Z == 4)
-				INC<Op, T>();
+				return INC<Op, T>();
 			else if constexpr (Op::Z == 5)
-				DEC<Op, T>();
+				return DEC<Op, T>();
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void CALL()
+		Byte CALL()
 		{
 			Word lo = AddressBus::Read(mRegisters[WordReg::PC]++);
 			Word hi = AddressBus::Read(mRegisters[WordReg::PC]++);
@@ -385,7 +422,7 @@ export namespace GB {
 				constexpr Condition Cond = Op::AsCondition(Op::Y);
 				mBranchTaken = CheckCondition<Cond>();
 				if (!mBranchTaken)
-					return;
+					return CYCLES[Op::Val];
 			}
 
 			Word imm = lo | (hi << 8);
@@ -394,9 +431,11 @@ export namespace GB {
 			AddressBus::Write(--sp, (Byte)(pc >> 8));
 			AddressBus::Write(--sp, (Byte)(pc & 0x00FF));
 			pc = imm;
+
+			return BRANCHED_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void RET()
+		Byte RET()
 		{
 			// Using condition?
 			if constexpr (!Op::Test(0))
@@ -405,7 +444,7 @@ export namespace GB {
 				constexpr Condition Cond = Op::AsCondition(Op::Y);
 				mBranchTaken = CheckCondition<Cond>();
 				if (!mBranchTaken)
-					return;
+					return CYCLES[Op::Val];
 			}
 
 			WordRef sp = mRegisters[WordReg::SP];
@@ -414,25 +453,31 @@ export namespace GB {
 			Word newPC = (Word)AddressBus::Read(sp++);
 			newPC |= (Word)AddressBus::Read(sp++) << 8;
 			pc = newPC;
+
+			return BRANCHED_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void RETI()
+		Byte RETI()
 		{
 			RET<Op, T>();
 			mInterruptsEnabled = true;
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void PUSH()
+		Byte PUSH()
 		{
 			WordRef sp = mRegisters[WordReg::SP];
 			Word regPair = ReadWord<Op::P>();
 
 			AddressBus::Write(--sp, (Byte)(regPair >> 8));
 			AddressBus::Write(--sp, (Byte)(regPair & 0x00FF));
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void POP()
+		Byte POP()
 		{
 			WordRef sp = mRegisters[WordReg::SP];
 			WordRef regPair = ReadWord<Op::P>();
@@ -440,10 +485,12 @@ export namespace GB {
 			Word popAddr = (Word)AddressBus::Read(sp++) | (Word)AddressBus::Read(sp++) << 8;
 
 			regPair = popAddr;
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void RST()
+		Byte RST()
 		{
 			constexpr Word InterruptLocation = Op::Y * 0x08;
 
@@ -452,89 +499,107 @@ export namespace GB {
 			AddressBus::Write(--sp, (Byte)(pc >> 8));
 			AddressBus::Write(--sp, (Byte)(pc & 0x00FF));
 			pc = InterruptLocation;
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void REG()
+		Byte REG()
 		{
 			if constexpr (Op::Y == 0)
-				RLCA();
+				return RLCA();
 			else if constexpr (Op::Y == 1)
-				RRCA();
+				return RRCA();
 			else if constexpr (Op::Y == 2)
-				RLA();
+				return RLA();
 			else if constexpr (Op::Y == 3)
-				RRA();
+				return RRA();
 			else if constexpr (Op::Y == 4)
-				DAA();
+				return DAA();
 			else if constexpr (Op::Y == 5)
-				CPL();
+				return CPL();
 			else if constexpr (Op::Y == 6)
-				SCF();
+				return SCF();
 			else if constexpr (Op::Y == 7)
-				CCF();
+				return CCF();
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void EI()
+		Byte EI()
 		{
 			mInterruptsEnabled = true;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void DI()
+		Byte DI()
 		{
 			mInterruptsEnabled = false;
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void HALT()
+		Byte HALT()
 		{
 			mHalted = true;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void STOP()
+		Byte STOP()
 		{
 			mRegisters[WordReg::PC]++;
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void CB()
+		Byte CB()
 		{
 			mCBInstruction = true;
 
 			Byte instruction = AddressBus::Read(mRegisters[WordReg::PC]++);
-			mCBDispatcher[instruction]();
+			return CYCLES[0xCB] + mCBDispatcher[instruction]();
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void ASSERT() { Emu::Assert(false, "Instruction not implemented!"); }
+		Byte ASSERT() 
+		{ 
+			Emu::Assert(false, "Instruction not implemented!");
+
+			return CYCLES[Op::Val];
+		}
 
 		// Instruction Implementations
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void NOP() {}
+		Byte NOP() 
+		{
+			return CYCLES[Op::Val];
+		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void ALU_T()
+		Byte ALU_T()
 		{
 			if constexpr (Op::Y == 0)
-				ADD_R<Op, T>();
+				return ADD_R<Op, T>();
 			else if constexpr (Op::Y == 1)
-				ADC_R<Op, T>();
+				return ADC_R<Op, T>();
 			else if constexpr (Op::Y == 2)
-				SUB_R<Op, T>();
+				return SUB_R<Op, T>();
 			else if constexpr (Op::Y == 3)
-				SBC_R<Op, T>();
+				return SBC_R<Op, T>();
 			else if constexpr (Op::Y == 4)
-				AND_R<Op, T>();
+				return AND_R<Op, T>();
 			else if constexpr (Op::Y == 5)
-				XOR_R<Op, T>();
+				return XOR_R<Op, T>();
 			else if constexpr (Op::Y == 6)
-				OR_R<Op, T>();
+				return OR_R<Op, T>();
 			else if constexpr (Op::Y == 7)
-				CP_R<Op, T>();
+				return CP_R<Op, T>();
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void ADD_R()
+		Byte ADD_R()
 		{
 			Byte val = [this]() -> Byte
 			{
@@ -553,9 +618,11 @@ export namespace GB {
 			mFRegister.setCarry(result & 0x100);
 
 			regA = (Byte)result;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void ADC_R()
+		Byte ADC_R()
 		{
 			Byte val = [this]() -> Byte
 			{
@@ -574,9 +641,11 @@ export namespace GB {
 			mFRegister.setCarry(result & 0x100);
 
 			regA = (Byte)result;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void SUB_R()
+		Byte SUB_R()
 		{
 			Byte val = [this]() -> Byte
 			{
@@ -595,9 +664,11 @@ export namespace GB {
 			mFRegister.setCarry(result & 0x100);
 
 			regA = (Byte)result;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void SBC_R()
+		Byte SBC_R()
 		{
 			Byte val = [this]() -> Byte
 			{
@@ -616,9 +687,11 @@ export namespace GB {
 			mFRegister.setCarry(result & 0x100);
 
 			regA = (Byte)result;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void AND_R()
+		Byte AND_R()
 		{
 			Byte val = [this]() -> Byte
 			{
@@ -635,9 +708,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(true);
 			mFRegister.setCarry(false);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void XOR_R()
+		Byte XOR_R()
 		{
 			Byte val = [this]() -> Byte
 			{
@@ -654,9 +729,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(false);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void OR_R()
+		Byte OR_R()
 		{
 			Byte val = [this]() -> Byte
 			{
@@ -673,9 +750,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(false);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void CP_R()
+		Byte CP_R()
 		{
 			Byte val = [this]() -> Byte
 			{
@@ -692,10 +771,12 @@ export namespace GB {
 			mFRegister.setSubtr(true);
 			mFRegister.setHCarry(((regA & 0xF) - (val & 0xF)) & 0x10);
 			mFRegister.setCarry(regA < val);
+
+			return CYCLES[Op::Val];
 		}
 
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void INC()
+		Byte INC()
 		{
 			Byte incVal = ReadByte<Op::Y>();
 			Byte result = incVal + 1;
@@ -704,9 +785,11 @@ export namespace GB {
 			mFRegister.setZero(result == 0);
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(((incVal & 0xF) + 0x1) & 0x10);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void DEC()
+		Byte DEC()
 		{
 			Byte decVal = ReadByte<Op::Y>();
 			Byte result = decVal - 1;
@@ -715,21 +798,27 @@ export namespace GB {
 			mFRegister.setZero(result == 0);
 			mFRegister.setSubtr(true);
 			mFRegister.setHCarry(((decVal & 0xF) - 0x1) & 0x10);
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void INC16()
+		Byte INC16()
 		{
 			WordRef reg = ReadWord<Op::P>();
 			reg++;
+
+			return CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void DEC16()
+		Byte DEC16()
 		{
 			WordRef reg = ReadWord<Op::P>();
 			reg--;
+
+			return CYCLES[Op::Val];
 		}
 
-		void RLCA()
+		Byte RLCA()
 		{
 			Byte regA = mRegisters[ByteReg::A];
 
@@ -745,8 +834,10 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(finalBit);
+
+			return CYCLES[0x07];
 		}
-		void RRCA()
+		Byte RRCA()
 		{
 			Byte regA = mRegisters[ByteReg::A];
 
@@ -762,8 +853,10 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(firstBit);
+
+			return CYCLES[0x0F];
 		}
-		void RLA()
+		Byte RLA()
 		{
 			Byte regA = mRegisters[ByteReg::A];
 
@@ -781,8 +874,10 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(finalBit);
+
+			return CYCLES[0x17];
 		}
-		void RRA()
+		Byte RRA()
 		{
 			Byte regA = mRegisters[ByteReg::A];
 
@@ -800,8 +895,10 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(firstBit);
+
+			return CYCLES[0x1F];
 		}
-		void DAA()
+		Byte DAA()
 		{
 			ByteRef regA = mRegisters[ByteReg::A];
 
@@ -821,31 +918,39 @@ export namespace GB {
 			mFRegister.setZero(regA == 0);
 			mFRegister.setCarry((correction << 2) & 0x100);
 			mFRegister.setHCarry(false);
+
+			return CYCLES[0x27];
 		}
-		void CPL()
+		Byte CPL()
 		{
 			ByteRef regA = mRegisters[ByteReg::A];
 			regA = ~regA;
 
 			mFRegister.setSubtr(true);
 			mFRegister.setHCarry(true);
+
+			return CYCLES[0x2F];
 		}
-		void SCF()
+		Byte SCF()
 		{
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(true);
+
+			return CYCLES[0x37];
 		}
-		void CCF()
+		Byte CCF()
 		{
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(!mFRegister.carry());
+
+			return CYCLES[0x3F];
 		}
 
 		// CB Instructions
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void RLC_R()
+		Byte RLC_R()
 		{
 			Byte reg = ReadByte<Op::Z>();
 
@@ -861,9 +966,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(finalBit);
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void RRC_R()
+		Byte RRC_R()
 		{
 			Byte reg = ReadByte<Op::Z>();
 
@@ -879,9 +986,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(firstBit);
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void RL_R()
+		Byte RL_R()
 		{
 			Byte reg = ReadByte<Op::Z>();
 
@@ -898,9 +1007,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(carryBit);
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void RR_R()
+		Byte RR_R()
 		{
 			Byte reg = ReadByte<Op::Z>();
 
@@ -917,9 +1028,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(carryBit);
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void SLA_R()
+		Byte SLA_R()
 		{
 			Byte reg = ReadByte<Op::Z>();
 
@@ -933,9 +1046,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(carryBit);
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void SRA_R()
+		Byte SRA_R()
 		{
 			Byte reg = ReadByte<Op::Z>();
 
@@ -952,9 +1067,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(carryBit);
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void SWAP_R()
+		Byte SWAP_R()
 		{
 			Byte reg = ReadByte<Op::Z>();
 			Byte lo = (reg & 0x0F) << 4;
@@ -965,9 +1082,11 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(false);
+
+			return CB_CYCLES[Op::Val];
 		}
 		template<typename Op, Byte T> requires IsOpCode<Op, T>
-		void SRL_R()
+		Byte SRL_R()
 		{
 			Byte reg = ReadByte<Op::Z>();
 
@@ -982,15 +1101,17 @@ export namespace GB {
 			mFRegister.setSubtr(false);
 			mFRegister.setHCarry(false);
 			mFRegister.setCarry(carryBit);
+
+			return CB_CYCLES[Op::Val];
 		}
 
 #pragma endregion
 
 #pragma region OpCode Dispatchers
 
-#define	GB_BIND_DISPATCH(func, op) [this] { this->func<OpCode<op>, op>(); }
+#define	GB_BIND_DISPATCH(func, op) [this] () -> Byte { return this->func<OpCode<op>, op>(); }
 
-		using OpCodeFunction = std::function<void()>;
+		using OpCodeFunction = std::function<Byte()>;
 		const std::array<OpCodeFunction, 0x100> mDispatcher =
 		{
 			GB_BIND_DISPATCH(NOP, 0x00),		GB_BIND_DISPATCH(LD_R_I16, 0x01),	GB_BIND_DISPATCH(LD_M_R, 0x02),		GB_BIND_DISPATCH(UN_R, 0x03),

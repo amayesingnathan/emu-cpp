@@ -49,7 +49,5 @@ namespace GB {
 		Emu::Impl<CPU> mProcessor = nullptr;
 		Emu::Impl<PPU> mGraphics = nullptr;
 		Emu::Impl<APU> mAudio = nullptr;
-
-		friend class AddressBus;
 	};
 }

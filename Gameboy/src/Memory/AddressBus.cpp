@@ -78,8 +78,7 @@ namespace GB {
 			return sErrorByte;
 
 		default:
-			return sErrorByte;
-			//return MemoryMapper::Get(MemoryMapper::IO, address - 0xFF00);
+			return MemoryMapper::Read(address);
 		}
 	}
 
@@ -128,12 +127,19 @@ namespace GB {
 		}
 
 		case Addr::LY:
-			MemoryMapper::Write(address, data);
+			MemoryMapper::Write(address, 0);
 			break;
 
 		case Addr::DMA:
-			//DoDMATransfer(data);
+			DoDMATransfer(data);
 			break;
+
+		case Addr::SC:
+		{
+			if (data == 0x81)
+				Emu::Log::Info(std::format("Serial data {}", MemoryMapper::Read(Addr::SB)));
+			break;
+		}
 
 			// Undocumented IO registers
 		case 0xFF08: case 0xFF09: case 0xFF27: case 0xFF28: case 0xFF29:
@@ -170,5 +176,13 @@ namespace GB {
 		ByteBits bits = req;
 		bits.set((Byte)interrupt);
 		req = (Byte)bits.to_ulong();
+	}
+
+	void AddressBus::DoDMATransfer(Byte data)
+	{
+		Word address = data << 8;
+		Byte* src = &Read(address);
+		Byte* dest = &MemoryMapper::Read(0xFE00);
+		memcpy(dest, src, 0xA0);
 	}
 }

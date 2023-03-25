@@ -1,7 +1,5 @@
 module Gameboy.CPU;
 
-import Gameboy.CPU.Cycles;
-
 namespace GB {
 
 	Byte CPU::tick()
@@ -13,9 +11,8 @@ namespace GB {
 			int a = 4;
 
 		Byte nextOp = AddressBus::Read(pc++);
-		mDispatcher[nextOp]();
+		Byte cycles = mDispatcher[nextOp]();
 
-		Byte cycles = GetOpCycles(nextOp);
 		UpdateTimers(cycles);
 
 		return cycles;
