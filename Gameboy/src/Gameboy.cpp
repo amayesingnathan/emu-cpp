@@ -4,6 +4,8 @@ module;
 
 module Gameboy;
 
+import <fstream>;
+
 import Gameboy.CPU;
 import Gameboy.Graphics;
 import Gameboy.Cartridge;
@@ -20,6 +22,8 @@ namespace GB {
         mGraphics = Emu::MakeInstance<PPU>();
 
         mCartridge = Emu::MakeInstance<Cartridge>(path);
+
+        mDebugState = Emu::MakeInstance<InternalState>();
     }
 
     Gameboy::~Gameboy()
@@ -46,6 +50,7 @@ namespace GB {
     void Gameboy::uiRender()
     {
         UI_CPU();
+        UI_Memory();
     }
 
     void Gameboy::onEvent(Emu::Event& event)
@@ -89,9 +94,9 @@ namespace GB {
         mGraphics->disableLCD();
     }
 
-	void Gameboy::UI_CPU()
-	{
-		ImGui::Begin("CPU");
+    void Gameboy::UI_CPU()
+    {
+        ImGui::Begin("CPU");
 
         {   // Registers
             Registers& registers = mProcessor->mRegisters;
@@ -140,52 +145,51 @@ namespace GB {
         ImGui::Separator();
 
         {   // Registers
-            Byte* ioRegisters = MemoryMapper::GetBlock(MemoryMapper::IO);
-            ByteBits IE = ioRegisters[0x80];
 
             ImGui::Text("IO Registers");
 
-            ImGui::Text("JOYP: 0x%02X", ioRegisters[0x0]);
+            ImGui::Text("JOYP: 0x%02X", mDebugState->JOYP);
 
-            ImGui::Text("SB: 0x%02X", ioRegisters[0x1]);
+            ImGui::Text("SB: 0x%02X", mDebugState->SB);
             ImGui::SameLine();
-            ImGui::Text("SC: 0x%02X", ioRegisters[0x2]);
+            ImGui::Text("SC: 0x%02X", mDebugState->SC);
 
-            ImGui::Text("DIV: 0x%02X", ioRegisters[0x4]);
+            ImGui::Text("DIV: 0x%02X", mDebugState->DIV);
             ImGui::SameLine();
-            ImGui::Text("TIMA: 0x%02X", ioRegisters[0x5]);
+            ImGui::Text("TIMA: 0x%02X", mDebugState->JOYP);
             ImGui::SameLine();
-            ImGui::Text("TMA: 0x%02X", ioRegisters[0x6]);
+            ImGui::Text("TMA: 0x%02X", mDebugState->TMA);
             ImGui::SameLine();
-            ImGui::Text("TMC: 0x%02X", ioRegisters[0x7]);
+            ImGui::Text("TMC: 0x%02X", mDebugState->TMC);
 
-            ImGui::Text("LCDC: 0x%02X", ioRegisters[0x40]);
+            ImGui::Text("LCDC: 0x%02X", mDebugState->LCDC);
             ImGui::SameLine();
-            ImGui::Text("STAT: 0x%02X", ioRegisters[0x41]);
+            ImGui::Text("STAT: 0x%02X", mDebugState->STAT);
 
-            ImGui::Text("SCY: 0x%02X", ioRegisters[0x42]);
+            ImGui::Text("SCY: 0x%02X", mDebugState->SCY);
             ImGui::SameLine();
-            ImGui::Text("SCX: 0x%02X", ioRegisters[0x43]);
+            ImGui::Text("SCX: 0x%02X", mDebugState->SCX);
 
-            ImGui::Text("LY: %03i", ioRegisters[0x44]);
+            ImGui::Text("LY: %03i", mDebugState->LY);
             ImGui::SameLine();
-            ImGui::Text("LYC: %03i", ioRegisters[0x45]);
+            ImGui::Text("LYC: %03i", mDebugState->LYC);
 
-            ImGui::Text("DMA: 0x%02X", ioRegisters[0x46]);
+            ImGui::Text("DMA: 0x%02X", mDebugState->DMA);
 
-            ImGui::Text("BGP: 0x%02X", ioRegisters[0x47]);
+            ImGui::Text("BGP: 0x%02X", mDebugState->BGP);
             ImGui::SameLine();
-            ImGui::Text("OPB0: 0x%02X", ioRegisters[0x48]);
+            ImGui::Text("OBP0: 0x%02X", mDebugState->OBP0);
             ImGui::SameLine();
-            ImGui::Text("OPB1: 0x%02X", ioRegisters[0x49]);
+            ImGui::Text("OBP1: 0x%02X", mDebugState->OBP1);
 
-            ImGui::Text("WY: 0x%02X", ioRegisters[0x4A]);
+            ImGui::Text("WY: 0x%02X", mDebugState->WY);
             ImGui::SameLine();
-            ImGui::Text("WX: 0x%02X", ioRegisters[0x4B]);
+            ImGui::Text("WX: 0x%02X", mDebugState->WX);
 
+            ByteBits IE = mDebugState->IE;
             ImGui::Text("IE: 0x%02X", IE);
             ImGui::SameLine();
-            ImGui::Text("IF: 0x%02X", ioRegisters[0x0F]);
+            ImGui::Text("IF: 0x%02X", mDebugState->IF);
 
             ImGui::Text("Interupt Enable Register");
             ImGui::Text("VBlank : %1i", IE.test(VBLANK_BIT));
@@ -199,14 +203,36 @@ namespace GB {
             ImGui::Text("Joypad : %1i", IE.test(JOYPAD_BIT));
         }
 
-		ImGui::End();
-	}
+        ImGui::End();
+    }
 
     void Gameboy::UI_Memory()
     {
         ImGui::Begin("Memory");
 
+        ImGui::BeginChild("MemoryBlock");
 
+        USize elementCount = 0;
+        Byte lineBytes[16];
+
+        for (Byte* bytePtr : MemoryMapper::GetMapping())
+        {
+            Byte byte = bytePtr ? *bytePtr : 0;
+
+            lineBytes[elementCount % 16] = byte;
+            elementCount++;
+
+            if (elementCount % 16 == 0)
+            {
+                std::string line = std::format("0x{:X}\t{:X}{:X}{:X}{:X}{:X}{:X}{:X}{:X}{:X}{:X}{:X}{:X}{:X}{:X}{:X}", (elementCount / 16) * 0x10,
+                    lineBytes[0], lineBytes[1], lineBytes[2], lineBytes[3], lineBytes[4], lineBytes[5], lineBytes[6], lineBytes[7],
+                    lineBytes[8], lineBytes[9], lineBytes[10], lineBytes[11], lineBytes[12], lineBytes[13], lineBytes[14], lineBytes[15]);
+
+                ImGui::Text(line.c_str());
+            }
+        }
+
+        ImGui::EndChild();
 
         ImGui::End();
     }

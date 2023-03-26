@@ -23,7 +23,10 @@ export namespace GB {
 	{
 	public:
 		Timer(Byte& reg, Byte freq)
-			: mRegister(reg), mFrequency(freq) {}
+			: mRegister(reg), mFrequency(freq) 
+		{
+			mRegister = 0;
+		}
 
 		bool step(Byte cycles)
 		{

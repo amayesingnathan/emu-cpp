@@ -1,5 +1,8 @@
 export module Gameboy.Memory.MemoryMapper;
 
+export import <array>;
+export import <ranges>;
+
 import Gameboy.Core.Types;
 import Gameboy.Cartridge;
 
@@ -42,13 +45,15 @@ namespace GB {
 		static void UpdateROMMap(Word startAddr);
 		static void UpdateRAMMap(Word startAddr);
 
+		static const auto& GetMapping() { return sMapping; }
+
 	private:
 		static Byte* GetBlock(Type blockType);
 		static Byte* GetInternal(Type blockType, USize address = 0);
 
 	private:
 		inline static Emu::Impl<Byte> sMemoryBlock = nullptr;
-		inline static Byte* sMapping[0x10000];
+		inline static std::vector<Byte*> sMapping = std::vector<Byte*>(0x10000);
 
 		friend class Gameboy;
 	};

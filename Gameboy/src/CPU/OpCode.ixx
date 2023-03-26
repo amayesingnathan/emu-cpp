@@ -37,6 +37,16 @@ namespace GB {
 			return (... && OpCodeUtils::TestBit<T>(vals));
 		}
 
+		// Expressing the OpCode as bits, we can use the arrangement to decode the operation.
+		// See https://gb-archive.github.io/salvage/decoding_gbz80_opcodes/Decoding%20Gamboy%20Z80%20Opcodes.html for more detail.
+
+		// 7 6 5 4 3 2 1 0
+		// --- ----- -----				
+		//  X	 Y	   Z
+		// 
+		//	   --- -
+		//		P  Q
+
 		static constexpr Byte X = T >> 6;
 		static constexpr Byte Y = (T >> 3) & 7;
 		static constexpr Byte Z = T & 7;

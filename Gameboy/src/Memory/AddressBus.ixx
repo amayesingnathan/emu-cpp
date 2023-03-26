@@ -29,6 +29,8 @@ namespace GB {
 		static Byte& ReadIO(Word address);
 		static void WriteIO(Word address, Byte data);
 
+		static void PostBoot();
+
 	private:
 		inline static Gameboy* sContext = nullptr;
 		inline static Byte sErrorByte = 0xFF;

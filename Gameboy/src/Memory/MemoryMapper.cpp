@@ -41,7 +41,7 @@ namespace GB {
 	void MemoryMapper::Shutdown()
 	{
 		sMemoryBlock.reset();
-		memset(sMapping, 0, 0x10000);
+		memset(sMapping.data(), 0, 0x10000);
 	}
 
 	Byte& MemoryMapper::Read(Word address)

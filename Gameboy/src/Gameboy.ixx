@@ -1,8 +1,11 @@
 export module Gameboy;
 
+import <sstream>;
+
 export import EmuBase.Emulator;
 
 import Gameboy.Core.Types;
+import DebugState;
 
 namespace GB {
 
@@ -49,5 +52,7 @@ namespace GB {
 		Emu::Impl<CPU> mProcessor = nullptr;
 		Emu::Impl<PPU> mGraphics = nullptr;
 		Emu::Impl<APU> mAudio = nullptr;
+
+		Emu::Impl<InternalState> mDebugState;
 	};
 }

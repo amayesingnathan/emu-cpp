@@ -3,6 +3,8 @@ module Gameboy.Memory.AddressBus;
 import Gameboy.Memory.MemoryMapper;
 import Gameboy.Graphics.Flags;
 
+import <iostream>;
+
 namespace GB {
 
 	void AddressBus::Init(Gameboy* ctx)
@@ -51,7 +53,7 @@ namespace GB {
 
 		// Disable boot ROM
 		if (sBootstrap && address == 0xFF50)
-			sBootstrap = false;
+			PostBoot();
 
 		if (address < 0x8000)
 			sContext->writeROM(address, data);
@@ -137,7 +139,8 @@ namespace GB {
 		case Addr::SC:
 		{
 			if (data == 0x81)
-				Emu::Log::Info(std::format("Serial data {}", MemoryMapper::Read(Addr::SB)));
+				std::cout << MemoryMapper::Read(Addr::SB);
+
 			break;
 		}
 
@@ -184,5 +187,49 @@ namespace GB {
 		Byte* src = &Read(address);
 		Byte* dest = &MemoryMapper::Read(0xFE00);
 		memcpy(dest, src, 0xA0);
+	}
+
+	void AddressBus::PostBoot()
+	{
+		Write(0xFF00, 0xCF);  // P1
+		Write(0xFF01, 0x00);  // SB
+		Write(0xFF02, 0x7E);  // SC
+		Write(0xFF04, 0xAB);  // DIV
+		Write(0xFF05, 0x00);  // TIMA
+		Write(0xFF06, 0x00);  // TMA
+		Write(0xFF07, 0x00);  // TAC
+		Write(0xFF0F, 0xE1);  // IF
+		Write(0xFF10, 0x80);  // NR10
+		Write(0xFF11, 0xBF);  // NR11
+		Write(0xFF12, 0xF3);  // NR12
+		Write(0xFF14, 0xBF);  // NR14
+		Write(0xFF16, 0x3F);  // NR21
+		Write(0xFF17, 0x00);  // NR22
+		Write(0xFF19, 0xBF);  // NR24
+		Write(0xFF1A, 0x7F);  // NR30
+		Write(0xFF1B, 0xFF);  // NR31
+		Write(0xFF1C, 0x9F);  // NR32
+		Write(0xFF1E, 0xBF);  // NR33
+		Write(0xFF20, 0xFF);  // NR41
+		Write(0xFF21, 0x00);  // NR42
+		Write(0xFF22, 0x00);  // NR43
+		Write(0xFF23, 0xBF);  // NR30
+		Write(0xFF24, 0x77);  // NR50
+		Write(0xFF25, 0xF3);  // NR51
+		Write(0xFF26, 0xF1);  // NR52
+		Write(0xFF40, 0x91);  // LCDC
+		Write(0xFF41, 0x85);  // STAT
+		Write(0xFF42, 0x00);  // SCY
+		Write(0xFF43, 0x00);  // SCX
+		Write(0xFF44, 0x00);  // LY
+		Write(0xFF45, 0x00);  // LYC
+		Write(0xFF47, 0xFC);  // BGP
+		Write(0xFF48, 0xFF);  // OBP0
+		Write(0xFF49, 0xFF);  // OBP1
+		Write(0xFF4A, 0x00);  // WY
+		Write(0xFF4B, 0x00);  // WX
+		Write(0xFFFF, 0x00);  // IE
+
+		sBootstrap = false;
 	}
 }

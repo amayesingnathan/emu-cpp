@@ -185,7 +185,7 @@ export namespace GB {
 				return Op::P;
 			}();
 
-			WordRef address = ReadWord<Op::P>();
+			WordRef address = ReadWord<Target>();
 			mRegisters[ByteReg::A] = AddressBus::Read(address);
 			address += incDec;
 
@@ -279,8 +279,8 @@ export namespace GB {
 			Word address = lo | (hi << 8);
 
 			Word sp = mRegisters[WordReg::SP];
-			AddressBus::Write(address++, sp & 0x0F);
-			AddressBus::Write(address, (sp & 0xF0) >> 4);
+			AddressBus::Write(address, sp & 0x0F);
+			AddressBus::Write(address + 1, (sp & 0xF0) >> 4);
 
 			return CYCLES[Op::Val];
 		}
