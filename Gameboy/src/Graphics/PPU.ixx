@@ -45,7 +45,6 @@ export namespace GB {
 		void disableLCD();
 
 	private:
-		bool IsLCDEnabled();
 		void SetLCDStatus(Mode newMode);
 		void CompareScanline();
 
@@ -55,8 +54,8 @@ export namespace GB {
 		void LCDTransferMode();
 
 		void DrawScanline();
-		void DrawTiles(ByteBits lcdControl);
-		void DrawSprites(ByteBits lcdControl);
+		void DrawTiles();
+		void DrawSprites();
 
 		Colour GetColour(Byte colourNum, Word address);
 

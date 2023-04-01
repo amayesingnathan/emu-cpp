@@ -33,6 +33,11 @@ export namespace GB {
 		Byte& IF;
 		Byte& IE;
 
+		bool Paused = true;
+		bool Break = false;
+		Word Breakpoint = 0x100;
+		USize LastFrameCount = 0;
+
 		InternalState();
 	};
 }

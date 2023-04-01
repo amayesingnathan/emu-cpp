@@ -15,9 +15,6 @@ namespace GB {
 
 	void PPU::tick(Byte cycles)
 	{
-		if (!IsLCDEnabled())
-			return;
-
 		mClockCounter += cycles;
 		switch (mCurrentMode)
 		{
@@ -39,12 +36,6 @@ namespace GB {
 		}
 
 		CompareScanline();
-	}
-
-	bool PPU::IsLCDEnabled()
-	{
-		ByteBits lcdControl = mLCDStatus;
-		return lcdControl.test(LCD_ENABLE_BIT);
 	}
 
 	void PPU::disableLCD()
@@ -108,6 +99,8 @@ namespace GB {
 		if (mClockCounter < HBLANK_CYCLES)
 			return;
 
+		DrawScanline();
+
 		mClockCounter -= HBLANK_CYCLES;
 		mLCDScanline++;
 
@@ -132,7 +125,7 @@ namespace GB {
 		if (mLCDScanline < SCANLINE_COUNT_MAX)
 			return;
 
-		mClockCounter = 0;
+		DrawSprites();
 		mLCDScanline = 0;
 
 		SetLCDStatus(Mode::OAM);
@@ -153,7 +146,7 @@ namespace GB {
 			return;
 
 		mClockCounter -= LCD_TRANSFER_CYCLES;
-		DrawScanline();
+
 		SetLCDStatus(Mode::HBLANK);
 	}
 
@@ -163,12 +156,13 @@ namespace GB {
 		if (!lcdControl.test(LCD_ENABLE_BIT))
 			return;
 
-		DrawTiles(lcdControl);
-		DrawSprites(lcdControl);
+		DrawTiles();
 	}
 
-	void PPU::DrawTiles(ByteBits lcdControl)
+	void PPU::DrawTiles()
 	{
+		ByteBits lcdControl = mLCDControl;
+
 		if (!lcdControl.test(BG_ENABLE_BIT))
 			return;
 
@@ -256,8 +250,10 @@ namespace GB {
 		}
 	}
 
-	void PPU::DrawSprites(ByteBits lcdControl)
+	void PPU::DrawSprites()
 	{
+		ByteBits lcdControl = mLCDControl;
+
 		if (lcdControl.test(OBJ_ENABLE_BIT))
 			return;
 

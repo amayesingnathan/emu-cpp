@@ -24,6 +24,9 @@ export namespace GB {
 			mTimerCounter(AddressBus::Read(Addr::TIMA), FREQ_16384) {}
 
 		Byte tick();
+		Byte tickDebug(Word breakpoint);
+		Byte tickOnce();
+
 		void handleInterrupts();
 
 		void startTimer() { mTimerCounter.start(); }

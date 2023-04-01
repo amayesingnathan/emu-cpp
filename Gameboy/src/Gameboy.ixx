@@ -43,7 +43,12 @@ namespace GB {
 		void writeROM(Word addr, Byte val);
 
 	private:
+		void Update();
+		void UpdateDebug();
+		void UpdateOnce();
+
 		void UI_CPU();
+		void UI_Debugger();
 		void UI_Memory();
 
 	private:

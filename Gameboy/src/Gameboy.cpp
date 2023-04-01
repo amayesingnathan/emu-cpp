@@ -33,24 +33,17 @@ namespace GB {
 
     void Gameboy::update()
     {
-        mGraphics->startFrame();
+        if (mDebugState->Break)
+            return UpdateDebug();
 
-        USize cyclesThisUpdate = 0;
-        while (cyclesThisUpdate < CYCLES_PER_FRAME)
-        {
-            Byte cycles = mProcessor->tick();
-            cyclesThisUpdate += cycles;
-            mGraphics->tick(cycles);
-            mProcessor->handleInterrupts();
-        }
-
-        mGraphics->endFrame();
+        Update();
     }
 
     void Gameboy::uiRender()
     {
         UI_CPU();
-        UI_Memory();
+        UI_Debugger();
+        //UI_Memory();
     }
 
     void Gameboy::onEvent(Emu::Event& event)
@@ -87,6 +80,51 @@ namespace GB {
     void Gameboy::writeROM(Word addr, Byte val)
     {
         mCartridge->write(addr, val);
+    }
+
+    void Gameboy::Update()
+    {
+        mGraphics->startFrame();
+
+        USize cyclesThisUpdate = 0;
+        while (!mDebugState->Paused && cyclesThisUpdate < CYCLES_PER_FRAME)
+        {
+            Byte cycles = mProcessor->tick();
+            cyclesThisUpdate += cycles;
+            mGraphics->tick(cycles);
+            mProcessor->handleInterrupts();
+        }
+
+        mGraphics->endFrame();
+    }
+
+    void Gameboy::UpdateDebug()
+    {
+        mGraphics->startFrame();
+
+        USize cyclesThisUpdate = mDebugState->LastFrameCount;
+        while (!mDebugState->Paused && cyclesThisUpdate < CYCLES_PER_FRAME)
+        {
+            Byte cycles = mProcessor->tickDebug(mDebugState->Breakpoint);
+            cyclesThisUpdate += cycles;
+            mGraphics->tick(cycles);
+            mProcessor->handleInterrupts();
+
+            mDebugState->Paused = cycles == 0;
+        }
+
+        mDebugState->LastFrameCount = 0;
+        if (cyclesThisUpdate < CYCLES_PER_FRAME)
+            mDebugState->LastFrameCount = cyclesThisUpdate;
+
+        mGraphics->endFrame();
+    }
+
+    void Gameboy::UpdateOnce()
+    {
+        Byte cycles = mProcessor->tick();
+        mGraphics->tick(cycles);
+        mProcessor->handleInterrupts();
     }
 
     void Gameboy::disableLCD()
@@ -202,6 +240,31 @@ namespace GB {
             ImGui::SameLine();
             ImGui::Text("Joypad : %1i", IE.test(JOYPAD_BIT));
         }
+
+        ImGui::End();
+    }
+
+    void Gameboy::UI_Debugger()
+    {
+        ImGui::Begin("Debug");
+
+        if (ImGui::Button(mDebugState->Paused ? "Play" : "Pause"))
+            mDebugState->Paused = !mDebugState->Paused;
+
+        ImGui::SameLine();
+
+        ImGui::Checkbox("Break", &mDebugState->Break);
+
+        ImGui::SameLine();
+
+        ImGui::BeginDisabled(!mDebugState->Paused);
+        if (ImGui::Button("Step"))
+            UpdateOnce();
+
+        ImGui::EndDisabled();
+
+        static Word sStepSize = 1;
+        ImGui::InputScalar("Breakpoint", ImGuiDataType_U16, &mDebugState->Breakpoint, &sStepSize, nullptr, "%04X", ImGuiInputTextFlags_CharsHexadecimal);
 
         ImGui::End();
     }

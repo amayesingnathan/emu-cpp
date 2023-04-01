@@ -230,6 +230,8 @@ namespace GB {
 		Write(0xFF4B, 0x00);  // WX
 		Write(0xFFFF, 0x00);  // IE
 
+		MemoryMapper::PostBoot(); // Remap boot rom memory
+
 		sBootstrap = false;
 	}
 }

@@ -41,6 +41,8 @@ namespace GB {
 		static Byte& Read(Word address);
 		static void Write(Word address, Byte val);
 
+		static void PostBoot();
+
 		static Byte* ReadROM();
 		static void UpdateROMMap(Word startAddr);
 		static void UpdateRAMMap(Word startAddr);

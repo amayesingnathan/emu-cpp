@@ -5,10 +5,19 @@ namespace GB {
 	Byte CPU::tick()
 	{
 		WordRef pc = mRegisters[WordReg::PC];
+		Byte nextOp = AddressBus::Read(pc++);
+		Byte cycles = mDispatcher[nextOp]();
 
-		Word check = 0x0100;
-		if (pc == check)
-			int a = 4;
+		UpdateTimers(cycles);
+
+		return cycles;
+	}
+
+	Byte CPU::tickDebug(Word breakpoint)
+	{
+		WordRef pc = mRegisters[WordReg::PC];
+		if (pc == breakpoint)
+			return 0;
 
 		Byte nextOp = AddressBus::Read(pc++);
 		Byte cycles = mDispatcher[nextOp]();

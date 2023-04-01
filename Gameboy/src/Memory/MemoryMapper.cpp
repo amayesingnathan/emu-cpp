@@ -54,6 +54,12 @@ namespace GB {
 		*sMapping[address] = val;
 	}
 
+	void MemoryMapper::PostBoot()
+	{
+		for (USize i = 0; i < 0x100; i++)
+			sMapping[i] = GetInternal(ROM, i);
+	}
+
 	Byte* MemoryMapper::ReadROM()
 	{
 		return GetBlock(ROM);
@@ -72,7 +78,7 @@ namespace GB {
 		Byte* mappedROM = GetInternal(CART_RAM, startAddr);
 
 		for (USize i = 0; i < 0x2000; i++)
-			sMapping[0xA000 + i] = &mappedROM[i];
+			sMapping[0xA000 + i] = mappedROM++;
 	}
 
 	Byte* MemoryMapper::GetBlock(Type blockType)
